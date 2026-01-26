@@ -103,13 +103,16 @@ function createIntentFn<intent extends MethodIntent.MethodIntent>(
   const { intent, realm, secretKey, verify } = parameters
 
   return (options) => {
+    const { description, ...request } = options
+
     // Recompute challenge from options. The HMAC-bound ID means we don't need to
     // store challenges server-side—if the client echoes back a credential with
     // a matching ID, we know it was issued by us with these exact parameters.
     const challenge = Challenge.fromIntent(intent, {
       secretKey,
       realm,
-      request: options,
+      request: request as z.input<intent['schema']['request']>,
+      description,
     })
 
     async function handleFetch(request: globalThis.Request): Promise<IntentFn.Response> {
@@ -119,7 +122,7 @@ function createIntentFn<intent extends MethodIntent.MethodIntent>(
         return {
           challenge: Response.requirePayment({
             challenge,
-            error: new Errors.PaymentRequiredError(),
+            error: new Errors.PaymentRequiredError({ realm, description }),
           }),
           status: 402,
         }
@@ -221,7 +224,10 @@ declare namespace createIntentFn {
 
 /** @internal */
 type IntentFn<intent extends MethodIntent.MethodIntent> = (
-  options: z.input<intent['schema']['request']>,
+  options: z.input<intent['schema']['request']> & {
+    /** Optional human-readable description of the payment. */
+    description?: string | undefined
+  },
 ) => IntentFn.Handler
 
 /** @internal */

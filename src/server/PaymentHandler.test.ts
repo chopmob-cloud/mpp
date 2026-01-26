@@ -190,6 +190,27 @@ describe('intent function', () => {
       expires: '2025-01-06T12:00:00Z',
     })
   })
+
+  test('behavior: 402 response includes description in challenge', async () => {
+    const request = new Request('https://api.example.com/resource')
+
+    const response = await handler.charge({
+      amount: '1000000',
+      currency: '0x20c0000000000000000000000000000000000001',
+      recipient: '0x742d35Cc6634C0532925a3b844Bc9e7595f8fE00',
+      expires: '2025-01-06T12:00:00Z',
+      description: 'Payment for API access',
+    })(request)
+
+    expect(response.status).toBe(402)
+    if (response.status !== 402) throw new Error('Expected 402')
+
+    const header = response.challenge.headers.get('WWW-Authenticate')
+    if (!header) throw new Error('Expected WWW-Authenticate header')
+    const challenge = Challenge.deserialize(header)
+
+    expect(challenge.description).toBe('Payment for API access')
+  })
 })
 
 describe('intent function (Node.js)', () => {
@@ -228,7 +249,7 @@ describe('intent function (Node.js)', () => {
         {
           "body": {
             "challengeId": "[id]",
-            "detail": "Payment is required.",
+            "detail": "Payment is required for "api.example.com".",
             "status": 402,
             "title": "PaymentRequiredError",
             "type": "https://tempoxyz.github.io/payment-auth-spec/problems/payment-required",

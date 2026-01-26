@@ -17,6 +17,8 @@ import * as z from './zod.js'
  * ```
  */
 export const Schema = z.object({
+  /** Optional human-readable description of the payment. */
+  description: z.optional(z.string()),
   /** Optional digest of the request body (format: "sha-256=base64hash"). */
   digest: z.optional(z.string().check(z.regex(/^sha-256=/, 'Invalid digest format'))),
   /** Optional expiration timestamp (ISO 8601). */
@@ -96,7 +98,7 @@ export type Challenge<request = Record<string, unknown>, intent extends string =
 export function from<const parameters extends from.Parameters>(
   parameters: parameters,
 ): from.ReturnType<parameters> {
-  const { digest, expires, method, intent, realm, request, secretKey } = parameters
+  const { description, digest, expires, method, intent, realm, request, secretKey } = parameters
   const id = secretKey ? computeId(parameters, { secretKey }) : (parameters as { id: string }).id
 
   return Schema.parse({
@@ -105,6 +107,7 @@ export function from<const parameters extends from.Parameters>(
     method,
     intent,
     request,
+    ...(description && { description }),
     ...(digest && { digest }),
     ...(expires && { expires }),
   }) as from.ReturnType<parameters>
@@ -121,6 +124,8 @@ export declare namespace from {
         secretKey: string
       }
   > & {
+    /** Optional human-readable description of the payment. */
+    description?: string | undefined
     /** Optional digest of the request body. */
     digest?: string | undefined
     /** Optional expiration timestamp (ISO 8601). */
@@ -175,7 +180,7 @@ export function fromIntent<const intent extends MethodIntent.MethodIntent>(
   parameters: fromIntent.Parameters<intent>,
 ): fromIntent.ReturnType<intent> {
   const { method, name } = intent
-  const { digest, expires, id, realm, secretKey } = parameters
+  const { description, digest, expires, id, realm, secretKey } = parameters
 
   const request = PaymentRequest.fromIntent(intent, parameters.request)
 
@@ -185,6 +190,7 @@ export function fromIntent<const intent extends MethodIntent.MethodIntent>(
     method,
     intent: name,
     request,
+    description,
     digest,
     expires,
   } as from.Parameters) as fromIntent.ReturnType<intent>
@@ -201,6 +207,8 @@ export declare namespace fromIntent {
         secretKey: string
       }
   > & {
+    /** Optional human-readable description of the payment. */
+    description?: string | undefined
     /** Optional digest of the request body. */
     digest?: string | undefined
     /** Optional expiration timestamp (ISO 8601). */
@@ -239,6 +247,7 @@ export function serialize(challenge: Challenge): string {
     `request="${PaymentRequest.serialize(challenge.request)}"`,
   ]
 
+  if (challenge.description !== undefined) parts.push(`description="${challenge.description}"`)
   if (challenge.digest !== undefined) parts.push(`digest="${challenge.digest}"`)
   if (challenge.expires !== undefined) parts.push(`expires="${challenge.expires}"`)
 

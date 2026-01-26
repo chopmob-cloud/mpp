@@ -127,15 +127,20 @@ export class PaymentRequiredError extends PaymentError {
   readonly type = 'https://tempoxyz.github.io/payment-auth-spec/problems/payment-required'
 
   constructor(options: PaymentRequiredError.Options = {}) {
-    const { resource } = options
-    super(resource ? `Payment required for "${resource}".` : 'Payment is required.')
+    const { description, realm } = options
+    const parts = ['Payment is required']
+    if (realm) parts.push(`for "${realm}"`)
+    if (description) parts.push(`(${description})`)
+    super(`${parts.join(' ')}.`)
   }
 }
 
 export declare namespace PaymentRequiredError {
   type Options = {
-    /** The resource that requires payment. */
-    resource?: string
+    /** Human-readable description of the payment. */
+    description?: string
+    /** Server realm (e.g., hostname). */
+    realm?: string
   }
 }
 

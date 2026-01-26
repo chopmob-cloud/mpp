@@ -155,12 +155,27 @@ describe('PaymentRequiredError', () => {
     `)
   })
 
-  test('with resource', () => {
+  test('with realm', () => {
     expect(
-      errorSnapshot(new PaymentRequiredError({ resource: '/api/premium' })),
+      errorSnapshot(new PaymentRequiredError({ realm: 'api.example.com' })),
     ).toMatchInlineSnapshot(`
         {
-          "message": "Payment required for "/api/premium".",
+          "message": "Payment is required for "api.example.com".",
+          "name": "PaymentRequiredError",
+          "status": 402,
+          "type": "https://tempoxyz.github.io/payment-auth-spec/problems/payment-required",
+        }
+      `)
+  })
+
+  test('with realm and description', () => {
+    expect(
+      errorSnapshot(
+        new PaymentRequiredError({ realm: 'api.example.com', description: 'API access fee' }),
+      ),
+    ).toMatchInlineSnapshot(`
+        {
+          "message": "Payment is required for "api.example.com" (API access fee).",
           "name": "PaymentRequiredError",
           "status": 402,
           "type": "https://tempoxyz.github.io/payment-auth-spec/problems/payment-required",

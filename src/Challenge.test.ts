@@ -62,7 +62,7 @@ describe('from', () => {
       secretKey: 'my-secret',
     })
 
-    expect(challenge.id).toMatchInlineSnapshot(`"hdkUxfPe55Wim-FZKi7UNo-o5OhgbUQG9QHnCuyyl3I"`)
+    expect(challenge.id).toMatchInlineSnapshot(`"MIY9fLzP6JPHRY5LGkXJHaa7QF8f5fD61bpO6-uTgK0"`)
     expect(challenge.realm).toBe('api.example.com')
     expect(challenge.method).toBe('tempo')
   })
