@@ -138,9 +138,9 @@ export class PaymentRequiredError extends PaymentError {
 export declare namespace PaymentRequiredError {
   type Options = {
     /** Human-readable description of the payment. */
-    description?: string
+    description?: string | undefined
     /** Server realm (e.g., hostname). */
-    realm?: string
+    realm?: string | undefined
   }
 }
 

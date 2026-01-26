@@ -344,7 +344,7 @@ export function fromResponse(response: Response): Challenge {
  */
 export function verify(challenge: Challenge, options: verify.Options): boolean {
   const expectedId = computeId(challenge, options)
-  return challenge.id === expectedId
+  return constantTimeEqual(challenge.id, expectedId)
 }
 
 export declare namespace verify {
@@ -369,4 +369,12 @@ function computeId(challenge: Omit<Challenge, 'id'>, options: { secretKey: strin
   const data = Bytes.fromString(input)
   const mac = hmac(sha256, key, data)
   return Base64.fromBytes(mac, { url: true, pad: false })
+}
+
+/** @internal Constant-time string comparison to prevent timing attacks. */
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let result = 0
+  for (let i = 0; i < a.length; i++) result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return result === 0
 }
