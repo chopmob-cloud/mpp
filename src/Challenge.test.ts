@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import * as Challenge from './Challenge.js'
 
 describe('from', () => {
-  test('default', () => {
+  test('behavior: creates challenge', () => {
     const challenge = Challenge.from({
       id: 'challenge-id',
       method: 'tempo',

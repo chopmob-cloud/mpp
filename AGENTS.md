@@ -14,13 +14,68 @@ mpay provides abstractions for the complete HTTP 402 payment flow — both clien
 
 3. **`Intent`** — Actions that hang off a `PaymentMethod`. Standard intents include `charge`, `authorize`, and `subscription`. Each intent defines what the server requests and what the client must prove.
 
-### Hierarchy
+### Primitives
+
+Low-level data structures that compose into the core abstractions:
+
+- **`Challenge`** — Server-issued payment request (appears in `WWW-Authenticate` header). Contains `id`, `realm`, `method`, `intent`, `request`, and optional `expires`/`digest`.
+- **`Credential`** — Client-submitted payment proof (appears in `Authorization` header). Contains `challenge` echo, `payload` (method-specific proof), and optional `source` (payer identity).
+- **`Receipt`** — Server-issued settlement confirmation (appears in `Payment-Receipt` header). Contains `status`, `method`, `timestamp`, and `reference`.
+
+### Relationship
 
 ```
-Mpay
-  └── PaymentMethod (tempo, stripe, x402, ...)
-        └── Intent (charge, authorize, subscription, ...)
+┌───────────────┐         ┌─────────────────┐         ┌────────────────┐
+│     Mpay      │ 1     * │  PaymentMethod  │ *     * │     Intent     │
+│  (protocol)   ├─────────┤    (adapter)    ├─────────┤    (action)    │
+└───────────────┘ has     └─────────────────┘ impl.   └────────────────┘
+                          │ tempo           │         │ charge         │
+                          │ stripe          │         │ authorize      │
+                          │ x402            │         │ subscription   │
+                          └─────────────────┘         └────────────────┘
 ```
+
+## Spec Reference
+
+Canonical specs live at [tempoxyz/payment-auth-spec](https://github.com/tempoxyz/payment-auth-spec).
+
+### Spec Documents
+
+| Layer | Spec | Description |
+|-------|------|-------------|
+| **Core** | [draft-httpauth-payment-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/core/draft-httpauth-payment-00.md) | 402 flow, `WWW-Authenticate`/`Authorization` headers, `Payment-Receipt` |
+| **Intent** | [draft-payment-intent-charge-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/intents/draft-payment-intent-charge-00.md) | One-time immediate payment |
+| **Intent** | [draft-payment-intent-authorize-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/intents/draft-payment-intent-authorize-00.md) | Pre-authorization for later capture |
+| **Intent** | [draft-payment-intent-subscription-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/intents/draft-payment-intent-subscription-00.md) | Recurring periodic payments |
+| **Method** | [draft-tempo-charge-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/methods/tempo/draft-tempo-charge-00.md) | TIP-20 token transfers on Tempo |
+| **Method** | [draft-tempo-authorize-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/methods/tempo/draft-tempo-authorize-00.md) | Access Key delegation with limits |
+| **Method** | [draft-stripe-charge-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/methods/stripe/draft-stripe-charge-00.md) | Stripe Payment Tokens (SPTs) |
+| **Extension** | [draft-payment-discovery-00](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/extensions/draft-payment-discovery-00.md) | `/.well-known/payment` discovery |
+
+### Key Protocol Details
+
+- **Challenge**: `WWW-Authenticate: Payment id="...", realm="...", method="...", intent="...", request="<base64url>"`
+- **Credential**: `Authorization: Payment <base64url>` → `{ challenge, payload, source? }`
+- **Receipt**: `Payment-Receipt: <base64url>` → `{ status, method, timestamp, reference }`
+- **Encoding**: All JSON payloads use base64url without padding (RFC 4648)
+
+### Challenge ID Binding
+
+The challenge `id` is an HMAC-SHA256 over the challenge parameters, cryptographically binding the ID to its contents. This prevents tampering and ensures the server can verify challenge integrity without storing state.
+
+**HMAC input** (concatenated, pipe-delimited):
+
+```
+realm | method | intent | request | expires
+```
+
+**Generation:**
+
+```
+id = base64url(HMAC-SHA256(server_secret, input))
+```
+
+**Verification:** Server recomputes HMAC from echoed challenge parameters and compares to `id`. If mismatch, reject credential.
 
 ## Commands
 

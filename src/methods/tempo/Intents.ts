@@ -3,9 +3,8 @@ import { type Account, type Chain, type Client, parseEventLogs, type Transport }
 import { getTransactionReceipt, sendRawTransactionSync, signTransaction } from 'viem/actions'
 import { Abis, Transaction } from 'viem/tempo'
 import { z } from 'zod/mini'
-
-import * as Intent from '../../Intent.js'
 import { InvalidCredentialTypeError, VerificationError } from '../../Intent.js'
+import { Charge } from '../../intents/index.js'
 import * as Receipt from '../../Receipt.js'
 
 const transfer = AbiFunction.from('function transfer(address to, uint256 amount) returns (bool)')
@@ -22,9 +21,11 @@ const transfer = AbiFunction.from('function transfer(address to, uint256 amount)
  * // Create a payment request
  * const request = await intent.request({
  *   amount: '1000000',
- *   asset: '0x20c0000000000000000000000000000000000001',
- *   destination: '0x...',
+ *   currency: '0x20c0000000000000000000000000000000000001',
+ *   recipient: '0x...',
  *   expires: new Date(Date.now() + 60_000).toISOString(),
+ *   chainId: 42431,
+ *   feePayer: true,
  * })
  *
  * // Generate the credential
@@ -45,20 +46,47 @@ export function charge<account extends Account | undefined = undefined>(
 ) {
   const { account = client.account } = options
 
-  return Intent.define({
-    schema: charge.schema,
+  return Charge.implement({
+    schema: {
+      request: {
+        requires: ['expires', 'recipient'],
+        methodDetails: z.object({
+          chainId: z._default(z.number(), client.chain.id),
+          feePayer: z._default(z.boolean(), false),
+        }),
+      },
+      credential: {
+        payload: z.discriminatedUnion('type', [
+          z.object({
+            type: z.literal('hash'),
+            hash: z.templateLiteral([z.literal('0x'), z.string()]),
+          }),
+          z.object({
+            type: z.literal('transaction'),
+            signature: z.templateLiteral([z.literal('0x'), z.string()]),
+          }),
+        ]),
+      },
+    },
 
     async verify(credential, request) {
       const { payload } = credential
+      const { chainId, expires, feePayer } = request
+      const currency = request.currency as `0x${string}`
+      const recipient = request.recipient as `0x${string}`
 
-      if (new Date(request.expires) < new Date()) throw new VerificationError('Request has expired')
+      if (new Date(expires) < new Date()) throw new VerificationError('Request has expired')
 
       if (payload.type === 'hash') {
+        if (chainId !== client.chain.id)
+          throw new VerificationError(
+            `Chain ID mismatch: expected ${chainId}, got ${client.chain.id}`,
+          )
+
         const receipt = await getTransactionReceipt(client, {
           hash: payload.hash,
         })
 
-        // Verify the receipt contains a Transfer log matching the request
         const logs = parseEventLogs({
           abi: Abis.tip20,
           eventName: 'Transfer',
@@ -67,8 +95,8 @@ export function charge<account extends Account | undefined = undefined>(
 
         const match = logs.find(
           (log) =>
-            Address.isEqual(log.address, request.asset) &&
-            Address.isEqual(log.args.to, request.destination) &&
+            Address.isEqual(log.address, currency) &&
+            Address.isEqual(log.args.to, recipient) &&
             log.args.amount.toString() === request.amount,
         )
 
@@ -90,13 +118,18 @@ export function charge<account extends Account | undefined = undefined>(
         const serializedTransaction = payload.signature as Transaction.TransactionSerializedTempo
         const transaction = Transaction.deserialize(serializedTransaction)
 
+        if (transaction.chainId !== chainId)
+          throw new VerificationError(
+            `Chain ID mismatch: expected ${chainId}, got ${transaction.chainId}`,
+          )
+
         const transferCall = transaction.calls?.find((call) => {
-          if (!call.to || !Address.isEqual(call.to, request.asset)) return false
+          if (!call.to || !Address.isEqual(call.to, currency)) return false
           if (!call.data) return false
 
           try {
             const [to, amount] = AbiFunction.decodeData(transfer, call.data)
-            return Address.isEqual(to, request.destination) && amount.toString() === request.amount
+            return Address.isEqual(to, recipient) && amount.toString() === request.amount
           } catch {
             return false
           }
@@ -107,7 +140,7 @@ export function charge<account extends Account | undefined = undefined>(
             'Transaction must contain a transfer(to, amount) call matching request parameters',
           )
 
-        const transaction_final = request.feePayer
+        const transaction_final = feePayer
           ? await signTransaction(client, {
               ...transaction,
               feePayer: account,
@@ -132,27 +165,6 @@ export function charge<account extends Account | undefined = undefined>(
   })
 }
 
-export namespace charge {
-  export type Options = { account?: Account | undefined }
-
-  export const schema = {
-    request: z.object({
-      amount: z.string(),
-      asset: z.templateLiteral([z.literal('0x'), z.string()]),
-      destination: z.templateLiteral([z.literal('0x'), z.string()]),
-      expires: z.iso.datetime(),
-      feePayer: z._default(z.boolean(), false),
-    }),
-
-    credentialPayload: z.discriminatedUnion('type', [
-      z.object({
-        type: z.literal('hash'),
-        hash: z.templateLiteral([z.literal('0x'), z.string()]),
-      }),
-      z.object({
-        type: z.literal('transaction'),
-        signature: z.templateLiteral([z.literal('0x'), z.string()]),
-      }),
-    ]),
-  }
+export declare namespace charge {
+  type Options = { account?: Account | undefined }
 }

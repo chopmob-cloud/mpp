@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import * as Credential from './Credential.js'
 
 describe('from', () => {
-  test('default', () => {
+  test('behavior: creates credential', () => {
     const credential = Credential.from({
       id: 'challenge-id',
       payload: { signature: '0x1234' },
@@ -18,7 +18,7 @@ describe('from', () => {
     `)
   })
 
-  test('with source', () => {
+  test('behavior: creates credential with source', () => {
     const credential = Credential.from({
       id: 'challenge-id',
       source: 'did:pkh:eip155:1:0x1234567890abcdef',

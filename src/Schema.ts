@@ -18,9 +18,30 @@ export class ValidationError extends Error {
  */
 export function unwrap<T>(result: StandardSchemaV1.Result<T>, name?: string): T {
   if ('issues' in result && result.issues) {
-    const messages = result.issues.map((i) => i.message).join(', ')
-    const prefix = name ? `Invalid ${name}: ` : ''
-    throw new ValidationError(`${prefix}${messages}`, result.issues)
+    const prefix = name ? `Invalid ${name}` : 'Validation failed'
+    const issues = result.issues.map(formatIssue)
+    const message = `${prefix}:\n${issues.map((i) => `  - ${i}`).join('\n')}`
+    throw new ValidationError(message, result.issues)
   }
   return (result as StandardSchemaV1.SuccessResult<T>).value
+}
+
+function formatIssue(issue: StandardSchemaV1.Issue): string {
+  const path = issue.path?.map((p) => (typeof p === 'object' ? p.key : p)).join('.')
+  const message = formatMessage(issue)
+  if (path) return `${path}: ${message}`
+  return message
+}
+
+function formatMessage(issue: StandardSchemaV1.Issue): string {
+  const extended = issue as StandardSchemaV1.Issue & {
+    code?: string
+    expected?: string
+    received?: string
+  }
+
+  if (extended.code === 'invalid_type' && extended.expected) return `expected ${extended.expected}`
+  if (extended.code === 'too_small') return 'required'
+
+  return issue.message
 }

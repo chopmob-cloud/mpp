@@ -4,6 +4,7 @@ interface ImportMetaEnv {
   readonly VITE_NODE_ENV: string
   readonly VITE_HTTP_LOG: string
   readonly VITE_RPC_CREDENTIALS: string
+  readonly VITE_TEMPO_TAG: string
   readonly VITEST_POOL_ID: string
 }
 

@@ -9,10 +9,10 @@ export default defineConfig({
     },
     include: ['src/**/*.test.ts'],
     globals: true,
-    testTimeout: 60_000,
-    hookTimeout: 60_000,
     retry: 3,
     globalSetup: ['./test/setup.global.ts'],
     setupFiles: ['./test/setup.ts'],
+    hookTimeout: 30_000,
+    maxWorkers: 3,
   },
 })

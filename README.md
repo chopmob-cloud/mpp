@@ -169,7 +169,7 @@ const res2 = await fetch('https://api.example.com/resource', {
 
 ## API Reference
 
-### Core
+### `mpay`
 
 #### `Challenge`
 
@@ -223,6 +223,133 @@ const credential = Credential.from({
 })
 ```
 
+#### `Method.define`
+
+##### Example
+
+```ts
+import { Method } from 'mpay'
+import { Intents } from 'mpay/tempo'
+import { createClient, http } from 'viem'
+import { tempo } from 'viem/chains'
+
+export function tempo(options: { rpcUrl?: string | undefined } = {}) {
+  const { rpcUrl } = options
+
+  const client = createClient({
+    chain: tempo,
+    transport: http(rpcUrl),
+  })
+
+  return Method.define({
+    name: 'tempo',
+    intents: {
+      authorize: Intent.authorize(client),
+      charge: Intent.charge(client),
+      subscribe: Intent.subscribe(client),
+    },
+  })
+}
+
+const { charge } = tempo({
+  rpcUrl: 'https://rpc.testnet.tempo.xyz',
+})
+```
+
+#### `Intent.define`
+
+Defines a base intent — a type of payment operation (e.g., `charge`, `authorize`, `subscription`). 
+Returns an intent with an `.implement()` method that payment methods use to create their specific implementation.
+
+##### Definition
+
+```ts
+import { Schema } from 'mpay'
+
+declare function define(options: {
+  schema: {
+    /** Request schema as an object of field schemas */
+    request: Record<string, Schema.Schema>
+  }
+}): Intent
+
+interface Intent {
+  /** Creates a method-specific implementation of this intent */
+  implement(options: {
+    schema: {
+      request?: {
+        /** Optional fields from base schema that this method requires */
+        requires?: string[]
+        /** Method-specific fields (flattened onto request) */
+        methodDetails?: Schema.Schema
+      }
+      credential: {
+        /** Schema for the credential payload */
+        payload: Schema.Schema
+      }
+    }
+    /** Verifies a credential and returns a receipt */
+    verify(credential: Credential, request: Request): Promise<{ receipt: Receipt }>
+  }): MethodIntent
+}
+```
+
+> **Note:** `Schema.Schema` is a [Standard Schema](https://github.com/standard-schema/standard-schema) — an interoperable schema format supported by [Zod](https://zod.dev), [Valibot](https://valibot.dev), [ArkType](https://arktype.io), and others.
+
+##### Example
+
+This example uses [Zod](https://zod.dev), but any [Standard Schema](https://github.com/standard-schema/standard-schema)-compatible library works.
+
+```ts
+import { Intent } from 'mpay'
+import { z } from 'zod/mini'
+
+// 1. Define the base Charge intent.
+const Charge = Intent.define({
+  schema: {
+    request: {
+      amount: z.string(),
+      currency: z.string(),
+      recipient: z.optional(z.string()),
+      expires: z.optional(z.string()),
+      description: z.optional(z.string()),
+    },
+  },
+})
+
+// 2. Payment methods implement the intent.
+const charge = Charge.implement({
+  schema: {
+    request: {
+      // Make optional fields required for this method.
+      requires: ['expires', 'recipient'],
+      
+      // Add method-specific fields.
+      methodDetails: z.object({
+        chainId: z.number(),
+      }),
+    },
+    credential: {
+      payload: z.object({
+        signature: z.string(),
+      }),
+    },
+  },
+
+  async verify(credential, request) {
+    // request has: amount, currency, expires, recipient, chainId
+    // credential.payload has: signature
+    return {
+      receipt: {
+        status: 'success',
+        timestamp: new Date().toISOString(),
+        reference: '0x...',
+      },
+    }
+  },
+})
+```
+
 #### `Receipt`
 
 Payment receipt returned after successful verification, sent via the `Payment-Receipt` header.
@@ -248,7 +375,7 @@ const receipt = Receipt.from({
 })
 ```
 
-### Server
+### `mpay/server`
 
 #### `Mpay.create`
 
@@ -260,96 +387,5 @@ import { Mpay, tempo } from 'mpay/server'
 const mpay = Mpay.create({
   methods: [tempo()],
   realm: 'api.example.com',
-})
-```
-
-#### `Method.define`
-
-##### Example
-
-```ts
-import { Method } from 'mpay/server'
-import { Intents } from 'mpay/tempo'
-import { createClient, http } from 'viem'
-import { tempo } from 'viem/chains'
-
-export function tempo(options: { rpcUrl?: string | undefined } = {}) {
-  const { rpcUrl } = options
-
-  const client = createClient({
-    chain: tempo,
-    transport: http(rpcUrl),
-  })
-
-  return Method.define({
-    name: 'tempo',
-    intents: {
-      authorize: Intents.authorize(client),
-      charge: Intents.charge(client),
-      subscribe: Intents.subscribe(client),
-    },
-  })
-}
-
-const { charge } = tempo({
-  rpcUrl: 'https://rpc.testnet.tempo.xyz',
-})
-```
-
-#### `Intent.define`
-
-Defines a payment intent — a type of payment operation (e.g., `charge`, `authorize`, `subscription`). Each intent specifies schemas for request validation and credential verification.
-
-##### Definition
-
-```ts
-import { Credential, Schema } from 'mpay'
-
-declare function define(options: {
-  schema: {
-    /** Standard schema for challenge request data */
-    request: Schema.Schema
-    /** Standard schema for credential payload the client sends back */
-    credentialPayload: Schema.Schema
-  }
-
-  /** Verifies a credential and executes the payment */
-  verify: (credential: Credential.Credential) => Promise<verify.ReturnValue>
-}): Intent
-```
-
-> **Note:** `Schema.Schema` is a [Standard Schema](https://github.com/standard-schema/standard-schema) — an interoperable schema format supported by [Zod](https://zod.dev), [Valibot](https://valibot.dev), [ArkType](https://arktype.io), and others.
-
-##### Example
-
-This example uses [Zod](https://zod.dev), but any [Standard Schema](https://github.com/standard-schema/standard-schema)-compatible library works.
-
-```ts
-import { Intent } from 'mpay/server'
-import { z } from 'zod'
-
-const charge = Intent.define({
-  schema: {
-    request: z.object({
-      amount: z.string(),
-      asset: z.string(),
-      destination: z.string(),
-      expires: z.string(),
-    }),
-    credentialPayload: z.object({
-      signature: z.string(),
-    }),
-  },
-
-  verify(credential) {
-    // ... verify the credential and execute the payment
-    return {
-      receipt: {
-        status: 'success',
-        timestamp: new Date().toISOString(),
-        reference: '0x...',
-      },
-    }
-  },
 })
 ```

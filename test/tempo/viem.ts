@@ -4,7 +4,7 @@ import { type Account, english, generateMnemonic, mnemonicToAccount } from 'viem
 import { tempo, tempoDevnet, tempoLocalnet, tempoModerato } from 'viem/chains'
 import { Actions } from 'viem/tempo'
 import { nodeEnv } from '../config.js'
-import { rpcUrl } from '../prool.js'
+import { rpcUrl } from './prool.js'
 
 export const asset = '0x20c0000000000000000000000000000000000001' as const
 

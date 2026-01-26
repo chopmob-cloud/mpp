@@ -1,10 +1,11 @@
 import { parseUnits } from 'viem'
 import { Actions, Addresses } from 'viem/tempo'
-import { beforeEach } from 'vitest'
+import { afterAll, beforeAll } from 'vitest'
 import { nodeEnv } from './config.js'
+import { rpcUrl } from './tempo/prool.js'
 import { accounts, asset, client, fundAccount } from './tempo/viem.js'
 
-beforeEach(async () => {
+beforeAll(async () => {
   if (nodeEnv !== 'localnet') return
 
   // Mint liquidity for fee tokens.
@@ -23,4 +24,9 @@ beforeEach(async () => {
   )
 
   await fundAccount({ address: accounts[1].address, token: asset })
+})
+
+afterAll(async () => {
+  if (nodeEnv !== 'localnet') return
+  await fetch(`${rpcUrl}/stop`)
 })
