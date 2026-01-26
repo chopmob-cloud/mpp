@@ -103,9 +103,7 @@ function createIntentFn<intent extends MethodIntent.MethodIntent>(
   const { intent, realm, secretKey, verify } = parameters
 
   return (options) => {
-    const { description, request } = options
-    // Default challenge expiry to the request's expires if present
-    const expires = options.expires ?? (request as { expires?: string }).expires
+    const { description, expires, request } = options
 
     // Recompute challenge from options. The HMAC-bound ID means we don't need to
     // store challenges server-side—if the client echoes back a credential with

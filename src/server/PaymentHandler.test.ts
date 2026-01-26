@@ -124,7 +124,10 @@ describe('intent function', () => {
       headers: { Authorization: Credential.serialize(credential) },
     })
 
-    const response = await handler.charge({ request: paymentRequest })(request)
+    const response = await handler.charge({
+      request: paymentRequest,
+      expires: paymentRequest.expires,
+    })(request)
 
     expect(response.status).toBe(200)
     if (response.status !== 200) throw new Error('Expected 200')
@@ -245,7 +248,7 @@ describe('intent function (Node.js)', () => {
 
   test('behavior: writes 402 when no Authorization header', async () => {
     const { server, port } = await startServer(async (req, res) => {
-      await handler.charge({ request: paymentRequest })(req, res)
+      await handler.charge({ request: paymentRequest, expires: paymentRequest.expires })(req, res)
       // 402 response is ended by handler, no need to call res.end()
     })
 
@@ -302,7 +305,7 @@ describe('intent function (Node.js)', () => {
     })
 
     const { server, port } = await startServer(async (req, res) => {
-      await handler.charge({ request: paymentRequest })(req, res)
+      await handler.charge({ request: paymentRequest, expires: paymentRequest.expires })(req, res)
       res.end('OK')
     })
 
