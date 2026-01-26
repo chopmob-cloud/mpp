@@ -1,5 +1,5 @@
-import { z } from 'zod/mini'
 import type * as Intent from './Intent.js'
+import * as z from './zod.js'
 
 /**
  * A payment method-specific intent.
