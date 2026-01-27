@@ -8,6 +8,7 @@ import {
   parseEventLogs,
   type TransactionReceipt,
 } from 'viem'
+import { tempo as tempo_chain } from 'viem/chains'
 import { getTransactionReceipt, sendRawTransactionSync, signTransaction } from 'viem/actions'
 import { Abis, Transaction } from 'viem/tempo'
 
@@ -45,6 +46,7 @@ export function tempo(parameters: tempo.Parameters) {
     if ('client' in parameters) return parameters.client
     return createClient({
       chain: defineChain({
+        ...tempo_chain,
         id: parameters.chainId,
         name: 'Tempo',
         nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
@@ -74,7 +76,7 @@ export function tempo(parameters: tempo.Parameters) {
           const currency = request.currency as Address.Address
           const recipient = request.recipient as Address.Address
 
-          if (new Date(expires) < new Date()) throw new Error('Request has expired')
+          if (new Date(expires) < new Date()) throw new Error('Payment request expired.')
 
           const payload = credential.payload
 
@@ -99,8 +101,13 @@ export function tempo(parameters: tempo.Parameters) {
               )
 
               if (!match)
-                throw new Error(
-                  'Transaction must contain a Transfer log matching request parameters',
+                throw new MismatchError(
+                  'Payment verification failed: no matching transfer found.',
+                  {
+                    amount,
+                    currency,
+                    recipient,
+                  },
                 )
 
               return toReceipt(receipt)
@@ -124,13 +131,20 @@ export function tempo(parameters: tempo.Parameters) {
               })
 
               if (!transferCall)
-                throw new Error(
-                  'Transaction must contain a transfer(to, amount) call matching request parameters',
-                )
+                throw new MismatchError('Invalid transaction: missing transfer call.', {
+                  amount,
+                  currency,
+                  recipient,
+                })
 
               const serializedTransaction_final = await (async () => {
-                if (methodDetails?.feePayer && feePayer)
-                  return signTransaction(client, { ...transaction, feePayer } as never)
+                if (methodDetails?.feePayer && feePayer) {
+                  return signTransaction(client, {
+                    ...transaction,
+                    account: feePayer,
+                    feePayer,
+                  } as never)
+                }
                 return serializedTransaction
               })()
 
@@ -142,12 +156,16 @@ export function tempo(parameters: tempo.Parameters) {
             }
 
             default:
-              throw new Error(`Unsupported credential type: ${(payload as { type: string }).type}`)
+              throw new Error(
+                `Unsupported credential type "${(payload as { type: string }).type}". Expected "hash" or "transaction".`,
+              )
           }
         }
 
         default:
-          throw new Error(`Unsupported intent: ${challenge.intent}`)
+          throw new Error(
+            `Unsupported intent "${challenge.intent}". Tempo currently supports "charge".`,
+          )
       }
     },
   })
@@ -183,4 +201,13 @@ export function toReceipt(receipt: TransactionReceipt) {
     timestamp: new Date().toISOString(),
     reference: receipt.transactionHash,
   } as const
+}
+
+/** @internal */
+class MismatchError extends Error {
+  override readonly name = 'MismatchError'
+
+  constructor(reason: string, details: Record<string, string>) {
+    super([reason, ...Object.entries(details).map(([k, v]) => `  - ${k}: ${v}`)].join('\n'))
+  }
 }
