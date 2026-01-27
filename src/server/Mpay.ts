@@ -45,13 +45,14 @@ export function create<const method extends Method.Server<any, any, any>>(
   config: create.Config<method>,
 ): Mpay<method> {
   const { method, realm, secretKey } = config
-  const { intents, verify } = method
+  const { intents, request, verify } = method
 
   const intentFns: Record<string, IntentFn<MethodIntent.MethodIntent, Record<string, unknown>>> = {}
   for (const [name, intent] of Object.entries(intents as Record<string, MethodIntent.MethodIntent>))
     intentFns[name] = createIntentFn({
       intent,
       realm,
+      request: request as never,
       secretKey,
       verify: verify as never,
     })
@@ -77,7 +78,12 @@ function createIntentFn<intent extends MethodIntent.MethodIntent, context>(
   const { intent, realm, secretKey, verify } = parameters
 
   return (options) => {
-    const { description, expires, request, ...context } = options
+    const { description, expires, request: request_, ...context } = options
+
+    // Transform request if method provides a `request` function
+    const request = (
+      parameters.request ? parameters.request(options as never) : request_
+    ) as typeof request_
 
     // Recompute challenge from options. The HMAC-bound ID means we don't need to
     // store challenges server-side—if the client echoes back a credential with
@@ -116,16 +122,15 @@ function createIntentFn<intent extends MethodIntent.MethodIntent, context>(
         }
       }
 
-      // The challenge ID is HMAC-SHA256(secretKey, realm|method|intent|request|expires).
-      // By comparing IDs, we verify: (1) we issued this challenge, and (2) the client
-      // hasn't tampered with any parameters. This is stateless—no database lookup needed.
-      if (credential.challenge.id !== challenge.id)
+      // Verify the echoed challenge was issued by us by recomputing its HMAC.
+      // This is stateless—no database lookup needed.
+      if (!Challenge.verify(credential.challenge, { secretKey }))
         return {
           challenge: Response.requirePayment({
             challenge,
             error: new Errors.InvalidChallengeError({
               id: credential.challenge.id,
-              reason: 'credential does not match the issued challenge',
+              reason: 'challenge was not issued by this server',
             }),
           }),
           status: 402,
@@ -204,6 +209,7 @@ declare namespace createIntentFn {
   type Parameters<intent extends MethodIntent.MethodIntent, context> = {
     intent: intent
     realm: string
+    request?: Method.RequestFn<Record<string, intent>, context>
     secretKey: string
     verify: Method.VerifyFn<Record<string, intent>, context>
   }

@@ -15,11 +15,13 @@ import type { OneOf } from '../../internal/types.js'
 import * as Method from '../../Method.js'
 import * as Methods from './../Method.js'
 
-const transfer = AbiFunction.from('function transfer(address to, uint256 amount) returns (bool)')
-const transferSelector = AbiFunction.getSelector(transfer)
+const transfer = /*#__PURE__*/ AbiFunction.from(
+  'function transfer(address to, uint256 amount) returns (bool)',
+)
+const transferSelector = /*#__PURE__*/ AbiFunction.getSelector(transfer)
 
 /**
- * Creates a Tempo payment method.
+ * Creates a Tempo payment method for usage on the server.
  *
  * @example
  * ```ts
@@ -52,6 +54,10 @@ export function tempo(parameters: tempo.Parameters) {
       }),
       { feePayer },
     ),
+    request(options) {
+      if (options.feePayer) return { feePayer: true, ...options.request }
+      return options.request
+    },
     async verify({ context, credential }) {
       const { feePayer } = context
       const { challenge } = credential
@@ -204,12 +210,13 @@ export declare namespace tempo {
 }
 
 /** @internal */
-export function toReceipt(receipt: TransactionReceipt) {
+function toReceipt(receipt: TransactionReceipt) {
+  const { status, transactionHash } = receipt
   return {
     method: 'tempo',
-    status: receipt.status === 'success' ? 'success' : 'failed',
+    status: status === 'success' ? 'success' : 'failed',
     timestamp: new Date().toISOString(),
-    reference: receipt.transactionHash,
+    reference: transactionHash,
   } as const
 }
 

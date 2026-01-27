@@ -25,6 +25,23 @@ export type Method<
 }
 
 /**
+ * A client-side payment method with credential creation logic.
+ *
+ * Extends the base Method with:
+ * - Credential creation logic
+ */
+export type Client<
+  name extends string = string,
+  intents extends Record<string, MethodIntent.MethodIntent> = Record<
+    string,
+    MethodIntent.MethodIntent
+  >,
+> = Method<name, intents> & {
+  /** Create a credential from a challenge. */
+  createCredential: CreateCredentialFn<intents>
+}
+
+/**
  * A server-side payment method with verification logic.
  *
  * Extends the base Method with:
@@ -41,11 +58,50 @@ export type Server<
 > = Method<name, intents> & {
   /** Schema for per-request context passed to `verify`. */
   context?: context
+  /** Transform request before challenge creation. */
+  request?: RequestFn<
+    intents,
+    context extends z.ZodMiniType ? z.output<context> : Record<never, never>
+  >
   /** Verify a credential and return a receipt. */
   verify: VerifyFn<
     intents,
     context extends z.ZodMiniType ? z.output<context> : Record<never, never>
   >
+}
+
+/** Credential creation function that produces a serialized credential from a challenge. */
+export type CreateCredentialFn<intents extends Record<string, MethodIntent.MethodIntent>> = (
+  parameters: CreateCredentialFn.Parameters<intents>,
+) => Promise<string>
+
+export declare namespace CreateCredentialFn {
+  type Parameters<intents extends Record<string, MethodIntent.MethodIntent>> = {
+    [key in keyof intents]: {
+      challenge: Challenge.Challenge<
+        z.output<intents[key]['schema']['request']>,
+        intents[key]['name']
+      >
+    }
+  }[keyof intents]
+}
+
+/** Function that transforms request based on context. */
+export type RequestFn<
+  intents extends Record<string, MethodIntent.MethodIntent>,
+  context = unknown,
+> = (
+  parameters: RequestFn.Parameters<intents, context>,
+) => RequestFn.Parameters<intents, context>['request']
+
+export declare namespace RequestFn {
+  type Parameters<intents extends Record<string, MethodIntent.MethodIntent>, context = unknown> = {
+    [key in keyof intents]: {
+      description?: string | undefined
+      expires?: string | undefined
+      request: z.input<intents[key]['schema']['request']>
+    } & ([keyof context] extends [never] ? unknown : context)
+  }[keyof intents]
 }
 
 /** Verification function that validates a credential and returns a receipt. */
@@ -137,12 +193,13 @@ export function toServer<
   method: method,
   options: toServer.Options<method['intents'], context>,
 ): Server<method['name'], method['intents'], context> {
-  const { context, verify } = options
+  const { context, request, verify } = options
   const { intents, name } = method
   return {
     context,
     intents,
     name,
+    request,
     verify,
   } as Server<method['name'], method['intents'], context>
 }
@@ -154,11 +211,52 @@ export declare namespace toServer {
   > = {
     /** Schema for per-request context passed to `verify`. */
     context?: context
+    /** Transform request before challenge creation. */
+    request?: RequestFn<
+      intents,
+      context extends z.ZodMiniType ? z.output<context> : Record<never, never>
+    >
     /** Verify a credential and return a receipt. */
     verify: VerifyFn<
       intents,
       context extends z.ZodMiniType ? z.output<context> : Record<never, never>
     >
+  }
+}
+
+/**
+ * Extends a method with client-side credential creation logic.
+ *
+ * @example
+ * ```ts
+ * import { Method } from 'mpay'
+ * import { tempo } from 'mpay/tempo'
+ *
+ * const method = Method.toClient(tempo, {
+ *   async createCredential({ challenge }) {
+ *     // sign and create credential
+ *     return Credential.serialize({ challenge, payload: { ... } })
+ *   },
+ * })
+ * ```
+ */
+export function toClient<const method extends Method>(
+  method: method,
+  options: toClient.Options<method['intents']>,
+): Client<method['name'], method['intents']> {
+  const { createCredential } = options
+  const { intents, name } = method
+  return {
+    createCredential,
+    intents,
+    name,
+  } as Client<method['name'], method['intents']>
+}
+
+export declare namespace toClient {
+  type Options<intents extends Record<string, MethodIntent.MethodIntent>> = {
+    /** Create a credential from a challenge. */
+    createCredential: CreateCredentialFn<intents>
   }
 }
 

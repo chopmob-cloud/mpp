@@ -226,7 +226,7 @@ describe('request handler', () => {
     }).toMatchInlineSnapshot(`
       {
         "challengeId": "[challengeId]",
-        "detail": "Challenge "wrong-id" is invalid: credential does not match the issued challenge.",
+        "detail": "Challenge "wrong-id" is invalid: challenge was not issued by this server.",
         "instance": "[instance]",
         "status": 402,
         "title": "InvalidChallengeError",

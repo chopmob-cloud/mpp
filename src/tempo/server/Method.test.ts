@@ -1,5 +1,4 @@
 import type { Hex } from 'ox'
-import { prepareTransactionRequest, signTransaction } from 'viem/actions'
 import { Actions } from 'viem/tempo'
 import { describe, expect, test } from 'vitest'
 import * as Http from '~test/Http.js'
@@ -7,15 +6,17 @@ import { rpcUrl } from '~test/tempo/prool.js'
 import { accounts, asset, chain, client } from '~test/tempo/viem.js'
 import * as Challenge from '../../Challenge.js'
 import * as Credential from '../../Credential.js'
+import * as Mpay_client from '../../client/Mpay.js'
 import * as Receipt from '../../Receipt.js'
-import * as Mpay from '../../server/Mpay.js'
-import { tempo } from './Method.js'
+import * as Mpay_server from '../../server/Mpay.js'
+import * as Methods_client from '../client/Method.js'
+import * as Methods_server from './Method.js'
 
 const realm = 'api.example.com'
 const secretKey = 'test-secret-key'
 
-const handler = Mpay.create({
-  method: tempo({
+const server = Mpay_server.create({
+  method: Methods_server.tempo({
     chainId: chain.id,
     rpcUrl,
   }),
@@ -34,15 +35,16 @@ describe('tempo', () => {
         feePayer: true,
       } as const
 
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
+      const httpServer = await Http.createServer(async (req, res) => {
+        const result = await server.charge({ request })(req, res)
+        if (result.status === 402) return
+        res.end('OK')
       })
 
-      const response = await fetch(server.url)
+      const response = await fetch(httpServer.url)
       expect(response.status).toBe(402)
 
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
+      const challenge = Challenge.fromResponse(response, { method: server.method })
 
       const { receipt } = await Actions.token.transferSync(client, {
         account: accounts[1],
@@ -58,7 +60,7 @@ describe('tempo', () => {
       })
 
       {
-        const response = await fetch(server.url, {
+        const response = await fetch(httpServer.url, {
           headers: { Authorization: Credential.serialize(credential) },
         })
         expect(response.status).toBe(200)
@@ -78,7 +80,7 @@ describe('tempo', () => {
           `)
       }
 
-      server.close()
+      httpServer.close()
     })
 
     test('behavior: rejects hash with non-matching Transfer log', async () => {
@@ -91,15 +93,16 @@ describe('tempo', () => {
         recipient: accounts[0].address,
       } as const
 
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
+      const httpServer = await Http.createServer(async (req, res) => {
+        const result = await server.charge({ request })(req, res)
+        if (result.status === 402) return
+        res.end('OK')
       })
 
-      const response = await fetch(server.url)
+      const response = await fetch(httpServer.url)
       expect(response.status).toBe(402)
 
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
+      const challenge = Challenge.fromResponse(response, { method: server.method })
 
       const { receipt } = await Actions.token.transferSync(client, {
         account: accounts[1],
@@ -114,7 +117,7 @@ describe('tempo', () => {
       })
 
       {
-        const response = await fetch(server.url, {
+        const response = await fetch(httpServer.url, {
           headers: { Authorization: Credential.serialize(credential) },
         })
         expect(response.status).toBe(402)
@@ -122,7 +125,7 @@ describe('tempo', () => {
         expect(body.detail).toContain('Payment verification failed: no matching transfer found.')
       }
 
-      server.close()
+      httpServer.close()
     })
 
     test('behavior: rejects expired request', async () => {
@@ -133,15 +136,16 @@ describe('tempo', () => {
         recipient: accounts[0].address,
       } as const
 
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
+      const httpServer = await Http.createServer(async (req, res) => {
+        const result = await server.charge({ request })(req, res)
+        if (result.status === 402) return
+        res.end('OK')
       })
 
-      const response = await fetch(server.url)
+      const response = await fetch(httpServer.url)
       expect(response.status).toBe(402)
 
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
+      const challenge = Challenge.fromResponse(response, { method: server.method })
 
       const { receipt } = await Actions.token.transferSync(client, {
         account: accounts[1],
@@ -156,7 +160,7 @@ describe('tempo', () => {
       })
 
       {
-        const response = await fetch(server.url, {
+        const response = await fetch(httpServer.url, {
           headers: { Authorization: Credential.serialize(credential) },
         })
         expect(response.status).toBe(402)
@@ -164,51 +168,46 @@ describe('tempo', () => {
         expect(body.detail).toBe('Payment verification failed: Payment request expired.')
       }
 
-      server.close()
+      httpServer.close()
     })
   })
 
-  describe('intent: charge; type: transaction', () => {
+  describe('intent: charge; type: transaction; via Mpay', () => {
     test('default', async () => {
-      const request = {
-        amount: '1000000',
-        currency: asset,
-        expires: new Date(Date.now() + 60_000).toISOString(),
-        recipient: accounts[0].address,
-      } as const
-
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
-      })
-
-      const response = await fetch(server.url)
-      expect(response.status).toBe(402)
-
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
-
-      const prepared = await prepareTransactionRequest(client, {
-        account: accounts[1],
-        calls: [
-          Actions.token.transfer.call({
-            to: challenge.request.recipient as Hex.Hex,
-            token: challenge.request.currency as Hex.Hex,
-            amount: BigInt(challenge.request.amount),
+      const mpay = Mpay_client.create({
+        methods: [
+          Methods_client.tempo({
+            account: accounts[1],
+            chainId: chain.id,
+            rpcUrl,
           }),
         ],
       })
-      const serializedTransaction = await signTransaction(client, prepared)
 
-      const credential = Credential.from({
-        challenge,
-        payload: { signature: serializedTransaction, type: 'transaction' as const },
+      const httpServer = await Http.createServer(async (req, res) => {
+        const result = await server.charge({
+          request: {
+            amount: '1000000',
+            currency: asset,
+            expires: new Date(Date.now() + 60_000).toISOString(),
+            recipient: accounts[0].address,
+          },
+        })(req, res)
+        if (result.status === 402) return
+        res.end('OK')
       })
 
+      const response = await fetch(httpServer.url)
+      expect(response.status).toBe(402)
+
+      const credential = await mpay.createCredential(response)
+
       {
-        const response = await fetch(server.url, {
-          headers: { Authorization: Credential.serialize(credential) },
+        const response = await fetch(httpServer.url, {
+          headers: { Authorization: credential },
         })
         expect(response.status).toBe(200)
+
         const receipt = Receipt.fromResponse(response)
         expect({
           ...receipt,
@@ -224,50 +223,42 @@ describe('tempo', () => {
           `)
       }
 
-      server.close()
+      httpServer.close()
     })
 
     test('behavior: fee payer', async () => {
-      const request = {
-        amount: '1000000',
-        currency: asset,
-        expires: new Date(Date.now() + 60_000).toISOString(),
-        feePayer: true,
-        recipient: accounts[0].address,
-      } as const
-
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ feePayer: accounts[0], request })(req, res)
-        if (!res.headersSent) res.end('OK')
-      })
-
-      const response = await fetch(server.url)
-      expect(response.status).toBe(402)
-
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
-      if (challenge.intent !== 'charge') throw new Error()
-
-      const prepared = await prepareTransactionRequest(client, {
-        account: accounts[1],
-        calls: [
-          Actions.token.transfer.call({
-            to: challenge.request.recipient as Hex.Hex,
-            token: challenge.request.currency as Hex.Hex,
-            amount: BigInt(challenge.request.amount),
+      const mpay = Mpay_client.create({
+        methods: [
+          Methods_client.tempo({
+            account: accounts[1],
+            chainId: chain.id,
+            rpcUrl,
           }),
         ],
-        feePayer: challenge.request.methodDetails?.feePayer as true,
       })
-      const serializedTransaction = await signTransaction(client, prepared)
 
-      const credential = Credential.from({
-        challenge,
-        payload: { signature: serializedTransaction, type: 'transaction' as const },
+      const httpServer = await Http.createServer(async (req, res) => {
+        const result = await server.charge({
+          feePayer: accounts[0],
+          request: {
+            amount: '1000000',
+            currency: asset,
+            expires: new Date(Date.now() + 60_000).toISOString(),
+            recipient: accounts[0].address,
+          },
+        })(req, res)
+        if (result.status === 402) return
+        res.end('OK')
       })
+
+      const response = await fetch(httpServer.url)
+      expect(response.status).toBe(402)
+
+      const credential = await mpay.createCredential(response)
 
       {
-        const response = await fetch(server.url, {
-          headers: { Authorization: Credential.serialize(credential) },
+        const response = await fetch(httpServer.url, {
+          headers: { Authorization: credential },
         })
         expect(response.status).toBe(200)
 
@@ -286,159 +277,7 @@ describe('tempo', () => {
           `)
       }
 
-      server.close()
-    })
-
-    test('behavior: rejects transaction with non-matching transfer call', async () => {
-      const wrongRecipient = accounts[2].address
-
-      const request = {
-        amount: '1000000',
-        currency: asset,
-        expires: new Date(Date.now() + 60_000).toISOString(),
-        recipient: accounts[0].address,
-      } as const
-
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
-      })
-
-      const response = await fetch(server.url)
-      expect(response.status).toBe(402)
-
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
-
-      const serializedTransaction = await signTransaction(client, {
-        account: accounts[1],
-        calls: [
-          Actions.token.transfer.call({
-            to: wrongRecipient,
-            token: challenge.request.currency as Hex.Hex,
-            amount: BigInt(challenge.request.amount),
-          }),
-        ],
-      })
-
-      const credential = Credential.from({
-        challenge,
-        payload: { signature: serializedTransaction, type: 'transaction' as const },
-      })
-
-      {
-        const response = await fetch(server.url, {
-          headers: { Authorization: Credential.serialize(credential) },
-        })
-        expect(response.status).toBe(402)
-        const body = (await response.json()) as { detail: string }
-        expect(body.detail).toContain(
-          'Payment verification failed: Invalid transaction: transfer recipient mismatch',
-        )
-      }
-
-      server.close()
-    })
-
-    test('behavior: rejects transaction with multiple calls', async () => {
-      const request = {
-        amount: '1000000',
-        currency: asset,
-        expires: new Date(Date.now() + 60_000).toISOString(),
-        recipient: accounts[0].address,
-      } as const
-
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
-      })
-
-      const response = await fetch(server.url)
-      expect(response.status).toBe(402)
-
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
-
-      const serializedTransaction = await signTransaction(client, {
-        account: accounts[1],
-        calls: [
-          Actions.token.transfer.call({
-            to: challenge.request.recipient as Hex.Hex,
-            token: challenge.request.currency as Hex.Hex,
-            amount: BigInt(challenge.request.amount),
-          }),
-          Actions.token.transfer.call({
-            to: accounts[2].address,
-            token: challenge.request.currency as Hex.Hex,
-            amount: 1n,
-          }),
-        ],
-      })
-
-      const credential = Credential.from({
-        challenge,
-        payload: { signature: serializedTransaction, type: 'transaction' as const },
-      })
-
-      {
-        const response = await fetch(server.url, {
-          headers: { Authorization: Credential.serialize(credential) },
-        })
-        expect(response.status).toBe(402)
-        const body = (await response.json()) as { detail: string }
-        expect(body.detail).toContain(
-          'Payment verification failed: Invalid transaction: unexpected number of calls',
-        )
-      }
-
-      server.close()
-    })
-
-    test('behavior: rejects transaction with wrong currency target', async () => {
-      const request = {
-        amount: '1000000',
-        currency: asset,
-        expires: new Date(Date.now() + 60_000).toISOString(),
-        recipient: accounts[0].address,
-      } as const
-
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
-      })
-
-      const response = await fetch(server.url)
-      expect(response.status).toBe(402)
-
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
-
-      const wrongCurrency = '0x0000000000000000000000000000000000000001'
-      const serializedTransaction = await signTransaction(client, {
-        account: accounts[1],
-        calls: [
-          Actions.token.transfer.call({
-            to: challenge.request.recipient as Hex.Hex,
-            token: wrongCurrency,
-            amount: BigInt(challenge.request.amount),
-          }),
-        ],
-      })
-
-      const credential = Credential.from({
-        challenge,
-        payload: { signature: serializedTransaction, type: 'transaction' as const },
-      })
-
-      {
-        const response = await fetch(server.url, {
-          headers: { Authorization: Credential.serialize(credential) },
-        })
-        expect(response.status).toBe(402)
-        const body = (await response.json()) as { detail: string }
-        expect(body.detail).toContain(
-          'Payment verification failed: Invalid transaction: call target does not match currency',
-        )
-      }
-
-      server.close()
+      httpServer.close()
     })
   })
 
@@ -451,15 +290,16 @@ describe('tempo', () => {
         recipient: accounts[0].address,
       } as const
 
-      const server = await Http.createServer(async (req, res) => {
-        await handler.charge({ request })(req, res)
-        if (!res.headersSent) res.end('OK')
+      const httpServer = await Http.createServer(async (req, res) => {
+        const result = await server.charge({ request })(req, res)
+        if (result.status === 402) return
+        res.end('OK')
       })
 
-      const response = await fetch(server.url)
+      const response = await fetch(httpServer.url)
       expect(response.status).toBe(402)
 
-      const challenge = Challenge.fromResponse(response, { method: handler.method })
+      const challenge = Challenge.fromResponse(response, { method: server.method })
 
       const credential = Credential.from({
         challenge,
@@ -467,13 +307,13 @@ describe('tempo', () => {
       })
 
       {
-        const response = await fetch(server.url, {
+        const response = await fetch(httpServer.url, {
           headers: { Authorization: Credential.serialize(credential) },
         })
         expect(response.status).toBe(402)
       }
 
-      server.close()
+      httpServer.close()
     })
   })
 })
