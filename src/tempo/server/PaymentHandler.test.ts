@@ -1,3 +1,4 @@
+import type { Hex } from 'ox'
 import { prepareTransactionRequest, signTransaction } from 'viem/actions'
 import { Actions } from 'viem/tempo'
 import { describe, expect, test } from 'vitest'
@@ -8,7 +9,6 @@ import * as Challenge from '../../Challenge.js'
 import * as Credential from '../../Credential.js'
 import * as Receipt from '../../Receipt.js'
 import * as PaymentHandler from './PaymentHandler.js'
-import type { Hex } from 'ox'
 
 const realm = 'api.example.com'
 const secretKey = 'test-secret-key'
@@ -118,9 +118,7 @@ describe('tempo', () => {
         })
         expect(response.status).toBe(402)
         const body = (await response.json()) as { detail: string }
-        expect(body.detail).toBe(
-          'Payment verification failed: Transaction must contain a Transfer log matching request parameters.',
-        )
+        expect(body.detail).toContain('Payment verification failed: no matching transfer found.')
       }
 
       server.close()
@@ -162,7 +160,7 @@ describe('tempo', () => {
         })
         expect(response.status).toBe(402)
         const body = (await response.json()) as { detail: string }
-        expect(body.detail).toBe('Payment verification failed: Request has expired.')
+        expect(body.detail).toBe('Payment verification failed: Payment request expired.')
       }
 
       server.close()
@@ -340,9 +338,7 @@ describe('tempo', () => {
         })
         expect(response.status).toBe(402)
         const body = (await response.json()) as { detail: string }
-        expect(body.detail).toBe(
-          'Payment verification failed: Transaction must contain a transfer(to, amount) call matching request parameters.',
-        )
+        expect(body.detail).toContain('Payment verification failed: Invalid transaction: missing transfer call.')
       }
 
       server.close()

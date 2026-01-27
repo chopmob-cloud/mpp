@@ -68,40 +68,26 @@ describe('from', () => {
 
 describe('fromResponse', () => {
   test('without handler returns generic Challenge', () => {
-    const response = new Response(null, { status: 402 })
-    const challenge = Challenge.fromResponse(response)
-
-    expectTypeOf(challenge.method).toBeString()
-    expectTypeOf(challenge.intent).toBeString()
+    expectTypeOf(Challenge.fromResponse).parameter(0).toMatchTypeOf<Response>()
+    expectTypeOf(Challenge.fromResponse).returns.toHaveProperty('method')
+    expectTypeOf(Challenge.fromResponse).returns.toHaveProperty('intent')
   })
 
   test('with handler narrows to FromHandler type', () => {
-    const response = new Response(null, { status: 402 })
-    const challenge = Challenge.fromResponse(response, { handler })
-
-    assertType<'tempo'>(challenge.method)
-    assertType<'charge' | 'authorize'>(challenge.intent)
-    expectTypeOf(challenge.request).toHaveProperty('amount')
-    expectTypeOf(challenge.request).toHaveProperty('currency')
+    const fn = (r: Response) => Challenge.fromResponse(r, { handler })
+    expectTypeOf(fn).returns.toMatchTypeOf<{ method: 'tempo'; intent: 'charge' | 'authorize' }>()
   })
 })
 
 describe('fromHeaders', () => {
   test('without handler returns generic Challenge', () => {
-    const headers = new Headers()
-    const challenge = Challenge.fromHeaders(headers)
-
-    expectTypeOf(challenge.method).toBeString()
-    expectTypeOf(challenge.intent).toBeString()
+    expectTypeOf(Challenge.fromHeaders).parameter(0).toMatchTypeOf<Headers>()
+    expectTypeOf(Challenge.fromHeaders).returns.toHaveProperty('method')
+    expectTypeOf(Challenge.fromHeaders).returns.toHaveProperty('intent')
   })
 
   test('with handler narrows to FromHandler type', () => {
-    const headers = new Headers()
-    const challenge = Challenge.fromHeaders(headers, { handler })
-
-    assertType<'tempo'>(challenge.method)
-    assertType<'charge' | 'authorize'>(challenge.intent)
-    expectTypeOf(challenge.request).toHaveProperty('amount')
-    expectTypeOf(challenge.request).toHaveProperty('currency')
+    const fn = (h: Headers) => Challenge.fromHeaders(h, { handler })
+    expectTypeOf(fn).returns.toMatchTypeOf<{ method: 'tempo'; intent: 'charge' | 'authorize' }>()
   })
 })

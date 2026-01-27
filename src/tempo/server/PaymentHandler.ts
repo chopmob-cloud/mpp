@@ -3,16 +3,15 @@ import {
   type Account,
   type Client,
   createClient,
-  defineChain,
   http,
   parseEventLogs,
   type TransactionReceipt,
 } from 'viem'
-import { tempo as tempo_chain } from 'viem/chains'
 import { getTransactionReceipt, sendRawTransactionSync, signTransaction } from 'viem/actions'
+import { tempo as tempo_chain } from 'viem/chains'
 import { Abis, Transaction } from 'viem/tempo'
 
-import * as ServerPaymentHandler from '../../server/PaymentHandler.js'
+import * as PaymentHandler from '../../server/PaymentHandler.js'
 import * as Intents from '../Intents.js'
 
 const transfer = AbiFunction.from('function transfer(address to, uint256 amount) returns (bool)')
@@ -45,26 +44,23 @@ export function tempo(parameters: tempo.Parameters) {
   const client = (() => {
     if ('client' in parameters) return parameters.client
     return createClient({
-      chain: defineChain({
+      chain: {
         ...tempo_chain,
         id: parameters.chainId,
-        name: 'Tempo',
-        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-        rpcUrls: { default: { http: [parameters.rpcUrl] } },
-      }),
+      },
       transport: http(parameters.rpcUrl),
     })
   })()
 
-  return ServerPaymentHandler.from({
-    method: 'tempo',
-    realm,
-    secretKey,
+  return PaymentHandler.from({
     intents: {
       authorize: Intents.authorize,
       charge: Intents.charge,
       subscription: Intents.subscription,
     },
+    method: 'tempo',
+    realm,
+    secretKey,
     async verify({ credential }) {
       const { challenge } = credential
 
@@ -76,7 +72,7 @@ export function tempo(parameters: tempo.Parameters) {
           const currency = request.currency as Address.Address
           const recipient = request.recipient as Address.Address
 
-          if (new Date(expires) < new Date()) throw new Error('Payment request expired.')
+          if (new Date(expires) < new Date()) throw new Error('Payment request expired')
 
           const payload = credential.payload
 
