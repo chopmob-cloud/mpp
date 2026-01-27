@@ -41,7 +41,7 @@ const transferSelector = AbiFunction.getSelector(transfer)
  * ```
  */
 export function tempo(parameters: tempo.Parameters) {
-  const { realm, secretKey } = parameters
+  const { feePayer, realm, secretKey } = parameters
 
   const client = (() => {
     if (parameters.client) return parameters.client
@@ -55,9 +55,12 @@ export function tempo(parameters: tempo.Parameters) {
   })()
 
   return PaymentHandler.from({
-    context: z.object({
-      feePayer: z.optional(z.custom<Account>()),
-    }),
+    context: z._default(
+      z.object({
+        feePayer: z.optional(z.custom<Account>()),
+      }),
+      { feePayer },
+    ),
     intents: {
       // TODO: add support for authorize
       // authorize: Intents.authorize,
@@ -201,6 +204,8 @@ export function tempo(parameters: tempo.Parameters) {
 
 export declare namespace tempo {
   type Parameters = {
+    /** Optional fee payer account for covering transaction fees. */
+    feePayer?: Account | undefined
     /** Server realm (e.g., hostname). */
     realm: string
     /** Secret key for HMAC-bound challenge IDs. */
