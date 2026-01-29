@@ -1,0 +1,33 @@
+# `Fetch.restore`
+
+Restores the original `fetch` after calling `polyfill`.
+
+## Usage
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+Fetch.polyfill({
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+
+// ... use payment-aware fetch ...
+
+Fetch.restore()
+```
+
+## Return Type
+
+```ts
+void
+```
+
+## Parameters
+
+None.

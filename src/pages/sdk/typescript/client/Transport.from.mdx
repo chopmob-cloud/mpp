@@ -1,0 +1,70 @@
+# `Transport.from`
+
+Creates a custom client-side transport.
+
+## Usage
+
+```ts twoslash
+import { Transport } from 'mpay/client'
+
+const custom = Transport.from({
+  name: 'custom',
+  isPaymentRequired(response) {
+    return response.status === 402
+  },
+  getChallenge(response) {
+    // Extract challenge from response
+    return JSON.parse(response.headers.get('X-Challenge')!)
+  },
+  setCredential(request, credential) {
+    return {
+      ...request,
+      headers: {
+        ...request.headers,
+        'X-Credential': credential,
+      },
+    }
+  },
+})
+```
+
+## Return Type
+
+```ts
+type Transport<request, response> = {
+  /** Transport name for identification. */
+  name: string
+  /** Checks if a response indicates payment is required. */
+  isPaymentRequired: (response: response) => boolean
+  /** Extracts the challenge from a payment-required response. */
+  getChallenge: (response: response) => Challenge
+  /** Attaches a credential to a request. */
+  setCredential: (request: request, credential: string) => request
+}
+```
+
+## Parameters
+
+### getChallenge
+
+- **Type:** `(response: Response) => Challenge`
+
+Function that extracts the challenge from a payment-required response.
+
+### isPaymentRequired
+
+- **Type:** `(response: Response) => boolean`
+
+Function that checks if a response indicates payment is required.
+
+### name
+
+- **Type:** `string`
+
+Transport name for identification.
+
+### setCredential
+
+- **Type:** `(request: Request, credential: string) => Request`
+
+Function that attaches a credential to a request.

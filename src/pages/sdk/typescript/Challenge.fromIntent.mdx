@@ -1,0 +1,87 @@
+# `Challenge.fromIntent`
+
+Creates a validated challenge from a method intent.
+
+If `secretKey` option is provided, the challenge ID is computed as HMAC-SHA256 over the challenge parameters, cryptographically binding the ID to its contents.
+
+## Usage
+
+```ts twoslash
+import { Challenge } from 'mpay'
+import { Intents } from 'mpay/tempo'
+
+// With HMAC-bound ID (recommended for servers)
+const challenge = Challenge.fromIntent(
+  Intents.charge,
+  {
+    realm: 'api.example.com',
+    request: {
+      amount: '1000000',
+      currency: '0x20c0000000000000000000000000000000000001',
+      recipient: '0x742d35Cc6634C0532925a3b844Bc9e7595f8fE00',
+      expires: '2025-01-06T12:00:00Z',
+    },
+    secretKey: 'my-secret',
+  },
+)
+```
+
+## Return Type
+
+```ts
+type ReturnType = Challenge<z.output<intent['schema']['request']>>
+```
+
+A validated challenge object with request type inferred from the intent.
+
+## Parameters
+
+### intent
+
+- **Type:** `MethodIntent`
+
+The method intent to validate against.
+
+### parameters
+
+#### description (optional)
+
+- **Type:** `string`
+
+Human-readable description of the payment.
+
+#### digest (optional)
+
+- **Type:** `string`
+
+Digest of the request body.
+
+#### expires (optional)
+
+- **Type:** `string`
+
+Expiration timestamp (ISO 8601).
+
+#### id (when not using secretKey)
+
+- **Type:** `string`
+
+Explicit challenge ID.
+
+#### realm
+
+- **Type:** `string`
+
+Server realm (e.g., hostname).
+
+#### request
+
+- **Type:** `z.input<intent['schema']['request']>`
+
+Method-specific request data matching the intent's schema.
+
+#### secretKey (when not using id)
+
+- **Type:** `string`
+
+Secret key for HMAC-bound challenge ID.

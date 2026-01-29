@@ -1,0 +1,35 @@
+# `Intent.charge`
+
+Charge intent for one-time immediate payments.
+
+## Usage
+
+```ts twoslash
+import { Intent } from 'mpay'
+
+// Use the built-in charge intent
+const charge = Intent.charge
+```
+
+## Type
+
+```ts
+const charge: Intent
+```
+
+## Schema
+
+### request
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | `string` | ✓ | Amount to charge |
+| `currency` | `string` | ✓ | Currency identifier |
+| `description` | `string` | | Human-readable description |
+| `expires` | `string` | | Expiration timestamp (ISO 8601) |
+| `externalId` | `string` | | External reference ID |
+| `recipient` | `string` | | Payment recipient |
+
+## Reference
+
+See the [charge intent specification](https://github.com/tempoxyz/payment-auth-spec/blob/main/specs/intents/draft-payment-intent-charge-00.md).

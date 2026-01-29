@@ -1,0 +1,40 @@
+# `PaymentRequest.fromIntent`
+
+Creates a validated payment request from a method intent.
+
+## Usage
+
+```ts twoslash
+import { PaymentRequest } from 'mpay'
+import { Intents } from 'mpay/tempo'
+
+const request = PaymentRequest.fromIntent(Intents.charge, {
+  amount: '1000000',
+  currency: '0x20c0000000000000000000000000000000000001',
+  recipient: '0x742d35Cc6634C0532925a3b844Bc9e7595f8fE00',
+  expires: '2025-01-06T12:00:00Z',
+  chainId: 42431,
+})
+```
+
+## Return Type
+
+```ts
+type ReturnType = Request<z.output<intent['schema']['request']>>
+```
+
+A validated request object with type inferred from the intent.
+
+## Parameters
+
+### intent
+
+- **Type:** `MethodIntent`
+
+The method intent to validate against.
+
+### request
+
+- **Type:** `z.input<intent['schema']['request']>`
+
+Request parameters matching the intent's schema.

@@ -1,0 +1,78 @@
+# `Mpay.toNodeListener`
+
+Wraps a payment handler to create a Node.js HTTP listener.
+
+## Usage
+
+```ts twoslash
+import * as http from 'node:http'
+import { Mpay, tempo } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+})
+
+http.createServer(async (req, res) => {
+  const result = await Mpay.toNodeListener(
+    payment.charge({
+      request: { amount: '1000', currency: '0x...', recipient: '0x...' },
+    }),
+  )(req, res)
+
+  if (result.status === 402) return
+
+  res.end('OK')
+})
+```
+
+## Behavior
+
+- **On 402:** Writes the challenge response headers and body, then ends the connection.
+- **On 200:** Sets the `Payment-Receipt` header; caller should write the response body.
+
+## Return Type
+
+```ts
+type ReturnType = (
+  req: IncomingMessage,
+  res: ServerResponse,
+) => Promise<IntentFn.Response<Transport.Http>>
+```
+
+## Parameters
+
+### handler
+
+- **Type:** `(input: Request) => Promise<IntentFn.Response<Transport.Http>>`
+
+The payment handler function returned by calling an intent on the payment object.
+
+```ts twoslash
+import * as http from 'node:http'
+import { Mpay, tempo } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+})
+
+http.createServer(async (req, res) => {
+  const result = await Mpay.toNodeListener(
+    payment.charge({ // [!code focus]
+      request: { amount: '1000', currency: '0x...', recipient: '0x...' }, // [!code focus]
+    }), // [!code focus]
+  )(req, res)
+
+  if (result.status === 402) return
+  res.end('OK')
+})
+```

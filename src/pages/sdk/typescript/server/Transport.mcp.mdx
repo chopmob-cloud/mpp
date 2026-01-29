@@ -1,0 +1,35 @@
+# `Transport.mcp`
+
+MCP transport for server-side payment handling with raw JSON-RPC.
+
+## Usage
+
+```ts twoslash
+import { Mpay, tempo, Transport } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+  transport: Transport.mcp(),
+})
+```
+
+## Behavior
+
+- Reads credentials from `_meta["org.paymentauth/credential"]`
+- Issues challenges via JSON-RPC error with code `-32042`
+- Attaches receipts via `_meta["org.paymentauth/receipt"]`
+
+Use this transport when handling raw JSON-RPC messages directly. For use with [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk), use [`Transport.mcpSdk()`](/sdk/typescript/server/Transport.mcpSdk) instead.
+
+## Return Type
+
+```ts
+import type { Mcp } from 'mpay'
+
+type ReturnType = Transport<Mcp.JsonRpcRequest, Mcp.Response>
+```

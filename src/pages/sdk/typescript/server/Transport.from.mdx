@@ -1,0 +1,60 @@
+# `Transport.from`
+
+Creates a custom server-side transport.
+
+## Usage
+
+```ts twoslash
+import { Transport } from 'mpay/server'
+
+const custom = Transport.from({
+  name: 'custom',
+
+  getCredential(input) {
+    // Extract credential from input
+    return input.credential ?? null
+  },
+
+  respondChallenge({ challenge, input }) {
+    // Return challenge response
+    return { type: 'challenge', challenge }
+  },
+
+  respondReceipt({ receipt, response, challengeId }) {
+    // Attach receipt to response
+    return { ...response, receipt }
+  },
+})
+```
+
+## Return Type
+
+```ts
+type ReturnType = Transport<Input, ChallengeOutput, ReceiptOutput>
+```
+
+## Parameters
+
+### getCredential
+
+- **Type:** `(input: Input) => Credential | null`
+
+Extracts credential from the transport input. Returns `null` if no credential was provided, or throws if malformed.
+
+### name
+
+- **Type:** `string`
+
+Transport name for identification.
+
+### respondChallenge
+
+- **Type:** `(options: { challenge: Challenge; error?: PaymentError; input: Input }) => ChallengeOutput | Promise<ChallengeOutput>`
+
+Creates a transport response for a payment challenge.
+
+### respondReceipt
+
+- **Type:** `(options: { challengeId: string; receipt: Receipt; response: ReceiptOutput }) => ReceiptOutput`
+
+Attaches a receipt to a successful response.

@@ -1,0 +1,73 @@
+# `Fetch.polyfill`
+
+Replaces the global `fetch` with a payment-aware wrapper.
+
+## Usage
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+Fetch.polyfill({
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+
+// Global fetch now handles 402 automatically
+const res = await fetch('https://api.example.com/resource')
+```
+
+### Per-Call Accounts
+
+Instead of defining an account at instantiation, you can pass it on a per-request basis via the `context` option. This is useful when you need to use different accounts for different requests.
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+Fetch.polyfill({
+  methods: [
+    tempo({
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+
+const res = await fetch('https://api.example.com/resource', {
+  context: { // [!code focus]
+    account: privateKeyToAccount('0x...'), // [!code focus]
+  }, // [!code focus]
+})
+```
+
+## Return Type
+
+```ts
+void
+```
+
+## Parameters
+
+### methods
+
+- **Type:** `readonly Method.Client[]`
+
+Array of payment methods to use for handling 402 responses.
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+Fetch.polyfill({
+  methods: [ // [!code focus]
+    tempo({ // [!code focus]
+      account: privateKeyToAccount('0x...'), // [!code focus]
+      rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+    }), // [!code focus]
+  ], // [!code focus]
+})
+```

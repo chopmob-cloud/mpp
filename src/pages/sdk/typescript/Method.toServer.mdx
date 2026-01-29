@@ -1,0 +1,86 @@
+# `Method.toServer`
+
+Extends a method with server-side verification logic.
+
+## Usage
+
+```ts twoslash
+import { Method, Receipt } from 'mpay'
+import { method } from 'mpay/tempo'
+
+const serverMethod = Method.toServer(method, {
+  async verify({ credential, request }) {
+    // Verification logic
+    const isValid = await verifySignature(credential)
+    
+    return Receipt.from({
+      method: 'tempo',
+      status: isValid ? 'success' : 'failed',
+      timestamp: new Date().toISOString(),
+      reference: '0x...',
+    })
+  },
+})
+```
+
+### With Context
+
+Pass additional context (like configuration) to the `verify` function.
+
+```ts twoslash
+import { Method, Receipt, z } from 'mpay'
+import { method } from 'mpay/tempo'
+
+const serverMethod = Method.toServer(method, {
+  context: z.object({
+    rpcUrl: z.string(),
+  }),
+  async verify({ credential, context }) {
+    // Use context.rpcUrl for verification
+    const isValid = await verifyOnChain(context.rpcUrl, credential)
+    
+    return Receipt.from({
+      method: 'tempo',
+      status: isValid ? 'success' : 'failed',
+      timestamp: new Date().toISOString(),
+      reference: '0x...',
+    })
+  },
+})
+```
+
+## Return Type
+
+```ts
+type ReturnType = Server<name, intents, context>
+```
+
+A server-side payment method with verification logic.
+
+## Parameters
+
+### method
+
+- **Type:** `Method`
+
+The base method to extend.
+
+### options
+
+#### context (optional)
+
+- **Type:** `z.ZodMiniType`
+
+Schema for per-request context passed to `verify`.
+
+#### request (optional)
+
+- **Type:** `(parameters) => request`
+
+Transform request before challenge creation.
+
+#### verify
+
+- **Type:** `(parameters: { credential, context, request }) => Promise<Receipt>`
+
+Function that validates a credential and returns a receipt.

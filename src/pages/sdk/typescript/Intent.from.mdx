@@ -1,0 +1,46 @@
+# `Intent.from`
+
+Creates a custom payment intent.
+
+## Usage
+
+```ts twoslash
+import { Intent, z } from 'mpay'
+
+const charge = Intent.from({
+  name: 'charge',
+  schema: {
+    request: z.object({
+      amount: z.string(),
+      currency: z.string(),
+      recipient: z.optional(z.string()),
+    }),
+  },
+})
+```
+
+## Return Type
+
+```ts
+type ReturnType = intent
+```
+
+The intent object passed in (identity function for type inference).
+
+## Parameters
+
+### intent
+
+#### name
+
+- **Type:** `string`
+
+The intent name (e.g., "charge", "authorize").
+
+#### schema
+
+##### request
+
+- **Type:** `z.ZodMiniObject`
+
+Zod schema defining the request parameters for this intent.

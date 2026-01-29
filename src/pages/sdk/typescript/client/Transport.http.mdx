@@ -1,0 +1,36 @@
+# `Transport.http`
+
+HTTP transport for client-side payment handling.
+
+## Usage
+
+```ts twoslash
+import { Mpay, Transport, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const mpay = Mpay.create({
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+  transport: Transport.http(), // [!code focus]
+})
+```
+
+## Behavior
+
+- Detects payment required via **402 status code**
+- Extracts challenges from **`WWW-Authenticate` header**
+- Sends credentials via **`Authorization` header**
+
+## Return Type
+
+```ts
+type HttpTransport = Transport<RequestInit, Response>
+```
+
+## Parameters
+
+None.

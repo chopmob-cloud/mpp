@@ -1,0 +1,106 @@
+# `Challenge.from`
+
+Creates a challenge from the given parameters.
+
+If `secretKey` option is provided, the challenge ID is computed as HMAC-SHA256 over the challenge parameters (realm|method|intent|request|expires), cryptographically binding the ID to its contents.
+
+## Usage
+
+```ts twoslash
+import { Challenge } from 'mpay'
+
+// With HMAC-bound ID (recommended for servers)
+const challenge = Challenge.from(
+  {
+    realm: 'api.example.com',
+    method: 'tempo',
+    intent: 'charge',
+    request: { amount: '1000000', currency: '0x...', recipient: '0x...' },
+    secretKey: 'my-secret',
+  },
+)
+```
+
+### With Explicit ID
+
+Use an explicit ID when you don't need HMAC-bound challenge verification.
+
+```ts twoslash
+import { Challenge } from 'mpay'
+
+const challenge = Challenge.from({
+  id: 'abc123',
+  realm: 'api.example.com',
+  method: 'tempo',
+  intent: 'charge',
+  request: { amount: '1000000', currency: '0x...', recipient: '0x...' },
+})
+```
+
+## Return Type
+
+```ts
+type ReturnType = Challenge
+```
+
+A challenge object.
+
+## Parameters
+
+### parameters
+
+Challenge parameters. Must include either `id` or `secretKey`.
+
+#### description (optional)
+
+- **Type:** `string`
+
+Human-readable description of the payment.
+
+#### digest (optional)
+
+- **Type:** `string`
+
+Digest of the request body.
+
+#### expires (optional)
+
+- **Type:** `string`
+
+Expiration timestamp (ISO 8601).
+
+#### id (when not using secretKey)
+
+- **Type:** `string`
+
+Explicit challenge ID.
+
+#### intent
+
+- **Type:** `string`
+
+Intent type (e.g., "charge", "authorize").
+
+#### method
+
+- **Type:** `string`
+
+Payment method (e.g., "tempo", "stripe").
+
+#### realm
+
+- **Type:** `string`
+
+Server realm (e.g., hostname).
+
+#### request
+
+- **Type:** `Record<string, unknown>`
+
+Method-specific request data.
+
+#### secretKey (when not using id)
+
+- **Type:** `string`
+
+Secret key for HMAC-bound challenge ID.

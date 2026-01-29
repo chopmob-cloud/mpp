@@ -1,0 +1,74 @@
+# `Method.toClient`
+
+Extends a method with client-side credential creation logic.
+
+## Usage
+
+```ts twoslash
+import { Method, Credential } from 'mpay'
+import { method } from 'mpay/tempo'
+
+const clientMethod = Method.toClient(method, {
+  async createCredential({ challenge }) {
+    // Sign and create credential
+    const signature = await sign(challenge)
+    return Credential.serialize({ 
+      challenge, 
+      payload: { signature } 
+    })
+  },
+})
+```
+
+### With Context
+
+Pass additional context (like credentials) to the `createCredential` function.
+
+```ts twoslash
+import { Method, Credential, z } from 'mpay'
+import { method } from 'mpay/tempo'
+
+const clientMethod = Method.toClient(method, {
+  context: z.object({
+    privateKey: z.string(),
+  }),
+  async createCredential({ challenge, context }) {
+    // Use context.privateKey to sign
+    const signature = await signWith(context.privateKey, challenge)
+    return Credential.serialize({ 
+      challenge, 
+      payload: { signature } 
+    })
+  },
+})
+```
+
+## Return Type
+
+```ts
+type ReturnType = Client<name, intents, context>
+```
+
+A client-side payment method with credential creation logic.
+
+## Parameters
+
+### method
+
+- **Type:** `Method`
+
+The base method to extend.
+
+### options
+
+#### context (optional)
+
+- **Type:** `z.ZodMiniType`
+
+Schema for per-request context passed to `createCredential`.
+
+#### createCredential
+
+- **Type:** `(parameters: { challenge, context? }) => Promise<string>`
+
+Function that creates a serialized credential from a challenge.

@@ -1,0 +1,104 @@
+# `Fetch.from`
+
+Creates a fetch wrapper that automatically handles `402 Payment Required` responses.
+
+## Usage
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const fetch = Fetch.from({
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+
+// Use the wrapped fetch — handles 402 automatically
+const res = await fetch('https://api.example.com/resource')
+```
+
+### Per-Call Accounts
+
+Instead of defining an `account` at instantiation, you can pass it on a per-request basis via the `context` option. 
+
+This is useful when you need to use different accounts for different requests.
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const fetch = Fetch.from({
+  methods: [
+    tempo({
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+
+const res = await fetch('https://api.example.com/resource', {
+  context: { // [!code focus]
+    account: privateKeyToAccount('0x...'), // [!code focus]
+  }, // [!code focus]
+})
+```
+
+## Return Type
+
+```ts
+type Fetch = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => Promise<Response>
+```
+
+The returned fetch function has the same signature as the global `fetch`, but with an additional `context` option in `RequestInit` to pass payment method context.
+
+## Parameters
+
+### methods
+
+- **Type:** `readonly Method.Client[]`
+
+Array of payment methods to use for handling 402 responses.
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const fetch = Fetch.from({
+  methods: [ // [!code focus]
+    tempo({ // [!code focus]
+      account: privateKeyToAccount('0x...'), // [!code focus]
+      rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+    }), // [!code focus]
+  ], // [!code focus]
+})
+```
+
+### fetch (optional)
+
+- **Type:** `typeof globalThis.fetch`
+- **Default:** `globalThis.fetch`
+
+Custom fetch function to wrap.
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const customFetch = globalThis.fetch
+
+const fetch = Fetch.from({
+  fetch: customFetch, // [!code focus]
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+```

@@ -1,0 +1,65 @@
+# `MethodIntent.from`
+
+Creates a method-specific intent.
+
+## Usage
+
+```ts twoslash
+import { MethodIntent, z } from 'mpay'
+
+const tempoCharge = MethodIntent.from({
+  method: 'tempo',
+  name: 'charge',
+  schema: {
+    credential: {
+      payload: z.object({
+        signature: z.string(),
+        type: z.literal('transaction'),
+      }),
+    },
+    request: z.object({
+      amount: z.string(),
+      currency: z.string(),
+      recipient: z.string(),
+    }),
+  },
+})
+```
+
+## Return Type
+
+```ts
+type ReturnType = intent
+```
+
+The method intent object passed in (identity function for type inference).
+
+## Parameters
+
+### intent
+
+#### method
+
+- **Type:** `string`
+
+Payment method name (e.g., "tempo", "stripe").
+
+#### name
+
+- **Type:** `string`
+
+Intent name (e.g., "charge", "authorize").
+
+#### schema
+
+##### credential.payload
+
+- **Type:** `z.ZodMiniType`
+
+Zod schema for the credential payload.
+
+##### request
+
+- **Type:** `z.ZodMiniObject`
+
+Zod schema for the request parameters.

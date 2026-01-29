@@ -1,0 +1,36 @@
+# `Transport.mcp`
+
+MCP transport for client-side payment handling.
+
+## Usage
+
+```ts twoslash
+import { Mpay, Transport, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const mpay = Mpay.create({
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+  transport: Transport.mcp(), // [!code focus]
+})
+```
+
+## Behavior
+
+- Detects payment required via **error code `-32042`**
+- Extracts challenges from **`error.data.challenges[0]`**
+- Sends credentials via **`_meta["org.paymentauth/credential"]`**
+
+## Return Type
+
+```ts
+type McpTransport = Transport<Mcp.Request, Mcp.Response>
+```
+
+## Parameters
+
+None.

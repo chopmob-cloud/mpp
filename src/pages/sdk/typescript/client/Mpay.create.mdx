@@ -1,0 +1,89 @@
+# `Mpay.create`
+
+Creates a client-side payment handler from an array of methods.
+
+## Usage
+
+```ts twoslash
+import { Mpay, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const mpay = Mpay.create({
+  methods: [
+    tempo({
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+
+const response = await fetch('/resource')
+if (response.status === 402) {
+  const credential = await mpay.createCredential(response, {
+    account: privateKeyToAccount('0x...'),
+  })
+  // Retry with credential
+  await fetch('/resource', {
+    headers: { Authorization: credential },
+  })
+}
+```
+
+## Return Type
+
+```ts
+type Mpay = {
+  /** The configured payment methods. */
+  methods: readonly Method.Client[]
+  /** The transport used. */
+  transport: Transport
+  /** Creates a credential from a payment-required response. */
+  createCredential: (
+    response: Response,
+    context?: Context,
+  ) => Promise<string>
+}
+```
+
+## Parameters
+
+### methods
+
+- **Type:** `readonly Method.Client[]`
+
+Array of payment methods to use.
+
+```ts twoslash
+import { Mpay, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const mpay = Mpay.create({
+  methods: [ // [!code focus]
+    tempo({ // [!code focus]
+      account: privateKeyToAccount('0x...'), // [!code focus]
+      rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+    }), // [!code focus]
+  ], // [!code focus]
+})
+```
+
+### transport (optional)
+
+- **Type:** `Transport`
+- **Default:** `Transport.http()`
+
+Transport to use for extracting challenges and attaching credentials.
+
+```ts twoslash
+import { Mpay, Transport, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const mpay = Mpay.create({
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+  transport: Transport.mcp(), // [!code focus]
+})
+```

@@ -1,0 +1,126 @@
+# `Mpay.create`
+
+Creates a server-side payment handler from a method.
+
+## Usage
+
+```ts twoslash
+import { Mpay, tempo } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+})
+```
+
+### With Custom Transport
+
+Use a custom transport for non-HTTP environments like MCP servers.
+
+```ts twoslash
+import { Mpay, tempo, Transport } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    chainId: 42431,
+    rpcUrl: 'https://rpc.tempo.xyz',
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+  transport: Transport.mcpSdk(),
+})
+```
+
+## Return Type
+
+```ts
+import type { Mpay, Method, Transport } from 'mpay/server'
+
+type ReturnType = Mpay<Method.Server, Transport.Http>
+```
+
+The returned object includes the method's intent functions (e.g., `charge`) which can be called to handle payment requests.
+
+## Parameters
+
+### method
+
+- **Type:** `Method.Server`
+
+Payment method (e.g., `tempo({ ... })`).
+
+```ts twoslash
+import { Mpay, tempo } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({ // [!code focus]
+    rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+    chainId: 42431, // [!code focus]
+  }), // [!code focus]
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+})
+```
+
+### realm
+
+- **Type:** `string`
+
+Server realm (e.g., hostname). Used to identify the server in payment challenges.
+
+```ts twoslash
+import { Mpay, tempo } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com', // [!code focus]
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+})
+```
+
+### secretKey
+
+- **Type:** `string`
+
+Secret key for HMAC-bound challenge IDs. Required for stateless verification—allows the server to verify that a challenge was issued by itself without storing state.
+
+```ts twoslash
+import { Mpay, tempo } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY, // [!code focus]
+})
+```
+
+### transport (optional)
+
+- **Type:** `Transport`
+- **Default:** `Transport.http()`
+
+Transport to use for handling payment requests. Defaults to HTTP transport.
+
+```ts twoslash
+import { Mpay, tempo, Transport } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+  transport: Transport.mcp(), // [!code focus]
+})
+```

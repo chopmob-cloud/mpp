@@ -1,0 +1,34 @@
+# `PaymentRequest.serialize`
+
+Serializes a payment request to a base64url string.
+
+## Usage
+
+```ts twoslash
+import { PaymentRequest } from 'mpay'
+
+const request = PaymentRequest.from({
+  amount: '1000000',
+  currency: '0x20c0000000000000000000000000000000000001',
+  recipient: '0x742d35Cc6634C0532925a3b844Bc9e7595f8fE00',
+})
+
+const serialized = PaymentRequest.serialize(request)
+// => "eyJhbW91bnQiOiIxMDAwMDAwIiwiY3VycmVuY3kiOiIweC4uLiJ9"
+```
+
+## Return Type
+
+```ts
+type ReturnType = string
+```
+
+A base64url-encoded string (no padding).
+
+## Parameters
+
+### request
+
+- **Type:** `Request`
+
+The request to serialize.

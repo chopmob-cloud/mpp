@@ -1,0 +1,31 @@
+# `Transport.http`
+
+HTTP transport for server-side payment handling.
+
+## Usage
+
+```ts twoslash
+import { Mpay, tempo, Transport } from 'mpay/server'
+
+const payment = Mpay.create({
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.PAYMENT_SECRET_KEY,
+  transport: Transport.http(),
+})
+```
+
+## Behavior
+
+- Reads credentials from the `Authorization` header
+- Issues challenges via `WWW-Authenticate` header with 402 status
+- Attaches receipts via `Payment-Receipt` header
+
+## Return Type
+
+```ts
+type ReturnType = Transport<Request, Response>
+```

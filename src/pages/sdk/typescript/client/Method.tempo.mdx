@@ -1,0 +1,98 @@
+# `tempo`
+
+Creates a Tempo payment method client for signing payment transactions.
+
+## Usage
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const fetch = Fetch.from({
+  methods: [
+    tempo({ // [!code focus]
+      account: privateKeyToAccount('0x...'), // [!code focus]
+      rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+    }), // [!code focus]
+  ],
+})
+```
+
+## Return Type
+
+```ts
+type Tempo = Method.Client<
+  'tempo',
+  Schema,
+  z.ZodObject<{ account: z.ZodOptional<z.ZodCustom<Account>> }>
+>
+```
+
+## Parameters
+
+### rpcUrl
+
+- **Type:** `string`
+
+Tempo RPC URL.
+
+```ts twoslash
+import { tempo } from 'mpay/client'
+
+const method = tempo({
+  rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+})
+```
+
+### account (optional)
+
+- **Type:** `Account`
+
+Account to sign transactions with. Can be overridden per-call via context.
+
+```ts twoslash
+import { tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const method = tempo({
+  account: privateKeyToAccount('0x...'), // [!code focus]
+  rpcUrl: 'https://rpc.tempo.xyz',
+})
+```
+
+### chainId (optional)
+
+- **Type:** `number`
+- **Default:** Tempo mainnet chain ID
+
+Tempo chain ID.
+
+```ts twoslash
+import { tempo } from 'mpay/client'
+
+const method = tempo({
+  chainId: 123456, // [!code focus]
+  rpcUrl: 'https://rpc.tempo.xyz',
+})
+```
+
+### client (optional)
+
+- **Type:** `Client`
+
+[viem](https://viem.sh) Client instance. Mutually exclusive with `rpcUrl` and `chainId`.
+
+```ts twoslash
+import { tempo } from 'mpay/client'
+import { createClient, http } from 'viem'
+import { tempo as tempoChain } from 'viem/chains'
+
+const viemClient = createClient({
+  chain: tempoChain,
+  transport: http('https://rpc.tempo.xyz'),
+})
+
+const method = tempo({
+  client: viemClient, // [!code focus]
+})
+```
