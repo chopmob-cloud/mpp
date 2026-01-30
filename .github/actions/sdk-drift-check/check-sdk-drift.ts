@@ -419,7 +419,7 @@ function formatConsoleOutput(result: DriftResult): string {
 		lines.push("ERRORS");
 		lines.push("─".repeat(40));
 		for (const error of result.errors) {
-			lines.push(`❌ [${error.type}] ${error.link}`);
+			lines.push(`[ERROR] [${error.type}] ${error.link}`);
 			lines.push(`   ${error.details}`);
 		}
 		lines.push("");
@@ -436,9 +436,9 @@ function formatConsoleOutput(result: DriftResult): string {
 		}
 		for (const [key, members] of grouped) {
 			if (members.length > 0) {
-				lines.push(`⚠️  ${key}: ${members.join(", ")}`);
+				lines.push(`[WARN] ${key}: ${members.join(", ")}`);
 			} else {
-				lines.push(`⚠️  ${key} (entire namespace)`);
+				lines.push(`[WARN] ${key} (entire namespace)`);
 			}
 		}
 		lines.push("");
