@@ -20,10 +20,8 @@
 	],
 	"no_bundle": true,
 	"vars": {
-		"AUTH_CREDENTIALS": "user:pass",
-		"TEMPO_ENV": "moderato",
 		"DEFAULT_CURRENCY": "0x20c0000000000000000000000000000000000000",
 		"DEFAULT_RECIPIENT": "0xa726a1CD723409074DF9108A2187cfA19899aCF8",
-		"SECRET_KEY": "top-secret"
+		"CHAIN": "moderato"
 	}
 }

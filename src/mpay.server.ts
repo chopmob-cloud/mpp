@@ -4,11 +4,11 @@ import { createClient, http } from "viem";
 import { tempoModerato } from "viem/chains";
 
 const chain = (() => {
-	switch (env.TEMPO_ENV) {
+	switch (env.CHAIN) {
 		case "moderato":
 			return tempoModerato;
 		default:
-			throw new Error(`Unsupported chain: ${env.TEMPO_ENV}`);
+			throw new Error(`Unsupported chain: ${env.CHAIN}`);
 	}
 })();
 
