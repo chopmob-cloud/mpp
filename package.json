@@ -17,6 +17,7 @@
 	"dependencies": {
 		"@hiogawa/node-loader-cloudflare": "^0.0.2",
 		"dayjs": "^1.11.19",
+		"mermaid": "^11.12.2",
 		"mpay": "https://pkg.pr.new/wevm/mpay@6c4bdf0",
 		"react": "^19",
 		"react-dom": "^19",
