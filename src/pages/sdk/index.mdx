@@ -1,4 +1,6 @@
-# SDKs
+# SDKs [Official implementations in TypeScript, Python, and Rust]
+
+import { Badge } from '../../components/Badge'
 
 The Machine Payments Protocol (MPP) has official SDK implementations in three languages. All SDKs implement the same protocol and are fully interoperable.
 
@@ -6,9 +8,9 @@ The Machine Payments Protocol (MPP) has official SDK implementations in three la
 
 | Language | Package | GitHub | Status |
 |----------|---------|--------|--------|
-| [TypeScript](/sdk/typescript) | [`mpay`](https://www.npmjs.com/package/mpay) | [wevm/mpay](https://github.com/wevm/mpay) | Reference |
-| [Python](/sdk/python) | [`pympay`](https://pypi.org/project/pympay/) | [tempoxyz/pympay](https://github.com/tempoxyz/pympay) | Beta |
-| [Rust](/sdk/rust) | [`mpay`](https://crates.io/crates/mpay) | [tempoxyz/mpay-rs](https://github.com/tempoxyz/mpay-rs) | Beta |
+| [TypeScript](/sdk/typescript) | [`mpay`](https://www.npmjs.com/package/mpay) | [wevm/mpay](https://github.com/wevm/mpay) | <Badge variant="success">Reference</Badge> |
+| [Python](/sdk/python) | [`pympay`](https://pypi.org/project/pympay/) | [tempoxyz/pympay](https://github.com/tempoxyz/pympay) | <Badge variant="info">Beta</Badge> |
+| [Rust](/sdk/rust) | [`mpay`](https://crates.io/crates/mpay) | [tempoxyz/mpay-rs](https://github.com/tempoxyz/mpay-rs) | <Badge variant="info">Beta</Badge> |
 
 ## Quick install
 
@@ -34,13 +36,12 @@ cargo add mpay
 
 ## Feature comparison
 
+Choose based on your stack—all SDKs provide the same protocol support and are fully interoperable. 
+
+The TypeScript SDK is the reference implementation with the most complete documentation.
+
 | Feature | TypeScript | Python | Rust |
 |---------|------------|--------|------|
 | HTTP Client | `fetch` wrapper | `httpx` transport | `reqwest` middleware |
 | HTTP Server | Fetch API / Node.js | FastAPI / Starlette | Axum / Tower |
-| MCP Support | ✅ Native | ✅ Native | ✅ Native |
-| Twoslash Docs | ✅ | — | — |
-
-:::tip[Choose an SDK]
-Choose based on your stack—all SDKs provide the same protocol support and are fully interoperable. The TypeScript SDK is the reference implementation with the most complete documentation.
-:::
+| MCP Support | ✅ Native | ✅ Native | ❌ |

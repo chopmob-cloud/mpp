@@ -1,38 +1,8 @@
-# Getting started
+# Getting started [The mpay TypeScript library]
 
 ## Overview
 
-The `mpay` TypeScript library provides an intuitive interface over the Machine Payments Protocol, from high-level abstractions to low-level primitives and building blocks.
-
-## Skills
-
-Get up and running quickly by using your coding agent (Claude Code, Cursor, Amp, and similar tools) with [Agent Skills](https://skills.sh). After you install it, your agent has context on how to properly integrate `mpay` with your chosen framework.
-
-Use the [`skills` CLI](https://github.com/vercel-labs/skills) to install skills for your coding agent:
-
-```bash
-# Install all mpay skills
-npx skills install wevm/mpay
-
-# Install a specific skill
-npx skills install wevm/mpay --skill mpay-hono
-
-# Install globally (available across all projects)
-npx skills install wevm/mpay -g
-```
-
-:::note[Available skills]
-- [`mpay-bun`](https://github.com/wevm/mpay/tree/main/skills/mpay-bun) - [Bun](https://bun.sh) HTTP server integration
-- [`mpay-client`](https://github.com/wevm/mpay/tree/main/skills/mpay-client) - Client-side payment integration
-- [`mpay-cloudflare`](https://github.com/wevm/mpay/tree/main/skills/mpay-cloudflare) - [Cloudflare Workers](https://workers.cloudflare.com) integration
-- [`mpay-deno`](https://github.com/wevm/mpay/tree/main/skills/mpay-deno) - [Deno](https://deno.com) server integration
-- [`mpay-ts-docs-reference`](https://github.com/wevm/mpp/tree/main/skills/mpay-ts-docs-reference) - Writing TypeScript API reference documentation
-- [`mpay-elysia`](https://github.com/wevm/mpay/tree/main/skills/mpay-elysia) - [Elysia](https://elysiajs.com) framework integration
-- [`mpay-express`](https://github.com/wevm/mpay/tree/main/skills/mpay-express) - [Express.js](https://expressjs.com) integration
-- [`mpay-hono`](https://github.com/wevm/mpay/tree/main/skills/mpay-hono) - [Hono](https://hono.dev) framework integration
-- [`mpay-nextjs`](https://github.com/wevm/mpay/tree/main/skills/mpay-nextjs) - [Next.js](https://nextjs.org) integration
-- [`mpay-node-http`](https://github.com/wevm/mpay/tree/main/skills/mpay-node-http) - [Node.js](https://nodejs.org) HTTP server integration
-:::
+The `mpay` TypeScript library provides a simple, intuitive, and extensible interface over the Machine Payments Protocol, from high-level abstractions to low-level primitives and building blocks.
 
 ## Install
 
@@ -298,3 +268,33 @@ app.get('/resource', async (c) => { // [!code focus:99]
 ```
 
 ::::
+
+## Skills
+
+Get up and running quickly by using your coding agent (Claude Code, Cursor, Amp, and similar tools) with [Agent Skills](https://skills.sh). After you install it, your agent has context on how to properly integrate `mpay` with your chosen framework.
+
+Use the [`skills` CLI](https://github.com/vercel-labs/skills) to install skills for your coding agent:
+
+```bash
+# Install all mpay skills
+npx skills install wevm/mpay
+
+# Install a specific skill
+npx skills install wevm/mpay --skill mpay-hono
+
+# Install globally (available across all projects)
+npx skills install wevm/mpay -g
+```
+
+:::note[Available skills]
+- [`mpay-bun`](https://github.com/wevm/mpay/tree/main/skills/mpay-bun) - [Bun](https://bun.sh) HTTP server integration
+- [`mpay-client`](https://github.com/wevm/mpay/tree/main/skills/mpay-client) - Client-side payment integration
+- [`mpay-cloudflare`](https://github.com/wevm/mpay/tree/main/skills/mpay-cloudflare) - [Cloudflare Workers](https://workers.cloudflare.com) integration
+- [`mpay-deno`](https://github.com/wevm/mpay/tree/main/skills/mpay-deno) - [Deno](https://deno.com) server integration
+- [`mpay-ts-docs-reference`](https://github.com/wevm/mpp/tree/main/skills/mpay-ts-docs-reference) - Writing TypeScript API reference documentation
+- [`mpay-elysia`](https://github.com/wevm/mpay/tree/main/skills/mpay-elysia) - [Elysia](https://elysiajs.com) framework integration
+- [`mpay-express`](https://github.com/wevm/mpay/tree/main/skills/mpay-express) - [Express.js](https://expressjs.com) integration
+- [`mpay-hono`](https://github.com/wevm/mpay/tree/main/skills/mpay-hono) - [Hono](https://hono.dev) framework integration
+- [`mpay-nextjs`](https://github.com/wevm/mpay/tree/main/skills/mpay-nextjs) - [Next.js](https://nextjs.org) integration
+- [`mpay-node-http`](https://github.com/wevm/mpay/tree/main/skills/mpay-node-http) - [Node.js](https://nodejs.org) HTTP server integration
+:::

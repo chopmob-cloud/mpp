@@ -1,4 +1,4 @@
-# MCP transport
+# MCP transport [Payment flows for AI tool calls]
 
 The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) transport enables payments for AI tool calls using JSON-RPC.
 
@@ -21,11 +21,11 @@ Payment requirements are signaled via JSON-RPC error code `-32042`:
   "jsonrpc": "2.0",
   "id": 1,
   "error": {
-    "code": -32042,
+    "code": -32042, // [!code highlight]
     "message": "Payment Required",
     "data": {
       "httpStatus": 402,
-      "challenges": [{
+      "challenges": [{ // [!code highlight]
         "id": "ch_abc123",
         "realm": "search.example.com",
         "method": "tempo",
@@ -53,8 +53,8 @@ Credentials are passed in the `_meta` field of the tool call:
   "params": {
     "name": "web-search",
     "arguments": {"query": "MCP protocol"},
-    "_meta": {
-      "org.paymentauth/credential": {
+    "_meta": { // [!code highlight]
+      "org.paymentauth/credential": { // [!code highlight]
         "challenge": { ... },
         "source": "0x1234...",
         "payload": { "signature": "0xabc..." }
@@ -74,8 +74,8 @@ Receipts are returned in the result `_meta`:
   "id": 2,
   "result": {
     "content": [{ "type": "text", "text": "Search results..." }],
-    "_meta": {
-      "org.paymentauth/receipt": {
+    "_meta": { // [!code highlight]
+      "org.paymentauth/receipt": { // [!code highlight]
         "status": "success",
         "challengeId": "ch_abc123",
         "method": "tempo"

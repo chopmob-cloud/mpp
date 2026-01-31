@@ -1,26 +1,29 @@
 import { Card, Cards } from 'vocs'
+import { Badge } from '../components/Badge'
 
-# Machine Payments Protocol
+# Machine Payments Protocol [The internet native payments protocol]
 
-The **Machine Payments Protocol (MPP)** is an internet-native payments protocol for machine-to-machine transactions. 
+## Overview
 
-Learn more about the protocol at [machinepaymentsprotocol.com](https://machinepaymentsprotocol.com).
+The Machine Payments Protocol (MPP) lets you accept payments from any client—humans, software, or AI agents—using standard HTTP control flows. Clients pay inline with their request, and you receive payment confirmation before delivering the response.
 
-:::tip[Get started in 5 minutes]
-Check out the [Quickstart](/quickstart) to build your first payment-enabled API.
-:::
+MPP is built around a simple core and is designed to be neutral and extensible from day one.
 
-## Principles
+- **Open standard built for the internet** — Built on an IETF-track specification, not a proprietary API
+- **Designed for payments** — Idempotency, security, and receipts as first-class primitives
+- **Multi rail** — Crypto, cards, bank transfers, invoices—all through one protocol
+- **Multi currency** — USD, EUR, BRL, USDC, ETH, BTC, or any other asset
+- **Client agnostic** — Humans, software, and AI agents have simple and safe ways to pay 
 
-| Principle | Description |
-|---------|-------------|
-| **True web standards** | Built on an IETF-track specification using open protocols, not proprietary payment ecosystems. |
-| **Multi-rail** | Crypto, cards, bank transfers—all through one protocol |
-| **Currency agnostic** | No implicit advantages at the protocol layer for any currency or asset. |
-| **Designed for payments** | Idempotency, security, and receipts as first-class primitives |
-| **Simple, extensible core** | Minimal protocol designed for extension |
+## Payment flow
 
-## Flow
+When a client requests a paid resource, the server returns a `402` response with payment options. The client fulfills the payment and retries with a credential. The server verifies the payment and returns the resource with a receipt.
+
+1. **Client requests resource** — `GET /resource`
+2. **Server returns payment challenge** — `402` Payment Required with `WWW-Authenticate: Payment` header
+3. **Client fulfills payment** — Signs a transaction, pays an invoice, or completes a card payment
+4. **Client retries with credential** — `GET /resource` with `Authorization: Payment` header
+5. **Server verifies and delivers** — `200` OK with `Payment-Receipt` header
 
 ```mermaid
 sequenceDiagram
@@ -29,53 +32,49 @@ sequenceDiagram
 
     Client->>Server: (1) GET /resource
     Server-->>Client: (2) 402 Payment Required<br/>WWW-Authenticate: Payment <challenge>
-    Note over Client: (3) Client fulfills payment challenge<br/>(signs transaction, pays invoice, etc.)
+    Note over Client: (3) Client fulfills payment
     Client->>Server: (4) GET /resource<br/>Authorization: Payment <credential>
-    Note over Server: (5) Server verifies and settles
+    Note over Server: (5) Server verifies payment
     Server-->>Client: (6) 200 OK<br/>Payment-Receipt: <receipt>
 ```
 
 ## Use cases
 
-### APIs
-Programmatic APIs can enable true pay-per-use pricing without requiring upfront API keys or billing accounts. Clients, including agents, can authenticate and pay inline—no manual signup or plumbing required.
+* **Paid APIs** — Accept payments inline without requiring API keys, billing accounts, or manual signup. Clients pay per request.
+* **MCP servers** — Monetize tool calls served through the Model Context Protocol. Agents pay autonomously without OAuth or account setup.
+* **Content** — Monetize articles, data, or media without subscription paywalls. Charge per access or per query.
 
-### MCP servers
+## Get started
 
-Tools served through the Model Context Protocol (MCP) can monetize without the complexities of OAuth integrations and account models. MPP's MCP transport lets agents pay for tool calls autonomously.
+`mpay` is the official SDK of the Machine Payments Protocol.
 
-### Content Providers
-Publishers can monetize individual articles or data queries without forcing users through subscription paywalls—or gate content from known AI scrapers with micro-payment requirements.
+The MPP SDKs handle challenge parsing, payment method selection, and credential generation automatically across payment methods.
 
-## SDKs
-
-MPP currently ships official SDKs in TypeScript, Python, and Rust.
-
-| Language | Package | GitHub | Status |
-|----------|---------|--------|--------|
-| [TypeScript](/sdk/typescript) | [`mpay`](https://www.npmjs.com/package/mpay) | [wevm/mpay](https://github.com/wevm/mpay) | Reference |
-| [Python](/sdk/python) | [`pympay`](https://pypi.org/project/pympay/) | [tempoxyz/pympay](https://github.com/tempoxyz/pympay) | Beta |
-| [Rust](/sdk/rust) | [`mpay`](https://crates.io/crates/mpay) | [tempoxyz/mpay-rs](https://github.com/tempoxyz/mpay-rs) | Beta |
+| Language | Package | GitHub | Maintainer | Status |
+|----------|---------|--------|------------|--------|
+| [TypeScript](/sdk/typescript) | [`mpay`](https://www.npmjs.com/package/mpay) | [wevm/mpay](https://github.com/wevm/mpay) | [wevm](https://github.com/wevm) | <Badge variant="info">Reference</Badge> |
+| [Python](/sdk/python) | [`pympay`](https://pypi.org/project/pympay/) | [tempoxyz/pympay](https://github.com/tempoxyz/pympay) | [Tempo Labs](https://github.com/tempoxyz) | <Badge variant="default">Beta</Badge> |
+| [Rust](/sdk/rust) | [`mpay`](https://crates.io/crates/mpay) | [tempoxyz/mpay-rs](https://github.com/tempoxyz/mpay-rs) | [Tempo Labs](https://github.com/tempoxyz) | <Badge variant="default">Beta</Badge> |
 
 ## Next steps
 
 <Cards>
   <Card
-    description="Accept or make your first payment in 5 minutes with a simple full-stack example"
+    description="Build your first payment-enabled API in 5 minutes"
     icon="lucide:rocket"
     title="Quickstart"
     to="/quickstart"
   />
   <Card
-    description="Understand concepts like challenges, credentials, and receipts"
+    description="Learn about challenges, credentials, and receipts"
     icon="lucide:book-open"
-    title="Learn the protocol"
+    title="Protocol concepts"
     to="/protocol"
   />
   <Card
-    description="Normative IETF-style spec"
+    description="Read the IETF-track specification"
     icon="lucide:file-text"
-    title="Read the specification"
+    title="Specification"
     to="https://paymentauth.tempo.xyz"
   />
 </Cards>

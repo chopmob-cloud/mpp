@@ -1,14 +1,14 @@
-# HTTP 402 payment required
+# HTTP 402 payment required [The status code that signals payment is required]
 
 MPP gives the HTTP/1.1 `402` "Payment Required" status code its semantics by pairing it with the HTTP `Payment` authentication scheme.
 
 ## Overview
 
-Servers respond with 402 when:
+Servers respond with `402` when:
 
 - A resource requires payment as a precondition for access
 - The server can provide a Payment challenge the client can fulfill
-- Payment is the primary barrier (not authentication or authorization, which would result in a 401 and then potentially an incremental 402)
+- Payment is the primary barrier (not authentication or authorization, which would result in a `401` and then potentially an incremental `402`)
 
 ```http
 HTTP/1.1 402 Payment Required
@@ -19,9 +19,6 @@ WWW-Authenticate: Payment id="abc123",
     request="eyJ..."
 ```
 
-:::warning
-Include a `WWW-Authenticate` header with at least one Payment challenge when returning 402.
-:::
 
 ## Status code comparison
 
@@ -50,7 +47,7 @@ Store authentication tokens in an [HTTP-only cookie](https://cheatsheetseries.ow
 
 ## Error responses
 
-Failed payment attempts return 402 with a fresh challenge and a Problem Details body:
+Failed payment attempts return `402` with a fresh challenge and a Problem Details body:
 
 ```http
 HTTP/1.1 402 Payment Required

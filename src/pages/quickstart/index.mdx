@@ -1,39 +1,23 @@
-# Quickstart
+# Installation 
 
-Build machine-to-machine payments in minutes using the MPP TypeScript SDK.
+Install `mpay` via your package manager, a script tag, or build from source
 
-## How it works
+## Package Manager
 
-MPP uses HTTP 402 (Payment Required) to negotiate payments between clients and servers:
-
-1. **Client** requests a protected resource
-2. **Server** responds with `402` and a payment challenge in `WWW-Authenticate`
-3. **Client** fulfills the payment and retries with a credential in `Authorization`
-4. **Server** verifies payment and returns the resource with a receipt
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-
-    Client->>Server: (1) GET /resource
-    Server-->>Client: (2) 402 Payment Required<br/>WWW-Authenticate: Payment <challenge>
-    Note over Client: (3) Client fulfills payment challenge<br/>(signs transaction, pays invoice, etc.)
-    Client->>Server: (4) GET /resource<br/>Authorization: Payment <credential>
-    Note over Server: (5) Server verifies and settles
-    Server-->>Client: (6) 200 OK<br/>Payment-Receipt: <receipt>
-```
-
-## Installation
+Install the required packages.
 
 :::code-group
+
+```bash [pnpm]
+pnpm add mpay viem
+```
 
 ```bash [npm]
 npm install mpay viem
 ```
 
-```bash [pnpm]
-pnpm add mpay viem
+```bash [yarn]
+yarn add mpay viem
 ```
 
 ```bash [bun]
@@ -42,7 +26,55 @@ bun add mpay viem
 
 :::
 
-## Next steps
+## CDN
 
-- [**Client quickstart**](/quickstart/client): Pay for resources, handle 402 responses
-- [**Server quickstart**](/quickstart/server): Charge for resources, verify payments
+If you're not using a package manager, you can also use mpay via an ESM-compatible CDN such as esm.sh. Simply add a `<script type="module">` tag to the bottom of your HTML file with the following content.
+
+```html
+<script type="module">
+  import { Challenge, Credential, Receipt } from 'https://esm.sh/mpay'
+</script>
+```
+
+## Using Unreleased Commits
+
+To test unreleased features, install from the canary tag (tracks the main branch).
+
+:::code-group
+
+```bash [pnpm]
+pnpm add mpay@canary
+```
+
+```bash [npm]
+npm install mpay@canary
+```
+
+```bash [yarn]
+yarn add mpay@canary
+```
+
+```bash [bun]
+bun add mpay@canary
+```
+
+:::
+
+Or clone the mpay repo to your local machine, build, and link it yourself.
+
+```bash
+gh repo clone wevm/mpay
+cd mpay
+pnpm install
+pnpm build
+pnpm link --global
+```
+
+Then go to the project where you are using mpay and run `pnpm link --global mpay` (or the package manager that you used to link mpay globally).
+
+## Security
+
+Payment-related projects are often targeted in attacks to steal users' assets. Make sure you follow security best-practices for your project. Some quick things to get started.
+
+- Pin package versions, upgrade mindfully, and inspect lockfile changes to minimize the risk of supply-chain attacks.
+- Add a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to defend against external scripts running in your app.

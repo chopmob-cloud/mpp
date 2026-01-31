@@ -1,10 +1,10 @@
-# Payment methods
+# Payment methods [Available methods and how to choose one]
 
 Payment methods define how clients pay for resources protected by the Machine Payments Protocol. Each method specifies its payment rails, credential format, and verification logic.
 
 ## How it works
 
-When a server responds with `402 Payment Required`, the `WWW-Authenticate` header includes a `method` parameter indicating which payment method to use:
+When a server responds with `402` Payment Required, the `WWW-Authenticate` header includes a `method` parameter indicating which payment method to use:
 
 ```http
 HTTP/1.1 402 Payment Required
@@ -15,13 +15,16 @@ If supported, the client can then use the corresponding payment method to genera
 
 ## Available methods
 
-| Method | Description | Settlement | Intents |
-|--------|-------------|------------|---------|
-| [Tempo](/payment-methods/tempo) | TIP-20 stablecoin transfers on Tempo | Instant (~500ms) | `charge` |
-| [Custom](/payment-methods/custom) | Implement your own method with the TypeScript SDK | Depends on method | Varies |
+import { Badge } from '../../components/Badge'
+
+| Method | Description | Settlement | Status |
+|--------|-------------|------------|--------|
+| [Tempo](/payment-methods/tempo) | TIP-20 stablecoin transfers on Tempo | Instant (~500ms) | <Badge variant="success">Stable</Badge> |
+| Stripe | Cards, bank transfers, invoices via Stripe | Varies by rail | <Badge variant="warning">Coming soon</Badge> |
+| [Custom](/payment-methods/custom) | Build your own method with the SDK | Depends on method | — |
 
 ## Choose a method
 
 Different payment methods suit different use cases:
 
-- **Tempo:** Best for instant, low-cost payments with USD stablecoins. Ideal for AI agents, APIs, and micropayments. Supports `charge`.
+- **Tempo:** Instant, low-cost payments with USD stablecoins. Works well for AI agents, APIs, and micropayments. Supports `charge`.

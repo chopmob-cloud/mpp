@@ -1,16 +1,17 @@
-# Server quickstart
+import { Badge } from '../../components/Badge'
 
-Learn how to charge for resources by issuing payment challenges and verifying credentials.
+# Server quickstart [Charge for resources and verify payment credentials]
 
 ## Overview
 
-The server SDK provides:
+Services can charge for resources using the `mpay` server SDK.
 
-| Component | Description |
-|-----------|-------------|
-| [`Mpay.create`](/sdk/typescript/server/Mpay.create) | Creates a payment handler with configured method and realm |
-| Intent methods | Functions like `payment.charge()` that handle the 402 flow |
-| [`Mpay.toNodeListener`](/sdk/typescript/server/Mpay.toNodeListener) | Adapts the handler for Node.js HTTP servers |
+The server SDK provides two approaches:
+
+| Approach | Use Case | Integration Shape |
+|----------|----------|-------------------|
+| [`Mpay.create`](/sdk/typescript/server/Mpay.create) | Creates a payment handler with configured method and realm | <Badge variant="info">Standard</Badge> |
+| [`Mpay.toNodeListener`](/sdk/typescript/server/Mpay.toNodeListener) | Adapts the handler for Node.js HTTP servers | <Badge variant="default">Custom</Badge> |
 
 ## Basic setup
 
@@ -19,27 +20,25 @@ Create a payment handler with your payment method and server realm:
 ```ts [server.ts]
 import { Mpay, tempo } from 'mpay/server'
 
-const payment = Mpay.create({
-  method: tempo({
-    rpcUrl: 'https://rpc.tempo.xyz',
-    chainId: 42431,
-  }),
-  realm: 'mpp.dev', // [!code focus]
-  secretKey: process.env.MPP_SECRET_KEY!, // [!code focus]
-})
+const payment = Mpay.create({ // [!code hl]
+  method: tempo({ // [!code hl]
+    rpcUrl: 'https://rpc.tempo.xyz', // [!code hl]
+    chainId: 42431, // [!code hl]
+  }), // [!code hl]
+  realm: 'mpp.dev', // [!code hl]
+  secretKey: process.env.MPP_SECRET_KEY!, // [!code hl]
+}) // [!code hl]
 ```
 
-:::details[Configuration options]
-| Option | Description |
-|--------|-------------|
-| `method` | Payment method (e.g., `tempo({ ... })`) |
-| `realm` | Server realm, typically your hostname |
-| `secretKey` | Secret for HMAC-bound challenge IDs (enables stateless verification) |
+:::tip[Common configuration options]
+- `method` — Payment method (e.g., `tempo({ ... })`)
+- `realm` — Server realm, typically your hostname
+- `secretKey` — Secret for HMAC-bound challenge IDs (enables stateless verification)
 :::
 
 ## Protecting a resource
 
-Use intent methods to protect resources. Each returns a function that handles the 402 flow:
+Use intent methods to protect resources. When a request lacks valid payment credentials, the server returns a `402` challenge. Once payment is verified, the protected content is returned with a receipt.
 
 ```ts [charge.ts]
 // Define what to charge
@@ -57,34 +56,7 @@ const chargeHandler = payment.charge({
 
 :::code-group
 
-```ts [Hono]
-import { Hono } from 'hono'
-import { Mpay, tempo } from 'mpay/server'
-
-const payment = Mpay.create({
-  method: tempo({ rpcUrl: 'https://rpc.tempo.xyz', chainId: 42431 }),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPP_SECRET_KEY!,
-})
-
-const app = new Hono()
-
-app.get('/resource', async (c) => {
-  const result = await payment.charge({
-    request: {
-      amount: '1000000',
-      currency: '0x20c0000000000000000000000000000000000000',
-      recipient: '0x...',
-    },
-  })(c.req.raw)
-
-  if (result.status === 402) return result.challenge
-
-  return result.withReceipt(c.json({ data: 'protected content' }))
-})
-```
-
-```ts [Bun/Deno]
+```ts [Bun]
 import { Mpay, tempo } from 'mpay/server'
 
 const payment = Mpay.create({
@@ -95,50 +67,56 @@ const payment = Mpay.create({
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    const result = await payment.charge({
-      request: {
-        amount: '1000000',
-        currency: '0x20c0000000000000000000000000000000000000',
-        recipient: '0x...',
-      },
-    })(request)
+    const result = await payment.charge({ // [!code hl]
+      request: { // [!code hl]
+        amount: '1000000', // [!code hl]
+        currency: '0x20c0000000000000000000000000000000000000', // [!code hl]
+        recipient: '0x...', // [!code hl]
+      }, // [!code hl]
+    })(request) // [!code hl]
 
-    if (result.status === 402) return result.challenge
+    if (result.status === 402) return result.challenge // [!code hl]
 
-    return result.withReceipt(
+    return result.withReceipt( // [!code hl]
       Response.json({ data: 'protected content' })
     )
   }
 }
 ```
 
-```ts [Fetch API]
-async function handler(request: Request): Promise<Response> {
-  const result = await payment.charge({
-    request: {
-      amount: '1000000',
-      currency: '0x20c0000000000000000000000000000000000000',
-      recipient: '0x...',
-    },
-  })(request)
+```ts [Node]
+import * as http from 'node:http'
+import { Mpay, tempo } from 'mpay/server'
 
-  // Payment required — return 402 challenge
-  if (result.status === 402) {
-    return result.challenge
-  }
+const payment = Mpay.create({
+  method: tempo({ rpcUrl: 'https://rpc.tempo.xyz', chainId: 42431 }),
+  realm: 'mpp.dev',
+  secretKey: process.env.MPP_SECRET_KEY!,
+})
 
-  // Payment verified — return protected resource with receipt
-  return result.withReceipt(
-    Response.json({ data: 'protected content' })
-  )
-}
+http.createServer(async (req, res) => {
+  const result = await Mpay.toNodeListener( // [!code hl]
+    payment.charge({ // [!code hl]
+      request: { // [!code hl]
+        amount: '1000000', // [!code hl]
+        currency: '0x20c0000000000000000000000000000000000000', // [!code hl]
+        recipient: '0x...', // [!code hl]
+      }, // [!code hl]
+    }), // [!code hl]
+  )(req, res) // [!code hl]
+
+  if (result.status === 402) return // [!code hl]
+
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify({ data: 'protected content' }))
+}).listen(3000)
 ```
 
 :::
 
 ## Node.js HTTP server
 
-For Node.js HTTP servers, use `Mpay.toNodeListener`:
+For Node.js HTTP servers, use `Mpay.toNodeListener` to adapt the payment handler:
 
 ```ts [node-server.ts]
 import * as http from 'node:http'
@@ -154,15 +132,15 @@ const payment = Mpay.create({
 })
 
 http.createServer(async (req, res) => {
-  const result = await Mpay.toNodeListener( // [!code focus]
-    payment.charge({
-      request: {
-        amount: '1000000',
-        currency: '0x20c0000000000000000000000000000000000000',
-        recipient: '0x...',
-      },
-    }),
-  )(req, res) // [!code focus]
+  const result = await Mpay.toNodeListener( // [!code hl]
+    payment.charge({ // [!code hl]
+      request: { // [!code hl]
+        amount: '1000000', // [!code hl]
+        currency: '0x20c0000000000000000000000000000000000000', // [!code hl]
+        recipient: '0x...', // [!code hl]
+      }, // [!code hl]
+    }), // [!code hl]
+  )(req, res) // [!code hl]
 
   // 402 response already written
   if (result.status === 402) return
@@ -173,34 +151,15 @@ http.createServer(async (req, res) => {
 }).listen(3000)
 ```
 
-## Sponsored fees
-
-Let your server pay transaction fees for users:
-
-```ts [sponsored.ts]
-import { Mpay, tempo } from 'mpay/server'
-import { privateKeyToAccount } from 'viem/accounts'
-
-const payment = Mpay.create({
-  method: tempo({
-    rpcUrl: 'https://rpc.tempo.xyz',
-    chainId: 42431,
-    feePayer: privateKeyToAccount('0x...'), // [!code focus]
-  }),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPP_SECRET_KEY!,
-})
-```
-
-:::tip
-When `feePayer` is set, the server co-signs transactions to cover gas fees so end users don't pay them.
+:::warning
+`Mpay.toNodeListener` writes the 402 response directly to the response object. Always check `result.status` before writing your own response.
 :::
 
 ## Testing with pget
 
 After your server is running, test it with [pget](/tools/pget):
 
-```bash
+```bash [test.sh]
 # See the payment challenge
 pget inspect <your-server>/resource
 
@@ -213,6 +172,10 @@ pget -vi <your-server>/resource
 # Dry run to preview payment without executing
 pget -D <your-server>/resource
 ```
+
+:::tip
+Use `pget inspect` to debug your server's challenge response without making any payments.
+:::
 
 ## Next steps
 
