@@ -64,72 +64,87 @@ nav[aria-label="Pagination"],
 	contain: layout style;
 }
 
+/* MPP Flow Diagram UI Components */
+.mpp-description-box {
+	color: #6b7280;
+	background: #f9fafb;
+	border: 1px solid #e5e7eb;
+}
+
+.mpp-nav-btn {
+	background: #ffffff;
+	border-color: #e5e7eb;
+	color: #6b7280;
+}
+
+:root.dark .mpp-description-box,
+.dark .mpp-description-box {
+	color: #9ca3af;
+	background: #1e293b;
+	border: 1px solid #374151;
+}
+
+:root.dark .mpp-nav-btn,
+.dark .mpp-nav-btn {
+	background: #1e293b;
+	border-color: #374151;
+	color: #9ca3af;
+}
+
 /* Mermaid SVG Diagram Styles - Light Mode */
-/* Use svg.animated-mermaid-svg since the class is on the SVG element itself */
 svg.animated-mermaid-svg {
 	max-width: 100%;
 	height: auto;
 }
 
-svg.animated-mermaid-svg .actor {
+svg.animated-mermaid-svg rect.actor {
 	fill: #ffffff !important;
 	stroke: #3b82f6 !important;
 	stroke-width: 2px !important;
-	rx: 8px !important;
+	rx: 6px !important;
 	filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.1)) !important;
 }
 
-svg.animated-mermaid-svg text.actor-box,
-svg.animated-mermaid-svg .actor text,
-svg.animated-mermaid-svg .actor tspan {
+svg.animated-mermaid-svg text.actor-box {
 	fill: #3b82f6 !important;
 	font-family: var(--vocs-fontFamily_default) !important;
 	font-size: 14px !important;
 	font-weight: 600 !important;
-	letter-spacing: 0.02em !important;
 }
 
 svg.animated-mermaid-svg .actor-line {
 	stroke: #3b82f6 !important;
-	stroke-width: 2px !important;
 	stroke-dasharray: 6, 4 !important;
 	opacity: 0.3 !important;
 }
 
 svg.animated-mermaid-svg .messageLine0 {
 	stroke: #6b7280 !important;
-	stroke-width: 2px !important;
-	fill: none !important;
+	stroke-width: 1.5px !important;
 }
 
 svg.animated-mermaid-svg .messageLine1 {
 	stroke: #6b7280 !important;
-	stroke-width: 2px !important;
-	fill: none !important;
+	stroke-width: 1.5px !important;
 	stroke-dasharray: 6, 4 !important;
 }
 
-svg.animated-mermaid-svg .messageText,
-svg.animated-mermaid-svg .messageText tspan {
+svg.animated-mermaid-svg .messageText {
 	fill: #1f2937 !important;
 	font-family: var(--vocs-fontFamily_mono) !important;
 	font-size: 12px !important;
-	font-weight: 500 !important;
 }
 
-svg.animated-mermaid-svg .note {
+svg.animated-mermaid-svg .note,
+svg.animated-mermaid-svg rect.note {
 	fill: transparent !important;
 	stroke: transparent !important;
-	stroke-width: 0 !important;
-	filter: none !important;
 }
 
-svg.animated-mermaid-svg .noteText,
-svg.animated-mermaid-svg .noteText tspan {
+svg.animated-mermaid-svg .noteText {
 	fill: #374151 !important;
 	font-family: var(--vocs-fontFamily_default) !important;
 	font-size: 12px !important;
-	font-weight: 500 !important;
 }
 
 svg.animated-mermaid-svg #arrowhead path,
@@ -139,19 +154,15 @@ svg.animated-mermaid-svg marker path {
 }
 
 /* Mermaid SVG Diagram Styles - Dark Mode */
-:root.dark svg.animated-mermaid-svg .actor,
-.dark svg.animated-mermaid-svg .actor {
+:root.dark svg.animated-mermaid-svg rect.actor,
+.dark svg.animated-mermaid-svg rect.actor {
 	fill: #1e293b !important;
 	stroke: #60a5fa !important;
 	filter: drop-shadow(0 2px 4px rgba(96, 165, 250, 0.15)) !important;
 }
 
 :root.dark svg.animated-mermaid-svg text.actor-box,
-:root.dark svg.animated-mermaid-svg .actor text,
-:root.dark svg.animated-mermaid-svg .actor tspan,
-.dark svg.animated-mermaid-svg text.actor-box,
-.dark svg.animated-mermaid-svg .actor text,
-.dark svg.animated-mermaid-svg .actor tspan {
+.dark svg.animated-mermaid-svg text.actor-box {
 	fill: #60a5fa !important;
 }
 
@@ -172,23 +183,20 @@ svg.animated-mermaid-svg marker path {
 }
 
 :root.dark svg.animated-mermaid-svg .messageText,
-:root.dark svg.animated-mermaid-svg .messageText tspan,
-.dark svg.animated-mermaid-svg .messageText,
-.dark svg.animated-mermaid-svg .messageText tspan {
+.dark svg.animated-mermaid-svg .messageText {
 	fill: #e5e7eb !important;
 }
 
 :root.dark svg.animated-mermaid-svg .note,
-.dark svg.animated-mermaid-svg .note {
+:root.dark svg.animated-mermaid-svg rect.note,
+.dark svg.animated-mermaid-svg .note,
+.dark svg.animated-mermaid-svg rect.note {
 	fill: transparent !important;
 	stroke: transparent !important;
-	filter: none !important;
 }
 
 :root.dark svg.animated-mermaid-svg .noteText,
-:root.dark svg.animated-mermaid-svg .noteText tspan,
-.dark svg.animated-mermaid-svg .noteText,
-.dark svg.animated-mermaid-svg .noteText tspan {
+.dark svg.animated-mermaid-svg .noteText {
 	fill: #e5e7eb !important;
 }
 

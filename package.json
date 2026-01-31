@@ -11,7 +11,7 @@
 		"test:watch": "vitest",
 		"dev": "vite dev",
 		"build": "pnpm diagrams:build && vite build && node scripts/patch-cf.ts",
-		"diagrams:build": "npx tsx scripts/build-diagrams.ts",
+		"diagrams:build": "pnpm exec mmdc -i diagrams/mpp-flow.mmd -o public/diagrams/mpp-flow.svg -c diagrams/mermaid.config.json && bash scripts/postprocess-svg.sh public/diagrams/mpp-flow.svg",
 		"deploy": "wrangler deploy",
 		"gen:types": "wrangler types",
 		"postinstall": "pnpm gen:types",

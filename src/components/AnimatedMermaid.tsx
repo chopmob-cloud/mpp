@@ -23,15 +23,20 @@ export function AnimatedMermaid({
 	const [currentStep, setCurrentStep] = useState(-1);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [svgContent, setSvgContent] = useState<string | null>(null);
-	const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+	const [isDark, setIsDark] = useState(false);
 
+	// Detect dark mode
 	useEffect(() => {
-		const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-		setPrefersReducedMotion(mq.matches);
-		const handler = (e: MediaQueryListEvent) =>
-			setPrefersReducedMotion(e.matches);
-		mq.addEventListener("change", handler);
-		return () => mq.removeEventListener("change", handler);
+		const checkDark = () => {
+			setIsDark(document.documentElement.classList.contains("dark"));
+		};
+		checkDark();
+		const observer = new MutationObserver(checkDark);
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["class"],
+		});
+		return () => observer.disconnect();
 	}, []);
 
 	useEffect(() => {
@@ -49,6 +54,22 @@ export function AnimatedMermaid({
 			});
 		return () => controller.abort();
 	}, [src]);
+
+	// Apply custom colors to specific message text elements
+	useEffect(() => {
+		if (!containerRef.current || !svgContent) return;
+		const svg = containerRef.current.querySelector("svg");
+		if (!svg) return;
+
+		const messageTexts = svg.querySelectorAll("text.messageText");
+		messageTexts.forEach((el, i) => {
+			if (i === 1 || i === 2) {
+				(el as HTMLElement).style.fill = isDark ? "#e39a9a" : "#b97676";
+			} else if (i === 5 || i === 6) {
+				(el as HTMLElement).style.fill = isDark ? "#7bcf9a" : "#5b9a76";
+			}
+		});
+	}, [svgContent, isDark]);
 
 	const getStepElements = useCallback(
 		(svg: SVGElement, step: AnimationStep): Element[] => {
@@ -71,63 +92,49 @@ export function AnimatedMermaid({
 		[],
 	);
 
-	// Apply custom colors to specific message text elements
 	useEffect(() => {
 		if (!containerRef.current || !svgContent) return;
 		const svg = containerRef.current.querySelector("svg");
 		if (!svg) return;
 
-		const messageTexts = svg.querySelectorAll("text.messageText");
-		// Text indices: 0=(1), 1=(2), 2=WWW-Auth, 3=(4), 4=Auth, 5=(6), 6=Payment-Receipt
-		// Color (2) 402 response text red (indices 1, 2)
-		// Color (6) 200 OK response text green (indices 5, 6)
-		messageTexts.forEach((el, i) => {
-			if (i === 1 || i === 2) {
-				(el as HTMLElement).style.fill = "#b97676"; // muted coral rose
-			} else if (i === 5 || i === 6) {
-				(el as HTMLElement).style.fill = "#5b9a76"; // muted sage green
-			}
-		});
-	}, [svgContent]);
-
-	useEffect(() => {
-		if (!containerRef.current || !svgContent) return;
-		const svg = containerRef.current.querySelector("svg");
-		if (!svg) return;
-
-		const allElements = svg.querySelectorAll(
-			".actor, .actor-box, .actor-line, .messageLine0, .messageLine1, .messageText, .note, .noteText, rect, line, text",
+		const animatableElements = svg.querySelectorAll(
+			".messageLine0, .messageLine1, .messageText, .note, .noteText",
 		);
 
-		// When currentStep is -1, show everything at full opacity
+		const actorElements = svg.querySelectorAll(
+			".actor, .actor-box, .actor-line, g[id^='root-'] rect, g[id^='root-'] text",
+		);
+
+		for (const el of actorElements) {
+			(el as HTMLElement).style.opacity = "1";
+			(el as HTMLElement).style.transition = "opacity 0.3s ease";
+		}
+
 		if (currentStep === -1) {
-			for (let i = 0; i < allElements.length; i++) {
-				const el = allElements[i] as HTMLElement;
-				el.style.opacity = "1";
-				el.style.transition = "opacity 0.3s ease";
+			for (const el of animatableElements) {
+				(el as HTMLElement).style.opacity = "1";
+				(el as HTMLElement).style.transition = "opacity 0.3s ease";
 			}
 			return;
 		}
 
-		// Otherwise animate steps
-		for (let i = 0; i < allElements.length; i++) {
-			const el = allElements[i] as HTMLElement;
-			el.style.opacity = "0.15";
-			el.style.transition = "opacity 0.3s ease";
+		for (const el of animatableElements) {
+			(el as HTMLElement).style.opacity = "0.15";
+			(el as HTMLElement).style.transition = "opacity 0.3s ease";
 		}
 
 		for (let i = 0; i <= currentStep; i++) {
 			const step = steps[i];
 			const elements = getStepElements(svg, step);
 			const opacity = i === currentStep ? "1" : "0.4";
-			for (let j = 0; j < elements.length; j++) {
-				(elements[j] as HTMLElement).style.opacity = opacity;
+			for (const el of elements) {
+				(el as HTMLElement).style.opacity = opacity;
 			}
 		}
 	}, [currentStep, svgContent, steps, getStepElements]);
 
 	useEffect(() => {
-		if (!isPlaying || autoPlayInterval === 0 || prefersReducedMotion) return;
+		if (!isPlaying || autoPlayInterval === 0) return;
 		const interval = setInterval(() => {
 			setCurrentStep((prev) => {
 				if (prev >= steps.length - 1) {
@@ -138,18 +145,14 @@ export function AnimatedMermaid({
 			});
 		}, autoPlayInterval);
 		return () => clearInterval(interval);
-	}, [isPlaying, autoPlayInterval, steps.length, prefersReducedMotion]);
+	}, [isPlaying, autoPlayInterval, steps.length]);
 
 	const handlePlay = useCallback(() => {
-		if (prefersReducedMotion) {
-			if (currentStep === -1) setCurrentStep(0);
-			return;
-		}
 		if (currentStep >= steps.length - 1 || currentStep === -1) {
 			setCurrentStep(0);
 		}
 		setIsPlaying(true);
-	}, [currentStep, steps.length, prefersReducedMotion]);
+	}, [currentStep, steps.length]);
 
 	const handlePrev = useCallback(() => {
 		setIsPlaying(false);
@@ -203,10 +206,10 @@ export function AnimatedMermaid({
 						justifyContent: "center",
 						width: "28px",
 						height: "28px",
-						border: "1px solid #e5e7eb",
+						border: "1px solid var(--vocs-color_border)",
 						borderRadius: "6px",
-						background: "#fff",
-						color: "#6b7280",
+						background: "var(--vocs-color_background)",
+						color: "var(--vocs-color_text3)",
 						cursor: "pointer",
 						padding: 0,
 						zIndex: 10,
@@ -246,18 +249,15 @@ export function AnimatedMermaid({
 					}}
 				>
 					<div
+						className="mpp-description-box"
 						style={{
 							textAlign: "center",
 							padding: "0.75rem 1.5rem",
 							fontSize: "0.875rem",
-							color: "#6b7280",
-							background: "#f9fafb",
 							borderRadius: "8px",
-							border: "1px solid #e5e7eb",
 							maxWidth: "480px",
 						}}
 						aria-live="polite"
-						aria-atomic="true"
 					>
 						{steps[currentStep]?.description}
 					</div>
@@ -271,7 +271,6 @@ export function AnimatedMermaid({
 					alignItems: "center",
 					gap: "0.75rem",
 					marginTop: "1rem",
-					width: "100%",
 				}}
 			>
 				{isAnimating && (
@@ -280,7 +279,11 @@ export function AnimatedMermaid({
 						onClick={handlePrev}
 						disabled={currentStep <= 0}
 						aria-label="Previous step"
-						style={{ ...btnStyle, opacity: currentStep <= 0 ? 0.4 : 1 }}
+						className="mpp-nav-btn"
+						style={{
+							...btnStyle,
+							opacity: currentStep <= 0 ? 0.4 : 1,
+						}}
 					>
 						<svg
 							aria-hidden="true"
@@ -342,6 +345,7 @@ export function AnimatedMermaid({
 						onClick={handleNext}
 						disabled={currentStep >= steps.length - 1}
 						aria-label="Next step"
+						className="mpp-nav-btn"
 						style={{
 							...btnStyle,
 							opacity: currentStep >= steps.length - 1 ? 0.4 : 1,
@@ -367,10 +371,8 @@ export function AnimatedMermaid({
 					style={{
 						display: "flex",
 						justifyContent: "center",
-						alignItems: "center",
 						gap: "6px",
 						marginTop: "0.75rem",
-						width: "100%",
 					}}
 					role="group"
 					aria-label="Animation steps"
@@ -395,7 +397,7 @@ export function AnimatedMermaid({
 										? "#3b82f6"
 										: i < currentStep
 											? "#93c5fd"
-											: "#d1d5db",
+											: "var(--vocs-color_border)",
 								cursor: "pointer",
 								padding: 0,
 							}}
@@ -413,10 +415,8 @@ const btnStyle: React.CSSProperties = {
 	justifyContent: "center",
 	width: "36px",
 	height: "36px",
-	border: "1px solid #e5e7eb",
+	border: "1px solid",
 	borderRadius: "50%",
-	background: "#fff",
-	color: "#6b7280",
 	cursor: "pointer",
 	padding: 0,
 };
