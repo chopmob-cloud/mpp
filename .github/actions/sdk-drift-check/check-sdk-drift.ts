@@ -130,7 +130,10 @@ export function extractSidebarLinksFromContent(
  * Extract sidebar links from vocs.config.tsx using regex
  * (avoids needing to execute the config)
  */
-export function extractSidebarLinks(configPath: string, pathPrefix: string): string[] {
+export function extractSidebarLinks(
+	configPath: string,
+	pathPrefix: string,
+): string[] {
 	const content = readFileSync(configPath, "utf-8");
 	return extractSidebarLinksFromContent(content, pathPrefix);
 }
@@ -139,7 +142,10 @@ export function extractSidebarLinks(configPath: string, pathPrefix: string): str
  * Parse a sidebar link into structured reference
  * e.g., "/sdk/typescript/core/Challenge.from" -> { area: "core", namespace: "Challenge", member: "from" }
  */
-export function parseLink(link: string, pathPrefix: string): SidebarReference | null {
+export function parseLink(
+	link: string,
+	pathPrefix: string,
+): SidebarReference | null {
 	const relativePath = link.slice(pathPrefix.length + 1); // Remove prefix and leading slash
 	const parts = relativePath.split("/");
 

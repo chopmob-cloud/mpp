@@ -34,7 +34,10 @@ describe("extractSidebarLinksFromContent", () => {
 			{ text: 'B', link: '/sdk/typescript/client/B' },
 		`;
 		const links = extractSidebarLinksFromContent(content, prefix);
-		expect(links).toEqual(["/sdk/typescript/core/A", "/sdk/typescript/client/B"]);
+		expect(links).toEqual([
+			"/sdk/typescript/core/A",
+			"/sdk/typescript/client/B",
+		]);
 	});
 
 	it("ignores links with different prefix", () => {
