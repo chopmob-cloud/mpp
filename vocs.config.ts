@@ -20,6 +20,10 @@ export default defineConfig({
 		path === "/"
 			? `${base}/og.png`
 			: `${base}/api/og?title=%title&description=%description`,
+	iconUrl: {
+		light: "/icon-light.png",
+		dark: "/icon-dark.png",
+	},
 	mcp: {
 		enabled: true,
 		sources: [
