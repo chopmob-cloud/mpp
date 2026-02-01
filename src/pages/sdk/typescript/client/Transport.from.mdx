@@ -7,23 +7,21 @@ Creates a custom client-side transport.
 ```ts twoslash
 import { Transport } from 'mpay/client'
 
-const custom = Transport.from({
+const custom = Transport.from<Request, Response>({
   name: 'custom',
   isPaymentRequired(response) {
     return response.status === 402
   },
   getChallenge(response) {
-    // Extract challenge from response
     return JSON.parse(response.headers.get('X-Challenge')!)
   },
   setCredential(request, credential) {
-    return {
-      ...request,
-      headers: {
-        ...request.headers,
-        'X-Credential': credential,
-      },
-    }
+    return new Request(request, {
+      headers: new Headers([
+        ...request.headers.entries(),
+        ['X-Credential', credential],
+      ]),
+    })
   },
 })
 ```

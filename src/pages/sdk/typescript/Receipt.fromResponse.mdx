@@ -5,10 +5,10 @@ Extracts the receipt from a Response's Payment-Receipt header.
 ## Usage
 
 ```ts twoslash
-import { Receipt, Credential } from 'mpay'
+import { Receipt } from 'mpay'
 
 const response = await fetch('/resource', {
-  headers: { Authorization: Credential.serialize(credential) },
+  headers: { Authorization: 'Payment ...' },
 })
 
 if (response.ok) {

@@ -17,10 +17,10 @@ Use a method definition to get type-safe access to method-specific request field
 
 ```ts twoslash
 import { Challenge } from 'mpay'
-import { method } from 'mpay/tempo'
+import { tempo } from 'mpay/tempo'
 
 const header = 'Payment id="abc123", realm="mpp.dev", method="tempo", intent="charge", request="eyJhbW91bnQiOi..."'
-const challenge = Challenge.deserialize(header, { method })
+const challenge = Challenge.deserialize(header, { method: tempo })
 ```
 
 ## Return Type

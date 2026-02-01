@@ -13,7 +13,7 @@ const payment = Mpay.create({
     chainId: 42431,
   }),
   realm: 'mpp.dev',
-  secretKey: process.env.PAYMENT_SECRET_KEY,
+  secretKey: process.env.PAYMENT_SECRET_KEY!,
 })
 ```
 
@@ -30,7 +30,7 @@ const payment = Mpay.create({
     rpcUrl: 'https://rpc.tempo.xyz',
   }),
   realm: 'mpp.dev',
-  secretKey: process.env.PAYMENT_SECRET_KEY,
+  secretKey: process.env.PAYMENT_SECRET_KEY!,
   transport: Transport.mcpSdk(),
 })
 ```
@@ -62,7 +62,7 @@ const payment = Mpay.create({
     chainId: 42431, // [!code focus]
   }), // [!code focus]
   realm: 'mpp.dev',
-  secretKey: process.env.PAYMENT_SECRET_KEY,
+  secretKey: process.env.PAYMENT_SECRET_KEY!,
 })
 ```
 
@@ -81,7 +81,7 @@ const payment = Mpay.create({
     chainId: 42431,
   }),
   realm: 'mpp.dev', // [!code focus]
-  secretKey: process.env.PAYMENT_SECRET_KEY,
+  secretKey: process.env.PAYMENT_SECRET_KEY!,
 })
 ```
 
@@ -100,7 +100,7 @@ const payment = Mpay.create({
     chainId: 42431,
   }),
   realm: 'mpp.dev',
-  secretKey: process.env.PAYMENT_SECRET_KEY, // [!code focus]
+  secretKey: process.env.PAYMENT_SECRET_KEY!, // [!code focus]
 })
 ```
 
@@ -120,7 +120,7 @@ const payment = Mpay.create({
     chainId: 42431,
   }),
   realm: 'mpp.dev',
-  secretKey: process.env.PAYMENT_SECRET_KEY,
+  secretKey: process.env.PAYMENT_SECRET_KEY!,
   transport: Transport.mcp(), // [!code focus]
 })
 ```

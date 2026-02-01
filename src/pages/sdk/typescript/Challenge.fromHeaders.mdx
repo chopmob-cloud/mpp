@@ -17,10 +17,10 @@ Use a method definition to get type-safe access to method-specific request field
 
 ```ts twoslash
 import { Challenge } from 'mpay'
-import { method } from 'mpay/tempo'
+import { tempo } from 'mpay/tempo'
 
 const response = await fetch('/resource')
-const challenge = Challenge.fromHeaders(response.headers, { method })
+const challenge = Challenge.fromHeaders(response.headers, { method: tempo })
 ```
 
 ## Return Type

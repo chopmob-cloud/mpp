@@ -19,11 +19,11 @@ Use a method definition to get type-safe access to method-specific request field
 
 ```ts twoslash
 import { Challenge } from 'mpay'
-import { method } from 'mpay/tempo'
+import { tempo } from 'mpay/tempo'
 
 const response = await fetch('/resource')
 if (response.status === 402) {
-  const challenge = Challenge.fromResponse(response, { method })
+  const challenge = Challenge.fromResponse(response, { method: tempo })
 }
 ```
 

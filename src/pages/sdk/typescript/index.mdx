@@ -76,9 +76,9 @@ const privateKey = '0xabc…123'
 const account = Account.fromSecp256k1(privateKey)
 
 const fetch = Fetch.from({ // [!code focus]
-  account, // [!code focus]
   methods: [ // [!code focus]
     tempo({ // [!code focus]
+      account, // [!code focus]
       chainId: 4217, // [!code focus]
       rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
     }) // [!code focus]
@@ -91,9 +91,9 @@ You can also polyfill the global `fetch` instance.
 
 ```ts 
 Fetch.polyfill({
-  account,
   methods: [
     tempo({
+      account,
       chainId: 4217,
       rpcUrl: 'https://rpc.tempo.xyz',
     })
@@ -154,6 +154,7 @@ const mpay = Mpay.create({
     rpcUrl: 'https://rpc.tempo.xyz',
   }),
   realm: 'mpp.dev',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -172,7 +173,7 @@ The Fetch API is compatible with most server frameworks, including:
 - other Fetch API-compatible frameworks
 
 ```ts twoslash [example.ts]
-import { Mpay, tempo } from 'mpay/server' // [!code collapse:7 collapsed]
+import { Mpay, tempo } from 'mpay/server' // [!code collapse:8 collapsed]
 
 const mpay = Mpay.create({
   method: tempo({
@@ -180,6 +181,7 @@ const mpay = Mpay.create({
     rpcUrl: 'https://rpc.tempo.xyz',
   }),
   realm: 'mpp.dev',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 
 export async function handler(request: Request) { 
@@ -206,7 +208,7 @@ If your framework doesn't support the Fetch API (for example, Express or Node.js
 Use the `Mpay.toNodeListener` helper to transform the handler into a Node.js-compatible listener.
 
 ```ts  twoslash
-import { Mpay, tempo } from 'mpay/server' // [!code collapse:7]
+import { Mpay, tempo } from 'mpay/server' // [!code collapse:8]
 
 const mpay = Mpay.create({
   method: tempo({
@@ -214,8 +216,12 @@ const mpay = Mpay.create({
     rpcUrl: 'https://rpc.tempo.xyz',
   }),
   realm: 'mpp.dev',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 
+type IncomingMessage = import('node:http').IncomingMessage
+type ServerResponse = import('node:http').ServerResponse
+// ---cut---
 export async function handler(req: IncomingMessage, res: ServerResponse) { 
   const response = await Mpay.toNodeListener(mpay.charge({ // [!code ++]
     request: { 
@@ -240,14 +246,14 @@ export async function handler(req: IncomingMessage, res: ServerResponse) {
 
 Plug the handler into your framework of choice, like [Hono](#TODO).
 
-```ts twoslash [example.ts]
+```ts [example.ts]
 import { Hono } from 'hono' // [!code focus]
 import { Mpay, tempo } from 'mpay/server'
 
 const mpay = Mpay.create({
   method: tempo({ chainId: 4217, rpcUrl: 'https://rpc.tempo.xyz' }),
   realm: 'mpp.dev',
-  secretKey: import.meta.env.MPAY_SECRET_KEY,
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 
 const app = new Hono() // [!code focus]
@@ -257,6 +263,7 @@ app.get('/resource', async (c) => { // [!code focus:99]
     request: {
       amount: '1000000',
       currency: '0x20c0000000000000000000000000000000000001',
+      expires: '2030-01-20T12:00:00Z',
       recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
     },
   })(c.req.raw)

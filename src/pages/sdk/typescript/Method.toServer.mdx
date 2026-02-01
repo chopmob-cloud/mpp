@@ -5,16 +5,30 @@ Extends a method with server-side verification logic.
 ## Usage
 
 ```ts twoslash
-import { Method, Receipt } from 'mpay'
-import { method } from 'mpay/tempo'
+import { Intent, Method, MethodIntent, Receipt, z } from 'mpay'
 
-const serverMethod = Method.toServer(method, {
-  async verify({ credential, request }) {
-    // Verification logic
+const charge = MethodIntent.fromIntent(Intent.charge, {
+  method: 'stripe',
+  schema: {
+    credential: {
+      payload: z.object({ signature: z.string() }),
+    },
+  },
+})
+
+const stripe = Method.from({
+  name: 'stripe',
+  intents: { charge },
+})
+
+declare function verifySignature(credential: unknown): Promise<boolean>
+// ---cut---
+const server = Method.toServer(stripe, {
+  async verify({ credential }) {
     const isValid = await verifySignature(credential)
     
     return Receipt.from({
-      method: 'tempo',
+      method: 'stripe',
       status: isValid ? 'success' : 'failed',
       timestamp: new Date().toISOString(),
       reference: '0x...',
@@ -28,19 +42,43 @@ const serverMethod = Method.toServer(method, {
 Pass additional context (like configuration) to the `verify` function.
 
 ```ts twoslash
-import { Method, Receipt, z } from 'mpay'
-import { method } from 'mpay/tempo'
+import { Intent, Method, MethodIntent, Receipt, z } from 'mpay'
 
-const serverMethod = Method.toServer(method, {
+const charge = Intent.from({
+  name: 'charge',
+  schema: {
+    request: z.object({
+      amount: z.string(),
+      currency: z.string(),
+    }),
+  },
+})
+
+const stripeCharge = MethodIntent.fromIntent(charge, {
+  method: 'stripe',
+  schema: {
+    credential: {
+      payload: z.object({ signature: z.string() }),
+    },
+  },
+})
+
+const stripe = Method.from({
+  name: 'stripe',
+  intents: { charge: stripeCharge },
+})
+
+declare function verifyOnChain(rpcUrl: string, credential: unknown): Promise<boolean>
+// ---cut---
+const server = Method.toServer(stripe, {
   context: z.object({
     rpcUrl: z.string(),
   }),
   async verify({ credential, context }) {
-    // Use context.rpcUrl for verification
     const isValid = await verifyOnChain(context.rpcUrl, credential)
     
     return Receipt.from({
-      method: 'tempo',
+      method: 'stripe',
       status: isValid ? 'success' : 'failed',
       timestamp: new Date().toISOString(),
       reference: '0x...',

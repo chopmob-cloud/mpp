@@ -6,57 +6,10 @@ import * as path from "node:path";
 
 const ssrAssetsDir = path.resolve(process.cwd(), "dist/server/ssr/assets");
 const serverAssetsDir = path.resolve(process.cwd(), "dist/server/assets");
-const serverDir = path.resolve(process.cwd(), "dist/server");
 
 if (!fs.existsSync(ssrAssetsDir)) {
 	console.log("⚠ SSR assets directory not found, skipping patches");
 	process.exit(0);
-}
-
-// Create a minimal vocs.config.js that just exports the config object directly
-// (vocs/config exports defineConfig which is just an identity function)
-const vocsConfigSrc = (() => {
-	const tsx = path.resolve(process.cwd(), "vocs.config.tsx");
-	if (fs.existsSync(tsx)) return tsx;
-	return path.resolve(process.cwd(), "vocs.config.ts");
-})();
-const vocsConfigDest = path.join(serverDir, "vocs.config.js");
-if (fs.existsSync(vocsConfigSrc)) {
-	let configContent = fs.readFileSync(vocsConfigSrc, "utf-8");
-
-	// Inline sidebar if imported
-	const sidebarImportMatch = configContent.match(
-		/import\s*\{\s*sidebar\s*\}\s*from\s*["']\.\/sidebar["'];?/,
-	);
-	if (sidebarImportMatch) {
-		const sidebarSrc = path.resolve(process.cwd(), "sidebar.ts");
-		if (fs.existsSync(sidebarSrc)) {
-			const sidebarContent = fs.readFileSync(sidebarSrc, "utf-8");
-			// Extract the sidebar object (remove imports and type annotations)
-			const sidebarStripped = sidebarContent
-				.replace(/import\s+type\s*\{[^}]+\}\s*from\s*["'][^"']+["'];?/g, "")
-				.replace(/\s*as\s+const\s+satisfies\s+Config\['sidebar'\]/, "");
-			// Remove the import and prepend the inlined sidebar
-			configContent = configContent
-				.replace(sidebarImportMatch[0], "")
-				.replace(/export\s+default/, `${sidebarStripped}\nexport default`);
-			console.log("✓ Inlined sidebar into vocs.config.js");
-		}
-	}
-
-	// Extract just the config object by replacing imports and defineConfig call
-	// McpSource.github({ name, repo }) → { type: "github", name, repo }
-	const strippedConfig = configContent
-		.replace(/import\s*\{[^}]+\}\s*from\s*["']vocs\/config["'];?/g, "")
-		.replace(
-			/McpSource\.github\(\s*\{[\s\S]*?name:\s*["']([^"']+)["'][\s\S]*?repo:\s*["']([^"']+)["'][\s\S]*?\}\s*\)/g,
-			'{ type: "github", name: "$1", repo: "$2" }',
-		)
-		.replace(/defineConfig\(/g, "(")
-		.replace(/export\s+default/, "export default");
-
-	fs.writeFileSync(vocsConfigDest, strippedConfig);
-	console.log("✓ Created minimal vocs.config.js for CF Workers");
 }
 
 // Patch SSR assets

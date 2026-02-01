@@ -152,7 +152,7 @@ declare function payInvoice(invoice: string): Promise<{ preimage: string }>
 const clientMethod = Method.toClient(lightningMethod, {
   async createCredential({ challenge }) {
     // Pay the BOLT11 invoice via Lightning node
-    const bolt11 = challenge.request.invoice
+    const bolt11 = challenge.request.methodDetails!.invoice;
     const result = await payInvoice(bolt11)
 
     return Credential.serialize({
@@ -212,7 +212,7 @@ declare function bytesToHex(bytes: Uint8Array): string
 const serverMethod = Method.toServer(lightningMethod, {
   async verify({ credential, request }) {
     const preimage = credential.payload.preimage
-    const expectedHash = request.paymentHash
+    const expectedHash = credential.challenge.request.methodDetails!.paymentHash
 
     // Verify preimage: SHA256(preimage) === paymentHash
     const actualHash = bytesToHex(sha256(hexToBytes(preimage)))
@@ -235,7 +235,8 @@ const serverMethod = Method.toServer(lightningMethod, {
 Pass the client method to `Fetch.from`:
 
 ```ts twoslash
-import { Credential, Fetch, Intent, Method, MethodIntent, z } from 'mpay'
+import { Credential, Intent, Method, MethodIntent, z } from 'mpay'
+import { Fetch } from 'mpay/client'
 
 const charge = Intent.from({
   name: 'charge',
@@ -274,7 +275,7 @@ declare function payInvoice(invoice: string): Promise<{ preimage: string }>
 
 const clientMethod = Method.toClient(lightningMethod, {
   async createCredential({ challenge }) {
-    const bolt11 = challenge.request.invoice
+    const bolt11 = challenge.request.methodDetails!.invoice;
     const result = await payInvoice(bolt11)
 
     return Credential.serialize({
@@ -298,7 +299,8 @@ const response = await fetch('https://api.example.com/premium')
 Pass the server method to `Mpay.create`:
 
 ```ts twoslash
-import { Intent, Method, MethodIntent, Mpay, Receipt, z } from 'mpay/server'
+import { Intent, Method, MethodIntent, Receipt, z } from 'mpay'
+import { Mpay } from 'mpay/server'
 
 const charge = Intent.from({
   name: 'charge',
@@ -338,9 +340,9 @@ declare function hexToBytes(hex: string): Uint8Array
 declare function bytesToHex(bytes: Uint8Array): string
 
 const serverMethod = Method.toServer(lightningMethod, {
-  async verify({ credential, request }) {
+  async verify({ credential }) {
     const preimage = credential.payload.preimage
-    const expectedHash = request.paymentHash
+    const expectedHash = credential.challenge.request.methodDetails!.paymentHash
 
     const actualHash = bytesToHex(sha256(hexToBytes(preimage)))
     const isValid = actualHash === expectedHash

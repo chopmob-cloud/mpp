@@ -14,13 +14,18 @@ const payment = Mpay.create({
     chainId: 42431,
   }),
   realm: 'mpp.dev',
-  secretKey: process.env.PAYMENT_SECRET_KEY,
+  secretKey: process.env.PAYMENT_SECRET_KEY!,
 })
 
 http.createServer(async (req, res) => {
   const result = await Mpay.toNodeListener(
     payment.charge({
-      request: { amount: '1000', currency: '0x...', recipient: '0x...' },
+      request: { 
+        amount: '1000', 
+        currency: '0x...', 
+        expires: '2030-01-01T00:00:00Z', 
+        recipient: '0x...',
+      },
     }),
   )(req, res)
 
@@ -62,13 +67,18 @@ const payment = Mpay.create({
     chainId: 42431,
   }),
   realm: 'mpp.dev',
-  secretKey: process.env.PAYMENT_SECRET_KEY,
+  secretKey: process.env.PAYMENT_SECRET_KEY!,
 })
 
 http.createServer(async (req, res) => {
   const result = await Mpay.toNodeListener(
     payment.charge({ // [!code focus]
-      request: { amount: '1000', currency: '0x...', recipient: '0x...' }, // [!code focus]
+      request: { // [!code focus]
+        amount: '1000', // [!code focus]
+        currency: '0x...', // [!code focus]
+        expires: '2030-01-01T00:00:00Z', // [!code focus]
+        recipient: '0x...', // [!code focus]
+      }, // [!code focus]
     }), // [!code focus]
   )(req, res)
 

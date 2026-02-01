@@ -4,23 +4,27 @@ Creates a custom server-side transport.
 
 ## Usage
 
-```ts twoslash
-import { Transport } from 'mpay/server'
+```ts
+import { Credential, Transport } from 'mpay/server'
 
-const custom = Transport.from({
+type Input = { credential?: string }
+type Output = { type: string; challenge?: unknown; receipt?: unknown }
+
+const custom = Transport.from<Input, Output, Output>({
   name: 'custom',
 
   getCredential(input) {
     // Extract credential from input
-    return input.credential ?? null
+    if (!input.credential) return null
+    return Credential.deserialize(input.credential)
   },
 
-  respondChallenge({ challenge, input }) {
+  respondChallenge({ challenge }) {
     // Return challenge response
     return { type: 'challenge', challenge }
   },
 
-  respondReceipt({ receipt, response, challengeId }) {
+  respondReceipt({ receipt, response }) {
     // Attach receipt to response
     return { ...response, receipt }
   },
