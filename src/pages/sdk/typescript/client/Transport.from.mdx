@@ -5,23 +5,21 @@ Creates a custom client-side transport.
 ## Usage
 
 ```ts twoslash
+import { Challenge } from 'mpay'
 import { Transport } from 'mpay/client'
 
-const custom = Transport.from<Request, Response>({
-  name: 'custom',
+const http = Transport.from<RequestInit, Response>({
+  name: 'http',
   isPaymentRequired(response) {
     return response.status === 402
   },
   getChallenge(response) {
-    return JSON.parse(response.headers.get('X-Challenge')!)
+    return Challenge.fromResponse(response)
   },
   setCredential(request, credential) {
-    return new Request(request, {
-      headers: new Headers([
-        ...request.headers.entries(),
-        ['X-Credential', credential],
-      ]),
-    })
+    const headers = new Headers(request.headers)
+    headers.set('Authorization', credential)
+    return { ...request, headers }
   },
 })
 ```
