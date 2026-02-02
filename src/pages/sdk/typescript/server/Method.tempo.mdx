@@ -5,11 +5,17 @@ Creates a Tempo payment method for server-side payment handling.
 ## Usage
 
 ```ts twoslash
-import { tempo } from 'mpay/server'
+import { Mpay, tempo } from 'mpay/server'
 
-const method = tempo({
-  chainId: 42431,
-  rpcUrl: 'https://rpc.tempo.xyz',
+const mpay = Mpay.create({
+  // [!code focus:start]
+  method: tempo({
+    chainId: 42431,
+    rpcUrl: 'https://rpc.tempo.xyz',
+  }),
+  // [!code focus:end]
+  realm: 'api.example.com',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -18,16 +24,24 @@ const method = tempo({
 Use an existing [Viem Client](https://viem.sh) instead of providing `rpcUrl` and `chainId` separately.
 
 ```ts twoslash
+// [!code focus:start]
 import { createClient, http } from 'viem'
 import { tempo as tempoChain } from 'viem/chains'
-import { tempo } from 'mpay/server'
+// [!code focus:end]
+import { Mpay, tempo } from 'mpay/server'
 
+// [!code focus:start]
 const client = createClient({
   chain: tempoChain,
   transport: http('https://rpc.tempo.xyz'),
 })
+// [!code focus:end]
 
-const method = tempo({ client })
+const mpay = Mpay.create({
+  method: tempo({ client }), // [!code focus]
+  realm: 'api.example.com',
+  secretKey: process.env.MPAY_SECRET_KEY!,
+})
 ```
 
 ### With Fee Payer
@@ -36,12 +50,16 @@ Provide a fee payer account to cover transaction fees on behalf of users.
 
 ```ts twoslash
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempo } from 'mpay/server'
+import { Mpay, tempo } from 'mpay/server'
 
-const method = tempo({
-  chainId: 42431,
-  feePayer: privateKeyToAccount('0x...'),
-  rpcUrl: 'https://rpc.tempo.xyz',
+const mpay = Mpay.create({
+  method: tempo({ 
+    chainId: 42431, 
+    feePayer: privateKeyToAccount('0x...'), // [!code focus]
+    rpcUrl: 'https://rpc.tempo.xyz', 
+  }), 
+  realm: 'api.example.com',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -62,11 +80,15 @@ type ReturnType = Method.Server
 Tempo chain ID.
 
 ```ts twoslash
-import { tempo } from 'mpay/server'
+import { Mpay, tempo } from 'mpay/server'
 
-const method = tempo({
-  chainId: 42431, // [!code focus]
-  rpcUrl: 'https://rpc.tempo.xyz',
+const mpay = Mpay.create({
+  method: tempo({
+    chainId: 42431, // [!code focus]
+    rpcUrl: 'https://rpc.tempo.xyz',
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -77,11 +99,15 @@ const method = tempo({
 Tempo RPC URL.
 
 ```ts twoslash
-import { tempo } from 'mpay/server'
+import { Mpay, tempo } from 'mpay/server'
 
-const method = tempo({
-  chainId: 42431,
-  rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+const mpay = Mpay.create({
+  method: tempo({
+    chainId: 42431,
+    rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -94,14 +120,18 @@ const method = tempo({
 ```ts twoslash
 import { createClient, http } from 'viem'
 import { tempo as tempoChain } from 'viem/chains'
-import { tempo } from 'mpay/server'
+import { Mpay, tempo } from 'mpay/server'
 
 const client = createClient({
   chain: tempoChain,
   transport: http('https://rpc.tempo.xyz'),
 })
 
-const method = tempo({ client }) // [!code focus]
+const mpay = Mpay.create({
+  method: tempo({ client }), // [!code focus]
+  realm: 'api.example.com',
+  secretKey: process.env.MPAY_SECRET_KEY!,
+})
 ```
 
 ### feePayer (optional)
@@ -112,11 +142,15 @@ Optional fee payer account for covering transaction fees.
 
 ```ts twoslash
 import { privateKeyToAccount } from 'viem/accounts'
-import { tempo } from 'mpay/server'
+import { Mpay, tempo } from 'mpay/server'
 
-const method = tempo({
-  chainId: 42431,
-  feePayer: privateKeyToAccount('0x...'), // [!code focus]
-  rpcUrl: 'https://rpc.tempo.xyz',
+const mpay = Mpay.create({
+  method: tempo({
+    chainId: 42431,
+    feePayer: privateKeyToAccount('0x...'), // [!code focus]
+    rpcUrl: 'https://rpc.tempo.xyz',
+  }),
+  realm: 'api.example.com',
+  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```

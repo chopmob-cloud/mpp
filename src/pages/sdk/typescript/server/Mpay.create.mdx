@@ -58,10 +58,12 @@ Payment method (e.g., `tempo({ ... })`).
 import { Mpay, tempo } from 'mpay/server'
 
 const payment = Mpay.create({
-  method: tempo({ // [!code focus]
-    rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
-    chainId: 42431, // [!code focus]
-  }), // [!code focus]
+  // [!code focus:start]
+  method: tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+    chainId: 42431,
+  }),
+  // [!code focus:end]
   realm: 'mpp.dev',
   secretKey: process.env.PAYMENT_SECRET_KEY!,
 })

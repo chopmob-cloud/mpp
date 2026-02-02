@@ -43,6 +43,7 @@ type Page =
 | { path: '/sdk/typescript/Receipt.fromResponse'; render: 'static' }
 | { path: '/sdk/typescript/Receipt.serialize'; render: 'static' }
 | { path: '/sdk/typescript'; render: 'static' }
+| { path: '/sdk/typescript/server/Method.tempo.charge'; render: 'static' }
 | { path: '/sdk/typescript/server/Method.tempo'; render: 'static' }
 | { path: '/sdk/typescript/server/Mpay.create'; render: 'static' }
 | { path: '/sdk/typescript/server/Mpay.toNodeListener'; render: 'static' }
@@ -100,8 +101,9 @@ type Page =
 | { path: '/payment-methods/custom'; render: 'static' }
 | { path: '/payment-methods'; render: 'static' }
 | { path: '/payment-methods/stripe'; render: 'static' }
+| { path: '/payment-methods/tempo/charge'; render: 'static' }
 | { path: '/payment-methods/tempo'; render: 'static' }
-| { path: '/guide/building-with-ai'; render: 'static' }
+| { path: '/guides/building-with-ai'; render: 'static' }
 | { path: '/_api/api/og'; render: 'static' };
 
 // prettier-ignore

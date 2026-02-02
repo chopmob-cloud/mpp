@@ -15,7 +15,15 @@ export const sidebar = {
 			items: [
 				{ text: "Client", link: "/quickstart/client" },
 				{ text: "Server", link: "/quickstart/server" },
-				{ text: "pget", link: "/quickstart/pget" },
+				{ text: "pget CLI", link: "/quickstart/pget" },
+			],
+		},
+		{
+			text: "Guides",
+			items: [
+				{ text: "Build with AI", link: "/guides/building-with-ai" },
+				{ text: "Accept One-Time Payments 🚧", disabled: true },
+				{ text: "Accept Pay-As-You-Go Payments 🚧", disabled: true },
 			],
 		},
 		{
@@ -38,24 +46,36 @@ export const sidebar = {
 		},
 
 		{
-			text: "Payment Methods",
+			text: "Payment Methods & Intents",
 			items: [
 				{ text: "Overview", link: "/payment-methods" },
-				{ text: "Tempo", link: "/payment-methods/tempo" },
-				{ text: "Stripe", link: "/payment-methods/stripe" },
+				{
+					text: "Tempo",
+					collapsed: true,
+					items: [
+						{ text: "Overview", link: "/payment-methods/tempo" },
+						{ text: "Charge", link: "/payment-methods/tempo/charge" },
+						{ text: "Stream 🚧", disabled: true },
+					],
+				},
+				{
+					text: "Stripe",
+					collapsed: true,
+					items: [
+						{ text: "Overview", link: "/payment-methods/stripe" },
+						{ text: "Charge 🚧", disabled: true },
+					],
+				},
 				{ text: "Custom", link: "/payment-methods/custom" },
 			],
 		},
 		{
-			text: "SDKs",
+			text: "SDKs & Tools",
 			items: [
-				{
-					text: "Overview",
-					link: "/sdk",
-				},
+				{ text: "Overview", link: "/sdk" },
 				{
 					text: "TypeScript",
-					collapsed: false,
+					collapsed: true,
 					items: [
 						{ text: "Getting Started", link: "/sdk/typescript" },
 						{
@@ -165,6 +185,10 @@ export const sidebar = {
 										{
 											text: ".tempo",
 											link: "/sdk/typescript/server/Method.tempo",
+										},
+										{
+											text: ".tempo.charge",
+											link: "/sdk/typescript/server/Method.tempo.charge",
 										},
 									],
 								},
@@ -303,23 +327,15 @@ export const sidebar = {
 						{ text: "Server", link: "/sdk/rust/server" },
 					],
 				},
-			],
-		},
-		{
-			text: "Tools",
-			items: [
 				{
-					text: "pget",
+					text: "pget CLI",
+					collapsed: true,
 					items: [
 						{ text: "Reference", link: "/tools/pget" },
 						{ text: "Examples", link: "/tools/pget/examples" },
 					],
 				},
 			],
-		},
-		{
-			text: "Guide",
-			items: [{ text: "Building with AI", link: "/guide/building-with-ai" }],
 		},
 	],
 } as const satisfies Config["sidebar"];

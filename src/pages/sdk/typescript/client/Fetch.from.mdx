@@ -48,9 +48,11 @@ const fetch = Fetch.from({
 })
 
 const res = await fetch('https://mpp.dev/ping/paid', {
-  context: { // [!code focus]
-    account: privateKeyToAccount('0x...'), // [!code focus]
-  }, // [!code focus]
+  // [!code focus:start]
+  context: {
+    account: privateKeyToAccount('0x...'),
+  },
+  // [!code focus:end]
 })
 ```
 
@@ -78,12 +80,14 @@ import { Fetch, tempo } from 'mpay/client'
 import { privateKeyToAccount } from 'viem/accounts'
 
 const fetch = Fetch.from({
-  methods: [ // [!code focus]
-    tempo({ // [!code focus]
-      account: privateKeyToAccount('0x...'), // [!code focus]
-      rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
-    }), // [!code focus]
-  ], // [!code focus]
+  // [!code focus:start]
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+  // [!code focus:end]
 })
 ```
 

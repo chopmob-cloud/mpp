@@ -47,16 +47,15 @@ export default defineConfig({
 		},
 	},
 	socials: [
-		{ icon: "github", link: "https://github.com/wevm/mpay" },
-		{ icon: "x", link: "https://twitter.com/tempo" },
+		{ icon: "github", link: "https://github.com/tempoxyz/payment-auth-spec" },
+		{ icon: "x", link: "https://x.com/mpp" },
 	],
 	title: "MPP",
 	titleTemplate: "%s | MPP",
 	topNav: [
 		{ text: "Docs", link: "/", match: "/" },
-		{ text: "Protocol", link: "/protocol", match: "/protocol" },
-		{ text: "SDKs", link: "/sdk", match: "/sdk" },
-		{ text: "Specs", link: "https://paymentauth.tempo.xyz" },
+		{ text: "SDKs & Tools", link: "/sdk" },
+		{ text: "Specifications", link: "https://paymentauth.tempo.xyz" },
 		{
 			text: "GitHub",
 			items: [
@@ -64,9 +63,10 @@ export default defineConfig({
 				{ text: "mpay-rs (Rust)", link: "https://github.com/tempoxyz/mpay-rs" },
 				{ text: "pympay (Python)", link: "https://github.com/tempoxyz/pympay" },
 				{
-					text: "Specification",
+					text: "Specifications",
 					link: "https://github.com/tempoxyz/payment-auth-spec",
 				},
+				{ text: "Docs", link: "https://github.com/tempoxyz/mpp" },
 			],
 		},
 	],

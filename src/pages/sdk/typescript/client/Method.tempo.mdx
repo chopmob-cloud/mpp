@@ -10,10 +10,12 @@ import { privateKeyToAccount } from 'viem/accounts'
 
 const fetch = Fetch.from({
   methods: [
-    tempo({ // [!code focus]
-      account: privateKeyToAccount('0x...'), // [!code focus]
-      rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
-    }), // [!code focus]
+    // [!code focus:start]
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+    // [!code focus:end]
   ],
 })
 ```
