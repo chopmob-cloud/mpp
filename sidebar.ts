@@ -6,7 +6,7 @@ export const sidebar = {
 			text: "Introduction",
 			items: [
 				{ text: "Overview", link: "/" },
-				{ text: "Install", link: "/install" },
+				{ text: "Specifications", link: "https://paymentauth.tempo.xyz/" },
 				{ text: "FAQ", link: "/faq" },
 			],
 		},
@@ -36,10 +36,7 @@ export const sidebar = {
 				},
 			],
 		},
-		{
-			text: "Protocol Specification",
-			link: "https://paymentauth.tempo.xyz/",
-		},
+
 		{
 			text: "Payment Methods",
 			items: [

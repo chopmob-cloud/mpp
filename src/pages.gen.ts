@@ -9,7 +9,6 @@ type Page =
 | { path: '/404'; render: 'static' }
 | { path: '/faq'; render: 'static' }
 | { path: '/'; render: 'static' }
-| { path: '/install'; render: 'static' }
 | { path: '/tools/pget'; render: 'static' }
 | { path: '/tools/pget/examples'; render: 'static' }
 | { path: '/sdk'; render: 'static' }
