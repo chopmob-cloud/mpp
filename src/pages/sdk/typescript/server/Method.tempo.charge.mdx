@@ -17,14 +17,16 @@ const mpay = Mpay.create({
 })
 
 export async function handler(request: Request) {
-  const response = await mpay.charge({ // [!code focus]
-    request: { // [!code focus]
-      amount: '1000000', // [!code focus]
-      currency: '0x20c0000000000000000000000000000000000001', // [!code focus]
-      recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8', // [!code focus]
-      expires: '2030-01-20T12:00:00Z', // [!code focus]
-    }, // [!code focus]
-  })(request) // [!code focus]
+  // [!code focus:start]
+  const response = await mpay.charge({
+    request: {
+      amount: '1000000',
+      currency: '0x20c0000000000000000000000000000000000001',
+      recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+      expires: '2030-01-20T12:00:00Z',
+    },
+  })(request)
+  // [!code focus:end]
 
   if (response.status === 402) return response.challenge
   return response.withReceipt(Response.json({ data: '...' }))

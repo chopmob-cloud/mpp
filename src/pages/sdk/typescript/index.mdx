@@ -80,19 +80,23 @@ Pass your Tempo `account` to the `fetch` instance and specify the payment `metho
 
 ```ts twoslash [example.ts]
 import { privateKeyToAccount } from 'viem/accounts'
-import { Fetch, tempo } from 'mpay/client' // [!code focus]
+// [!code focus:start]
+import { Fetch, tempo } from 'mpay/client'
+// [!code focus:end]
 
 const account = privateKeyToAccount('0xabc…123')
 
-const fetch = Fetch.from({ // [!code focus]
-  methods: [ // [!code focus]
-    tempo({ // [!code focus]
-      account, // [!code focus]
-      chainId: 4217, // [!code focus]
-      rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
-    }) // [!code focus]
-  ] // [!code focus]
-}) // [!code focus]
+// [!code focus:start]
+const fetch = Fetch.from({
+  methods: [
+    tempo({
+      account,
+      chainId: 4217,
+      rpcUrl: 'https://rpc.tempo.xyz',
+    })
+  ]
+})
+// [!code focus:end]
 ```
 
 :::tip

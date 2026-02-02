@@ -72,14 +72,16 @@ const payment = Mpay.create({
 
 http.createServer(async (req, res) => {
   const result = await Mpay.toNodeListener(
-    payment.charge({ // [!code focus]
-      request: { // [!code focus]
-        amount: '1000', // [!code focus]
-        currency: '0x...', // [!code focus]
-        expires: '2030-01-01T00:00:00Z', // [!code focus]
-        recipient: '0x...', // [!code focus]
-      }, // [!code focus]
-    }), // [!code focus]
+    // [!code focus:start]
+    payment.charge({
+      request: {
+        amount: '1000',
+        currency: '0x...',
+        expires: '2030-01-01T00:00:00Z',
+        recipient: '0x...',
+      },
+    }),
+    // [!code focus:end]
   )(req, res)
 
   if (result.status === 402) return
