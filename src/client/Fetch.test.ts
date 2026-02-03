@@ -209,7 +209,6 @@ describe('Fetch.from', () => {
     const httpServer = await Http.createServer(async (req, res) => {
       const result = await toNodeListener(
         serverWithFeePayer.charge({
-          feePayer: true,
           amount: '1000000',
           currency: asset,
           expires: new Date(Date.now() + 60_000).toISOString(),

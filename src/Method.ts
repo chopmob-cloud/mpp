@@ -94,19 +94,22 @@ export declare namespace CreateCredentialFn {
 
 /** Function that transforms request before challenge creation. */
 export type RequestFn<intents extends Record<string, MethodIntent.MethodIntent>> = (
-  parameters: RequestFn.Parameters<intents>,
+  options: RequestFn.Options<intents>,
 ) => RequestFn.ReturnType<intents>
 
 export declare namespace RequestFn {
-  type Parameters<
+  type Options<
     intents extends Record<string, MethodIntent.MethodIntent>,
     defaults extends Partial<RequestUnion<intents>> = {},
   > = {
-    [key in keyof intents]: {
-      description?: string | undefined
-      expires?: string | undefined
-    } & WithDefaults<z.input<intents[key]['schema']['request']>, defaults>
-  }[keyof intents]
+    credential?: Credential.Credential | null | undefined
+    request: {
+      [key in keyof intents]: {
+        description?: string | undefined
+        expires?: string | undefined
+      } & WithDefaults<z.input<intents[key]['schema']['request']>, defaults>
+    }[keyof intents]
+  }
 
   type ReturnType<intents extends Record<string, MethodIntent.MethodIntent>> = {
     [key in keyof intents]: z.input<intents[key]['schema']['request']>
@@ -131,7 +134,9 @@ export declare namespace VerifyFn {
         z.output<intents[key]['schema']['credential']['payload']>,
         Challenge.Challenge<z.output<intents[key]['schema']['request']>, intents[key]['name']>
       >
-      request: globalThis.Request
+      request: {
+        [key in keyof intents]: z.input<intents[key]['schema']['request']>
+      }[keyof intents]
     }
   }[keyof intents]
 }

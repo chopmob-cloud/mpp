@@ -40,6 +40,7 @@ describe('tempo', () => {
       expect(response.status).toBe(402)
 
       const challenge = Challenge.fromResponse(response, { method: server.method })
+      expect(challenge.request.methodDetails?.chainId).toBe(chain.id)
 
       const { receipt } = await Actions.token.transferSync(client, {
         account: accounts[1],
@@ -208,6 +209,32 @@ describe('tempo', () => {
 
       httpServer.close()
     })
+
+    test('behavior: rejects when chainId override mismatches configured chain', async () => {
+      const httpServer = await Http.createServer(async (req, res) => {
+        try {
+          const result = await toNodeListener(
+            server.charge({
+              amount: '1000000',
+              chainId: 999999,
+            }),
+          )(req, res)
+          if (result.status === 402) return
+          res.end('OK')
+        } catch (e) {
+          res.statusCode = 500
+          res.end((e as Error).message)
+        }
+      })
+
+      const response = await fetch(httpServer.url)
+      expect(response.status).toBe(500)
+      expect(await response.text()).toMatchInlineSnapshot(
+        `"Chain ID mismatch. Expected 1337 but got 999999."`,
+      )
+
+      httpServer.close()
+    })
   })
 
   describe('intent: charge; type: transaction; via Mpay', () => {
@@ -324,6 +351,70 @@ describe('tempo', () => {
         const result = await toNodeListener(
           server.charge({
             feePayer: accounts[0],
+            amount: '1000000',
+            currency: asset,
+            recipient: accounts[0].address,
+          }),
+        )(req, res)
+        if (result.status === 402) return
+        res.end('OK')
+      })
+
+      const response = await fetch(httpServer.url)
+      expect(response.status).toBe(402)
+
+      const credential = await mpay.createCredential(response)
+
+      {
+        const response = await fetch(httpServer.url, {
+          headers: { Authorization: credential },
+        })
+        expect(response.status).toBe(200)
+
+        const receipt = Receipt.fromResponse(response)
+        expect({
+          ...receipt,
+          reference: '[reference]',
+          timestamp: '[timestamp]',
+        }).toMatchInlineSnapshot(`
+            {
+              "method": "tempo",
+              "reference": "[reference]",
+              "status": "success",
+              "timestamp": "[timestamp]",
+            }
+          `)
+      }
+
+      httpServer.close()
+    })
+
+    test('behavior: fee payer (hoisted)', async () => {
+      const mpay = Mpay_client.create({
+        methods: [
+          Methods_client.tempo({
+            account: accounts[1],
+            chainId: chain.id,
+            rpcUrl,
+          }),
+        ],
+      })
+
+      const server = Mpay_server.create({
+        method: Methods_server.tempo({
+          chainId: chain.id,
+          currency: asset,
+          feePayer: accounts[0],
+          recipient: accounts[0].address,
+          rpcUrl,
+        }),
+        realm,
+        secretKey,
+      })
+
+      const httpServer = await Http.createServer(async (req, res) => {
+        const result = await toNodeListener(
+          server.charge({
             amount: '1000000',
             currency: asset,
             recipient: accounts[0].address,

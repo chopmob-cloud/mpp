@@ -109,8 +109,18 @@ function createIntentFn(parameters: createIntentFn.Parameters): createIntentFn.R
       // Merge defaults with per-request options
       const merged = { ...defaults, ...rest }
 
-      // Transform request if method provides a `request` function
-      const request = (parameters.request ? parameters.request(merged as never) : merged) as never
+      const credential_request = (() => {
+        try {
+          return transport.getCredential(input) as Credential.Credential | null
+        } catch {}
+      })()
+
+      // Transform request if method provides a `request` function.
+      const request = (
+        parameters.request
+          ? parameters.request({ credential: credential_request, request: merged } as never)
+          : merged
+      ) as never
 
       // Recompute challenge from options. The HMAC-bound ID means we don't need to
       // store challenges server-side—if the client echoes back a credential with

@@ -73,6 +73,7 @@ export function create<
 
       const parsedContext =
         method.context && context !== undefined ? method.context.parse(context) : undefined
+
       return method.createCredential(
         parsedContext !== undefined
           ? { challenge, context: parsedContext }

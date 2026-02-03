@@ -44,7 +44,6 @@ export function tempo<const defaults extends tempo.Defaults>(
     currency,
     description,
     externalId,
-    feePayer,
     memo,
     recipient,
     rpcUrl = defaults.rpcUrl,
@@ -72,13 +71,26 @@ export function tempo<const defaults extends tempo.Defaults>(
       recipient,
     } as defaults,
 
-    request({ feePayer: feePayerRequested, ...request }) {
-      if (feePayerRequested && feePayer) return { feePayer: true, ...request }
-      return request
+    request({ credential, request }) {
+      const chainId = request.chainId ?? client.chain?.id
+      if (chainId !== client.chain?.id)
+        throw new Error(`Chain ID mismatch. Expected ${client.chain?.id} but got ${chainId}.`)
+
+      const feePayer = (() => {
+        const account =
+          typeof request.feePayer === 'object' ? request.feePayer : parameters.feePayer
+        const requested = request.feePayer !== false && parameters.feePayer
+        if (credential) return account
+        if (requested) return true
+        return undefined
+      })()
+
+      return { ...request, chainId, feePayer }
     },
 
-    async verify({ credential }) {
+    async verify({ credential, request }) {
       const { challenge } = credential
+      const { feePayer } = request
 
       switch (challenge.intent) {
         case 'charge': {
