@@ -1,35 +1,16 @@
+import { Tab, Tabs } from 'vocs'
+
 # Charge [Immediate one-time payments]
 
 The `charge` intent requests an immediate one-time payment from the client.
 
-## Client
-
-Use the [`tempo` method](/sdk/typescript/client/Method.tempo) on a [`Fetch` instance](/sdk/typescript/client/Fetch.from) to automatically sign payment transactions when encountering 402 responses.
-
-```ts twoslash
-import { Fetch, tempo } from 'mpay/client'
-import { privateKeyToAccount } from 'viem/accounts'
-
-const fetch = Fetch.from({
-  methods: [
-    tempo({
-      account: privateKeyToAccount('0x...'),
-      rpcUrl: 'https://rpc.tempo.xyz',
-    }),
-  ],
-})
-
-const response = await fetch('https://mpp.dev/ping/paid')
-```
-
-See [`tempo` client reference](/sdk/typescript/client/Method.tempo) for full API documentation.
-
-## Server
-
-Use the [`.charge` method](/sdk/typescript/server/Method.tempo.charge) on your [`Mpay` instance](/sdk/typescript/server/Mpay.create) to verify payment credentials and settle transactions.
+<Tabs stateKey="platform">
+  <Tab title="Server">
+  <div className="vocs:space-y-4">
+Use the [`.charge` method](/sdk/typescript/server/Method.tempo.charge) on your [`Mpay` instance](/sdk/typescript/server/Mpay.create) to verify and settle payments when a user accesses your endpoint.
 
 ```ts twoslash
-import { Mpay, tempo } from 'mpay/server'
+import { Mpay, tempo } from 'mpay/server' // [!code collapse:8]
 
 const mpay = Mpay.create({
   method: tempo({
@@ -57,7 +38,37 @@ export async function handler(request: Request) {
 }
 ```
 
+:::info
 See [`tempo.charge` server reference](/sdk/typescript/server/Method.tempo.charge) for full API documentation.
+:::
+  </div>
+  </Tab>
+  <Tab title="Client">
+  <div className="vocs:space-y-4">
+Use the [`tempo` method](/sdk/typescript/client/Method.tempo) on a [`Fetch` instance](/sdk/typescript/client/Fetch.from) to automatically sign payment transactions when encountering 402 responses.
+
+```ts twoslash
+import { Fetch, tempo } from 'mpay/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const fetch = Fetch.from({
+  methods: [
+    tempo({
+      account: privateKeyToAccount('0x...'),
+      rpcUrl: 'https://rpc.tempo.xyz',
+    }),
+  ],
+})
+
+const response = await fetch('https://mpp.dev/ping/paid')
+```
+
+:::info
+See [`tempo` client reference](/sdk/typescript/client/Method.tempo) for full API documentation.
+:::
+  </div>
+  </Tab>
+</Tabs>
 
 ## Specification
 
