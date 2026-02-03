@@ -22,6 +22,7 @@ export async function handler(request: Request) {
     request: {
       amount: '1000000',
       currency: '0x20c0000000000000000000000000000000000001',
+      expires: '2025-12-31T23:59:59Z',
       recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
     },
   })(request)
@@ -32,7 +33,7 @@ export async function handler(request: Request) {
 }
 ```
 
-### With Expiry
+### With Custom Expiry
 
 Set a custom expiration time for the charge using the `expires` option.
 
@@ -87,6 +88,7 @@ export async function handler(request: Request) {
     request: {
       amount: '1000000',
       currency: '0x20c0000000000000000000000000000000000001',
+      expires: '2025-12-31T23:59:59Z',
       recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
     },
   })(request)
