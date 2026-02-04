@@ -20,6 +20,10 @@ export default defineConfig({
 		light: "/icon-light.png",
 		dark: "/icon-dark.png",
 	},
+	logoUrl: {
+		light: "/mpp-logo-light.svg",
+		dark: "/mpp-logo-dark.svg",
+	},
 	mcp: {
 		enabled: true,
 		sources: [
