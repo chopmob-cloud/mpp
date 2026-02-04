@@ -18,13 +18,16 @@
 		"wrangler:dev": "wrangler dev"
 	},
 	"dependencies": {
+		"@tanstack/react-query": "^5.90.20",
 		"dayjs": "^1.11.19",
 		"mermaid": "^11.12.2",
 		"mpay": "https://pkg.pr.new/wevm/mpay@e725a9d",
 		"react": "^19",
 		"react-dom": "^19",
+		"tempo.ts": "~0.14.0",
 		"viem": "latest",
 		"vocs": "https://pkg.pr.new/wevm/vocs@051f2f3",
+		"wagmi": "^3.4.2",
 		"waku": "^1.0.0-alpha.2"
 	},
 	"simple-git-hooks": {
