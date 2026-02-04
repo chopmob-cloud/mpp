@@ -9,8 +9,6 @@ import { Mpay, tempo } from 'mpay/server'
 
 const payment = Mpay.create({
   method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -23,8 +21,6 @@ import { Mpay, tempo, Transport } from 'mpay/server'
 
 const payment = Mpay.create({
   method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
   transport: Transport.mcpSdk(),
 })
 ```
@@ -55,8 +51,6 @@ const payment = Mpay.create({
   // [!code focus:start]
   method: tempo(),
   // [!code focus:end]
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -72,7 +66,6 @@ import { Mpay, tempo } from 'mpay/server'
 const payment = Mpay.create({
   method: tempo(),
   realm: 'mpp.dev', // [!code focus]
-  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
@@ -87,7 +80,6 @@ import { Mpay, tempo } from 'mpay/server'
 
 const payment = Mpay.create({
   method: tempo(),
-  realm: 'mpp.dev',
   secretKey: process.env.MPAY_SECRET_KEY!, // [!code focus]
 })
 ```
@@ -104,8 +96,6 @@ import { Mpay, tempo, Transport } from 'mpay/server'
 
 const payment = Mpay.create({
   method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
   transport: Transport.mcp(), // [!code focus]
 })
 ```

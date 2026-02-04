@@ -31,20 +31,6 @@ type Tempo = Method.Client<
 
 ## Parameters
 
-### rpcUrl
-
-- **Type:** `string`
-
-Tempo RPC URL.
-
-```ts twoslash
-import { tempo } from 'mpay/client'
-
-const method = tempo({
-  rpcUrl: 'https://rpc.tempo.xyz', // [!code focus]
-})
-```
-
 ### account (optional)
 
 - **Type:** `Account`
@@ -60,39 +46,20 @@ const method = tempo({
 })
 ```
 
-### chainId (optional)
+### rpcUrl (optional)
 
-- **Type:** `number`
-- **Default:** Tempo mainnet chain ID
+- **Type:** `{ [chainId: number]: string }`
 
-Tempo chain ID.
+RPC URLs keyed by chain ID.
 
 ```ts twoslash
 import { tempo } from 'mpay/client'
 
 const method = tempo({
-  chainId: 123456, // [!code focus]
-  rpcUrl: 'https://rpc.tempo.xyz',
-})
-```
-
-### client (optional)
-
-- **Type:** `Client`
-
-[viem](https://viem.sh) Client instance. Mutually exclusive with `rpcUrl` and `chainId`.
-
-```ts twoslash
-import { tempo } from 'mpay/client'
-import { createClient, http } from 'viem'
-import { tempo as tempoChain } from 'viem/chains'
-
-const viemClient = createClient({
-  chain: tempoChain,
-  transport: http('https://rpc.tempo.xyz'),
-})
-
-const method = tempo({
-  client: viemClient, // [!code focus]
+  // [!code focus:start]
+  rpcUrl: {
+    123456: 'https://rpc.tempo.xyz',
+  },
+  // [!code focus:end]
 })
 ```

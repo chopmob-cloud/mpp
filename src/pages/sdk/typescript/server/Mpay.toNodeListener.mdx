@@ -10,8 +10,6 @@ import { Mpay, tempo } from 'mpay/server'
 
 const payment = Mpay.create({
   method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 
 http.createServer(async (req, res) => {
@@ -57,8 +55,6 @@ import { Mpay, tempo } from 'mpay/server'
 
 const payment = Mpay.create({
   method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 
 http.createServer(async (req, res) => {

@@ -8,7 +8,7 @@ This quickstart demonstrates how to plug MPP into any server framework to accept
 
 ## Steps
 
-::::steps
+:::::steps
 
 ### Create an `Mpay` instance
 
@@ -17,50 +17,44 @@ Create an `Mpay` instance to request payment for protected resources.
 ```ts twoslash [example.ts]
 import { Mpay, tempo } from 'mpay/server'
 
-const mpay = Mpay.create({
-  method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
-})
+const mpay = Mpay.create({ method: tempo() })
 ```
 
-:::tip[Common configuration options]
-- `method`: Payment method (for example, `tempo()`)
-- `realm`: Server realm, typically your hostname
-- `secretKey`: Secret for HMAC-bound challenge IDs (enables stateless verification)
+:::tip
+It is highly recommended to also set a `secretKey` to bind challenges to their contents, 
+and allow the server to verify that incoming credentials match challenges it issued.
 
-[See more →](/sdk/typescript/server/Mpay.create)
+```ts
+// .env // [!code focus]
+MPAY_SECRET_KEY="random-secret-key" // [!code focus]
+
+// config.ts // [!code focus]
+const mpay = Mpay.create({
+  method: tempo(),
+  secretKey: process.env.MPAY_SECRET_KEY!, // [!code focus]
+})
+```
 :::
+
+[See `Mpay.create` reference](/sdk/typescript/server/Mpay.create)
 
 ### Use in request handlers
 
-Use the `mpay` instance to request payment from the client.
-
-The intent handler accepts a [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)-compatible request object, and returns a `Response` object.
-
-The Fetch API is compatible with most server frameworks, including:
-- [Hono](https://hono.dev)
-- [Deno](https://deno.com)
-- [Cloudflare Workers](https://workers.dev)
-- [Next.js](https://nextjs.org)
-- [Bun](https://bun.sh)
-- other Fetch API-compatible frameworks
+Use the `mpay.charge(){:ts}` method to request payment from the client within your request handler.
 
 ```ts twoslash [example.ts]
-import { Mpay, tempo } from 'mpay/server' // [!code collapse:8 collapsed]
+import { Mpay, tempo } from 'mpay/server' // [!code collapse:2 collapsed]
 
-const mpay = Mpay.create({
-  method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
-})
+const mpay = Mpay.create({ method: tempo() })
 
+// [!code focus:start]
 export async function handler(request: Request) { 
-  const response = await mpay.charge({ // [!code hl]
-    amount: '1000000', // [!code hl]
-    currency: '0x20c0000000000000000000000000000000000001', // [!code hl]
-    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8', // [!code hl]
-  })(request) // [!code hl]
+  const response = await mpay.charge({ 
+    amount: '1000000', 
+    currency: '0x20c0000000000000000000000000000000000001', 
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8', 
+  })(request) 
+  // [!code focus:end]
 
   // Payment required: send 402 response with challenge 
   if (response.status === 402) return response.challenge 
@@ -70,7 +64,13 @@ export async function handler(request: Request) {
 } 
 ```
 
-:::tip
+The intent handler accepts a [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)-compatible request object, and returns a `Response` object.
+
+The Fetch API is compatible with most server frameworks, including: [Hono](https://hono.dev), [Deno](https://deno.com), [Cloudflare Workers](https://workers.dev), [Next.js](https://nextjs.org)
+[Bun](https://bun.sh), and other Fetch API-compatible frameworks.
+
+::::info
+:::details[Node.js & Express Compatibility]
 If your framework doesn't support the Fetch API (for example, Express or Node.js), you're likely interfacing with the [Node.js Request Listener API](https://nodejs.org/api/http.html#httpcreateserveroptions-requestlistener).
 
 Use the `Mpay.toNodeListener` helper to transform the handler into a Node.js-compatible listener.
@@ -79,11 +79,7 @@ Use the `Mpay.toNodeListener` helper to transform the handler into a Node.js-com
 // @noErrors
 import { Mpay, tempo } from 'mpay/server'
 
-const mpay = Mpay.create({
-  method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
-})
+const mpay = Mpay.create({ method: tempo() })
 
 type IncomingMessage = import('node:http').IncomingMessage
 type ServerResponse = import('node:http').ServerResponse
@@ -102,7 +98,26 @@ export async function handler(req: IncomingMessage, res: ServerResponse) {
   return response.withReceipt(Response.json({ data: '...' })) 
 } 
 ```
+:::
+::::
 
+:::tip
+We can also hoist values that we use often up into the `Mpay` instance.
+
+```ts
+const mpay = Mpay.create({ 
+  method: tempo({
+    currency: '0x20c0000000000000000000000000000000000001', // [!code ++]
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8', // [!code ++]
+  }) 
+})
+
+const response = await mpay.charge({ 
+  amount: '1000000', 
+  currency: '0x20c0000000000000000000000000000000000001',  // [!code --]
+  recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',  // [!code --]
+})(request) 
+```
 :::
 
 ### Plug into your framework
@@ -113,11 +128,7 @@ Plug the handler into your framework of choice, like [Hono](https://hono.dev).
 import { Hono } from 'hono' // [!code focus]
 import { Mpay, tempo } from 'mpay/server'
 
-const mpay = Mpay.create({
-  method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
-})
+const mpay = Mpay.create({ method: tempo() })
 
 const app = new Hono() // [!code focus]
 
@@ -134,7 +145,7 @@ app.get('/resource', async (c) => { // [!code focus:99]
 })
 ```
 
-### (Optional) Use agent skills
+### <div className="vocs:mr-2"><Badge variant="note">Optional</Badge></div> Use agent skills & create middleware
 
 Use your coding agent (Claude Code, Cursor, or Amp) with [Agent Skills](https://skills.sh) to integrate `mpay` with your framework.
 
@@ -145,7 +156,8 @@ npx skills install wevm/mpay --skill mpay-hono
 Then ask your agent:
 
 ```
-Add an `mpay` middleware to my Hono server.
+Add an `mpay` middleware to my Hono server to charge $0.001 
+on all `/resource` endpoints.
 ```
 
 :::note[Available skills]
@@ -159,7 +171,7 @@ Add an `mpay` middleware to my Hono server.
 - [`mpay-node-http`](https://github.com/wevm/mpay/tree/main/skills/mpay-node-http) - Node.js HTTP server
 :::
 
-::::
+:::::
 
 
 ## Testing with pget

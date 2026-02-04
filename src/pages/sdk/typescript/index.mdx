@@ -144,12 +144,24 @@ Create an `Mpay` instance to request payment for protected resources.
 ```ts twoslash [example.ts]
 import { Mpay, tempo } from 'mpay/server'
 
+const mpay = Mpay.create({ method: tempo() })
+```
+
+:::tip
+It is highly recommended to also set a `secretKey` to bind challenges to their contents, 
+and allow the server to verify that incoming credentials match challenges it issued.
+
+```ts
+// .env // [!code focus]
+MPAY_SECRET_KEY="random-secret-key" // [!code focus]
+
+// config.ts // [!code focus]
 const mpay = Mpay.create({
   method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
+  secretKey: process.env.MPAY_SECRET_KEY!, // [!code focus]
 })
 ```
+:::
 
 #### Use in request handlers
 
@@ -168,11 +180,7 @@ The Fetch API is compatible with most server frameworks, including:
 ```ts twoslash [example.ts]
 import { Mpay, tempo } from 'mpay/server' // [!code collapse:8 collapsed]
 
-const mpay = Mpay.create({
-  method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
-})
+const mpay = Mpay.create({ method: tempo() })
 
 export async function handler(request: Request) { 
   const response = await mpay.charge({ 
@@ -197,11 +205,7 @@ Use the `Mpay.toNodeListener` helper to transform the handler into a Node.js-com
 ```ts  twoslash
 import { Mpay, tempo } from 'mpay/server' // [!code collapse:8]
 
-const mpay = Mpay.create({
-  method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
-})
+const mpay = Mpay.create({ method: tempo() })
 
 type IncomingMessage = import('node:http').IncomingMessage
 type ServerResponse = import('node:http').ServerResponse
@@ -231,11 +235,7 @@ Plug the handler into your framework of choice, like [Hono](https://hono.dev).
 import { Hono } from 'hono' // [!code focus]
 import { Mpay, tempo } from 'mpay/server'
 
-const mpay = Mpay.create({
-  method: tempo(),
-  realm: 'mpp.dev',
-  secretKey: process.env.MPAY_SECRET_KEY!,
-})
+const mpay = Mpay.create({ method: tempo() })
 
 const app = new Hono() // [!code focus]
 

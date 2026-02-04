@@ -358,8 +358,6 @@ const serverMethod = Method.toServer(lightningMethod, {
 // ---cut---
 const mpay = Mpay.create({
   method: serverMethod,
-  realm: 'api.example.com',
-  secretKey: process.env.MPAY_SECRET_KEY!,
 })
 ```
 
