@@ -39,7 +39,6 @@ export type Mpay<
  *
  * const payment = Mpay.create({
  *   method: tempo(),
- *   realm: 'api.example.com',
  *   secretKey: process.env.PAYMENT_SECRET_KEY,
  * })
  * ```
@@ -51,7 +50,7 @@ export function create<
   const {
     method,
     realm = 'MPP Payment',
-    secretKey,
+    secretKey = 'tmp',
     transport = Transport.http() as transport,
   } = config
   const { defaults, intents, request, verify } = method
@@ -83,8 +82,8 @@ export declare namespace create {
     method: method
     /** Server realm (e.g., hostname). @default "MPP Payment". */
     realm?: string | undefined
-    /** Secret key for HMAC-bound challenge IDs (required for stateless verification). */
-    secretKey: string
+    /** Secret key for HMAC-bound challenge IDs for stateless verification. */
+    secretKey?: string | undefined
     /** Transport to use. @default Transport.http() */
     transport?: transport | undefined
   }
