@@ -150,9 +150,13 @@ function PaymentDemoInner() {
 			}
 
 			const challenge = Challenge.fromResponse(res1);
-			// Create tempo method with account for signing
-			// biome-ignore lint/suspicious/noExplicitAny: wagmi account type differs from viem Account
-			const method = tempo({ account: walletClient.account as any });
+			// Create tempo method with wagmiClient (configured for tempoModerato) and account for signing
+			const tempoParams = {
+				client: wagmiClient,
+				account: walletClient.account,
+				// biome-ignore lint/suspicious/noExplicitAny: wagmi client/account types differ from viem types
+			} as any;
+			const method = tempo(tempoParams);
 			// biome-ignore lint/suspicious/noExplicitAny: Challenge.fromResponse returns generic, createCredential expects intent-typed
 			const createCredentialArgs = { challenge, context: {} } as any;
 			const credential = await method.createCredential(createCredentialArgs);
@@ -203,7 +207,7 @@ function PaymentDemoInner() {
 				setIsLoading(null);
 			}
 		}
-	}, [walletClient, refetchBalance]);
+	}, [walletClient, refetchBalance, wagmiClient]);
 
 	const balanceValue = balance ?? 0n;
 	const hasFunds = balanceValue > 0n;
