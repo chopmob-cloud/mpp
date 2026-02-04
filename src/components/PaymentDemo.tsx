@@ -223,14 +223,7 @@ function PaymentDemoInner() {
 
 		faucetAttemptedRef.current = address;
 		faucet.mutate();
-	}, [
-		isConnected,
-		address,
-		balance,
-		balanceValue,
-		faucet.isPending,
-		faucet.mutate,
-	]);
+	}, [isConnected, address, balance, balanceValue, faucet]);
 
 	return (
 		<div className="vocs:mt-6 vocs:mx-auto vocs:max-w-[90%] vocs:border vocs:border-[var(--vocs-color-border)] vocs:rounded vocs:overflow-hidden vocs:not-prose vocs:divide-y vocs:divide-[var(--vocs-color-border)]">
