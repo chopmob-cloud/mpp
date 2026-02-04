@@ -399,6 +399,18 @@ function CodeTabs() {
 	);
 }
 
+// Reusable styles for full-width sections
+const fullWidthStyle: React.CSSProperties = {
+	width: "100vw",
+	marginLeft: "calc(-50vw + 50%)",
+};
+
+const containerStyle: React.CSSProperties = {
+	maxWidth: "1600px",
+	margin: "0 auto",
+	padding: "0 80px",
+};
+
 export function LandingPage() {
 	return (
 		<div className="vocs:not-prose">

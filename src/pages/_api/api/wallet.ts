@@ -18,9 +18,19 @@ async function rpcCall(method: string, params: unknown[]) {
 	return response.json();
 }
 
+interface WalletRequest {
+	action: string;
+	address?: string;
+}
+
+interface RpcResult {
+	error?: { message?: string };
+	result?: string;
+}
+
 export async function POST(request: Request) {
 	try {
-		const body = await request.json();
+		const body = (await request.json()) as WalletRequest;
 		const { action, address } = body;
 
 		if (action === "fund") {
@@ -29,7 +39,7 @@ export async function POST(request: Request) {
 			}
 
 			// Call the Tempo faucet RPC method
-			const result = await rpcCall("tempo_fundAddress", [address]);
+			const result = (await rpcCall("tempo_fundAddress", [address])) as RpcResult;
 
 			if (result.error) {
 				console.error("[Wallet API] Faucet error:", result.error);
@@ -45,13 +55,13 @@ export async function POST(request: Request) {
 			}
 
 			// Get token balance via eth_call
-			const result = await rpcCall("eth_call", [
+			const result = (await rpcCall("eth_call", [
 				{
 					to: DEFAULT_CURRENCY,
 					data: `0x70a08231000000000000000000000000${address.slice(2)}`, // balanceOf(address)
 				},
 				"latest",
-			]);
+			])) as RpcResult;
 
 			if (result.error) {
 				if (result.error.message?.includes("Uninitialized")) {

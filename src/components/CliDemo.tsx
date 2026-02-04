@@ -229,6 +229,25 @@ const QUERY_PRESETS: QueryPreset[] = [
 // Explorer base URL for Moderato testnet
 const EXPLORER_URL = "https://explore.moderato.tempo.xyz";
 
+// API response types
+interface BalanceResponse {
+	balance?: string;
+}
+
+interface FundResponse {
+	error?: string;
+}
+
+interface ApiDataResponse {
+	location?: { city: string; region: string };
+	results?: { name: string }[];
+	summary?: string;
+	sentiment?: string;
+	steps?: unknown[];
+	duration?: string;
+	distance?: string;
+}
+
 // Format balance for display
 const formatBalance = (value: number): string => {
 	const truncated = Math.floor(value * 10000) / 10000;
@@ -330,8 +349,8 @@ export function CliDemo() {
 				]);
 
 				// Check for cached wallet in sessionStorage
-				let acc: ReturnType<typeof privateKeyToAccount>;
-				let privateKey: `0x${string}`;
+				let acc: ReturnType<typeof privateKeyToAccount> | undefined;
+				let privateKey: `0x${string}` | undefined;
 				let needsFunding = true;
 
 				const cached = sessionStorage.getItem(WALLET_STORAGE_KEY);
@@ -349,7 +368,8 @@ export function CliDemo() {
 						});
 
 						if (balRes.ok) {
-							const { balance: bal } = await balRes.json();
+							const { balance: bal } =
+								(await balRes.json()) as BalanceResponse;
 							if (bal && bal !== "0") {
 								const balNum = Number(bal) / 1e6;
 								setBalance(balNum);
@@ -400,7 +420,7 @@ export function CliDemo() {
 					});
 
 					if (!fundRes.ok) {
-						const err = await fundRes.json();
+						const err = (await fundRes.json()) as FundResponse;
 						throw new Error(err.error || "Faucet request failed");
 					}
 
@@ -419,7 +439,8 @@ export function CliDemo() {
 						});
 
 						if (balRes.ok) {
-							const { balance: bal } = await balRes.json();
+							const { balance: bal } =
+								(await balRes.json()) as BalanceResponse;
 							if (bal && bal !== "0") {
 								const balNum = Number(bal) / 1e6;
 								setBalance(balNum);
@@ -436,6 +457,10 @@ export function CliDemo() {
 					if (!funded) {
 						throw new Error("Funding timeout - please refresh");
 					}
+				}
+
+				if (!acc || !privateKey) {
+					throw new Error("Wallet initialization failed");
 				}
 
 				setAccount({ address: acc.address, privateKey });
@@ -535,7 +560,7 @@ export function CliDemo() {
 						throw new Error(`API returned ${res.status}`);
 					}
 
-					const data = await res.json();
+					const data = (await res.json()) as ApiDataResponse;
 					spent += call.priceNum;
 
 					// Show receipt info if available
@@ -699,7 +724,8 @@ export function CliDemo() {
 					body: JSON.stringify({ action: "balance", address: account.address }),
 				});
 				if (res.ok) {
-					const { balance: bal } = await res.json();
+					const { balance: bal } =
+						(await res.json()) as BalanceResponse;
 					if (bal) {
 						setBalance(Number(bal) / 1e6);
 					}
