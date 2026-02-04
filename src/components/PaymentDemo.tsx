@@ -149,12 +149,12 @@ function PaymentDemoInner() {
 				throw new Error("Missing WWW-Authenticate header");
 			}
 
-			// Pass walletClient directly - it has both transport and signing capabilities
-			// This avoids issues with the account's signTransaction method being lost
-			// during SSR/bundling in production
+			// Pass account explicitly and wrap walletClient in a function
+			// mpay expects client as (chainId) => Client, not a client object directly
 			const method = tempo({
+				account: walletClient.account,
 				// biome-ignore lint/suspicious/noExplicitAny: wagmi client types differ from viem client types
-				client: walletClient as any,
+				client: (_chainId: number) => walletClient as any,
 			});
 			const challenge = Challenge.fromResponse(res1, { method });
 			const credential = await method.createCredential({
