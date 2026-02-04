@@ -11,8 +11,9 @@
 		"deploy": "wrangler deploy",
 		"dev": "vite dev",
 		"gen:types": "wrangler types",
-		"postinstall": "pnpm gen:types && node scripts/copy-vocs-theme.ts && simple-git-hooks",
+		"postinstall": "pnpm gen:types && simple-git-hooks",
 		"preview": "vite preview",
+		"sync:vocs": "node scripts/copy-vocs-theme.ts && pnpm check",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"wrangler:dev": "wrangler dev"
@@ -48,10 +49,5 @@
 		"vite": "^7",
 		"vitest": "^4.0.18",
 		"wrangler": "^4.61.1"
-	},
-	"pnpm": {
-		"patchedDependencies": {
-			"vocs@0.0.0": "patches/vocs@0.0.0.patch"
-		}
 	}
 }
