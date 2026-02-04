@@ -313,6 +313,8 @@ export function CliDemo() {
 		if (initRef.current) return;
 		initRef.current = true;
 
+		const WALLET_STORAGE_KEY = "mpp-demo-wallet";
+
 		const init = async () => {
 			try {
 				// Dynamic imports to avoid SSR issues
@@ -327,66 +329,118 @@ export function CliDemo() {
 					{ type: "info", content: "Initializing payment-enabled agent..." },
 				]);
 
-				// Generate fresh wallet
-				const privateKey = generatePrivateKey();
-				const acc = privateKeyToAccount(privateKey);
-				setAccount({ address: acc.address, privateKey });
+				// Check for cached wallet in sessionStorage
+				let acc: ReturnType<typeof privateKeyToAccount>;
+				let privateKey: `0x${string}`;
+				let needsFunding = true;
 
-				addLines([
-					{
-						type: "info",
-						content: `Wallet: ${acc.address.slice(0, 10)}...${acc.address.slice(-8)}`,
-					},
-					{ type: "info", content: "Requesting testnet funds..." },
-				]);
-				setStatus("funding");
+				const cached = sessionStorage.getItem(WALLET_STORAGE_KEY);
+				if (cached) {
+					try {
+						const { privateKey: cachedKey } = JSON.parse(cached);
+						privateKey = cachedKey as `0x${string}`;
+						acc = privateKeyToAccount(privateKey);
 
-				// Fund the wallet via our faucet endpoint
-				const fundRes = await fetch("/api/wallet", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ action: "fund", address: acc.address }),
-				});
+						// Check if wallet still has balance
+						const balRes = await fetch("/api/wallet", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ action: "balance", address: acc.address }),
+						});
 
-				if (!fundRes.ok) {
-					const err = await fundRes.json();
-					throw new Error(err.error || "Faucet request failed");
+						if (balRes.ok) {
+							const { balance: bal } = await balRes.json();
+							if (bal && bal !== "0") {
+								const balNum = Number(bal) / 1e6;
+								setBalance(balNum);
+								needsFunding = false;
+
+								addLines([
+									{
+										type: "info",
+										content: `Wallet: ${acc.address.slice(0, 10)}...${acc.address.slice(-8)}`,
+									},
+									{
+										type: "success",
+										content: `✓ Restored: $${formatBalance(balNum)} aUSD`,
+									},
+								]);
+							}
+						}
+					} catch {
+						// Invalid cache, will create new wallet
+					}
 				}
 
-				// Poll for balance
-				let retries = 0;
-				const maxRetries = 20;
-				let funded = false;
+				// Create new wallet if no valid cache
+				if (needsFunding) {
+					privateKey = generatePrivateKey();
+					acc = privateKeyToAccount(privateKey);
 
-				while (retries < maxRetries && !funded) {
-					await new Promise((r) => setTimeout(r, 1500));
+					// Save to sessionStorage
+					sessionStorage.setItem(
+						WALLET_STORAGE_KEY,
+						JSON.stringify({ privateKey }),
+					);
 
-					const balRes = await fetch("/api/wallet", {
+					addLines([
+						{
+							type: "info",
+							content: `Wallet: ${acc.address.slice(0, 10)}...${acc.address.slice(-8)}`,
+						},
+						{ type: "info", content: "Requesting testnet funds..." },
+					]);
+					setStatus("funding");
+
+					// Fund the wallet via our faucet endpoint
+					const fundRes = await fetch("/api/wallet", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ action: "balance", address: acc.address }),
+						body: JSON.stringify({ action: "fund", address: acc.address }),
 					});
 
-					if (balRes.ok) {
-						const { balance: bal } = await balRes.json();
-						if (bal && bal !== "0") {
-							const balNum = Number(bal) / 1e6;
-							setBalance(balNum);
-							funded = true;
-							addLine({
-								type: "success",
-								content: `✓ Funded: $${formatBalance(balNum)} aUSD`,
-							});
-						}
+					if (!fundRes.ok) {
+						const err = await fundRes.json();
+						throw new Error(err.error || "Faucet request failed");
 					}
-					retries++;
+
+					// Poll for balance
+					let retries = 0;
+					const maxRetries = 20;
+					let funded = false;
+
+					while (retries < maxRetries && !funded) {
+						await new Promise((r) => setTimeout(r, 1500));
+
+						const balRes = await fetch("/api/wallet", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ action: "balance", address: acc.address }),
+						});
+
+						if (balRes.ok) {
+							const { balance: bal } = await balRes.json();
+							if (bal && bal !== "0") {
+								const balNum = Number(bal) / 1e6;
+								setBalance(balNum);
+								funded = true;
+								addLine({
+									type: "success",
+									content: `✓ Funded: $${formatBalance(balNum)} aUSD`,
+								});
+							}
+						}
+						retries++;
+					}
+
+					if (!funded) {
+						throw new Error("Funding timeout - please refresh");
+					}
 				}
 
-				if (!funded) {
-					throw new Error("Funding timeout - please refresh");
-				}
+				setAccount({ address: acc.address, privateKey });
 
-				// Set up mpay fetch with the new account
+				// Set up mpay fetch with the account
 				const customFetch = Fetch.from({
 					methods: [
 						tempo({
