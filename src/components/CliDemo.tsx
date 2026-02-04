@@ -869,6 +869,46 @@ export function CliDemo() {
 				)}
 			</div>
 
+			{/* Mobile query buttons */}
+			{status === "selecting" && (
+				<div
+					className="vocs:grid vocs:grid-cols-2 vocs:gap-2 vocs:p-3"
+					style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+				>
+					{QUERY_PRESETS.map((query, index) => (
+						<button
+							key={query.id}
+							type="button"
+							onClick={() => runQuery(index)}
+							className="vocs:flex vocs:items-center vocs:gap-2 vocs:px-3 vocs:py-2.5 vocs:rounded-lg vocs:text-left vocs:transition-colors"
+							style={{
+								backgroundColor:
+									highlightedIndex === index
+										? "rgba(1, 102, 255, 0.15)"
+										: "rgba(255,255,255,0.05)",
+								border:
+									highlightedIndex === index
+										? "1px solid rgba(1, 102, 255, 0.3)"
+										: "1px solid rgba(255,255,255,0.1)",
+							}}
+						>
+							<span
+								className="vocs:flex vocs:items-center vocs:justify-center vocs:w-6 vocs:h-6 vocs:rounded vocs:text-xs vocs:font-medium"
+								style={{
+									backgroundColor: "rgba(1, 102, 255, 0.2)",
+									color: "#0166FF",
+								}}
+							>
+								{index + 1}
+							</span>
+							<span className="vocs:text-xs vocs:text-[var(--vocs-color-text-2)] vocs:truncate">
+								{query.label}
+							</span>
+						</button>
+					))}
+				</div>
+			)}
+
 			{/* Interactive prompt */}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: click to focus input */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: click to focus input */}

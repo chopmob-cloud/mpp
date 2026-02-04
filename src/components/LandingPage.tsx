@@ -482,9 +482,15 @@ export function LandingPage() {
 							</div>
 						</div>
 
-						{/* Right side - Demo (hidden on mobile) */}
-						<div className="vocs:hidden lg:vocs:block vocs:flex-1 vocs:min-w-0 vocs:relative">
-							<div className="vocs:absolute vocs:-inset-4 vocs:bg-gradient-to-r vocs:from-[#0166FF]/10 vocs:to-[#0166FF]/5 vocs:rounded-2xl vocs:blur-xl" />
+						{/* Right side - Demo */}
+						<div className="vocs:flex-1 vocs:min-w-0 vocs:relative vocs:w-full vocs:mt-8 lg:vocs:mt-0">
+							<div
+								className="vocs:absolute vocs:-inset-4 vocs:rounded-2xl vocs:blur-xl"
+								style={{
+									background:
+										"linear-gradient(to right, rgba(1,102,255,0.1), rgba(1,102,255,0.05))",
+								}}
+							/>
 							<div className="vocs:relative">
 								<CliDemo />
 							</div>

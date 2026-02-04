@@ -211,14 +211,34 @@ export function AsciiLogo() {
 		return () => cancelAnimationFrame(animationId);
 	}, []);
 
+	const asciiStyles = `
+		.ascii-logo-wrapper {
+			overflow-x: auto;
+			max-width: 100%;
+		}
+		.ascii-logo-inner {
+			font-size: 2.5px;
+		}
+		@media (min-width: 400px) {
+			.ascii-logo-inner { font-size: 3px; }
+		}
+		@media (min-width: 640px) {
+			.ascii-logo-inner { font-size: 5px; }
+		}
+		@media (min-width: 768px) {
+			.ascii-logo-inner { font-size: 6px; }
+		}
+	`;
+
 	return (
 		<>
+			<style>{asciiStyles}</style>
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: decorative animation, no keyboard interaction needed */}
 			<div
 				onMouseEnter={() => startMorph(1)}
 				onMouseLeave={() => startMorph(0)}
 				onContextMenu={handleContextMenu}
-				className="vocs:overflow-x-auto vocs:max-w-full vocs:-mx-4 vocs:px-4 sm:vocs:mx-0 sm:vocs:px-0"
+				className="ascii-logo-wrapper"
 				style={{
 					fontFamily: "monospace",
 					lineHeight: 1.15,
@@ -231,7 +251,7 @@ export function AsciiLogo() {
 				}}
 			>
 				<div
-					className="vocs:text-[4px] sm:vocs:text-[5px] md:vocs:text-[6px]"
+					className="ascii-logo-inner"
 					style={{ minWidth: "fit-content" }}
 				>
 					{mppLines.map((mppLine, lineIdx) => {
