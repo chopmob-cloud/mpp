@@ -11,7 +11,7 @@ const baseUrl = (() => {
 
 export default defineConfig({
 	accentColor: "#0166FF",
-	colorScheme: "dark",
+	colorScheme: "light dark",
 	baseUrl,
 	redirects: [{ source: "/docs", destination: "/overview" }],
 	description:
@@ -402,7 +402,7 @@ export default defineConfig({
 	topNav: [
 		{ text: "Docs", link: "/overview", match: (path) => path !== "/" },
 		{ text: "SDKs & Tools", link: "/sdk" },
-		{ text: "Specifications", link: "https://paymentauth.tempo.xyz" },
+		{ text: "Specs", link: "https://paymentauth.tempo.xyz" },
 		{
 			text: "GitHub",
 			items: [

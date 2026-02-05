@@ -1,10 +1,212 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AsciiLogo } from "./AsciiLogo";
 import { CliDemo } from "./CliDemo";
 
-// Tempo logo SVG
+const SPEC_BASE = "https://paymentauth.tempo.xyz";
+
+interface Spec {
+	title: string;
+	status: string;
+	html: string;
+	txt: string;
+	xml: string;
+	pdf: string;
+}
+
+interface SpecGroup {
+	path: string;
+	specs: Spec[];
+}
+
+const SPEC_GROUPS: SpecGroup[] = [
+	{
+		path: "~/Core",
+		specs: [
+			{
+				title: 'The "Payment" HTTP Authentication Scheme',
+				status: "Standards Track",
+				html: "draft-httpauth-payment-00.html",
+				txt: "draft-httpauth-payment-00.txt",
+				xml: "draft-httpauth-payment-00.xml",
+				pdf: "draft-httpauth-payment-00.pdf",
+			},
+		],
+	},
+	{
+		path: "~/Extensions",
+		specs: [
+			{
+				title: "Discovery Mechanisms for HTTP Payment Authentication",
+				status: "Informational",
+				html: "draft-payment-discovery-00.html",
+				txt: "draft-payment-discovery-00.txt",
+				xml: "draft-payment-discovery-00.xml",
+				pdf: "draft-payment-discovery-00.pdf",
+			},
+		],
+	},
+	{
+		path: "~/Intents",
+		specs: [
+			{
+				title: "Charge Intent for HTTP Payment Authentication",
+				status: "Informational",
+				html: "draft-payment-intent-charge-00.html",
+				txt: "draft-payment-intent-charge-00.txt",
+				xml: "draft-payment-intent-charge-00.xml",
+				pdf: "draft-payment-intent-charge-00.pdf",
+			},
+		],
+	},
+	{
+		path: "~/Payment_Methods/Stripe",
+		specs: [
+			{
+				title: "Stripe Charge Intent for HTTP Payment Authentication",
+				status: "Informational",
+				html: "draft-stripe-charge-00.html",
+				txt: "draft-stripe-charge-00.txt",
+				xml: "draft-stripe-charge-00.xml",
+				pdf: "draft-stripe-charge-00.pdf",
+			},
+		],
+	},
+	{
+		path: "~/Payment_Methods/Tempo",
+		specs: [
+			{
+				title: "Tempo Charge Intent for HTTP Payment Authentication",
+				status: "Informational",
+				html: "draft-tempo-charge-00.html",
+				txt: "draft-tempo-charge-00.txt",
+				xml: "draft-tempo-charge-00.xml",
+				pdf: "draft-tempo-charge-00.pdf",
+			},
+			{
+				title: "Tempo Stream Intent for HTTP Payment Authentication",
+				status: "Informational",
+				html: "draft-tempo-stream-00.html",
+				txt: "draft-tempo-stream-00.txt",
+				xml: "draft-tempo-stream-00.xml",
+				pdf: "draft-tempo-stream-00.pdf",
+			},
+		],
+	},
+	{
+		path: "~/Transports",
+		specs: [
+			{
+				title: "Payment Authentication Scheme: MCP Transport",
+				status: "Informational",
+				html: "draft-payment-transport-mcp-00.html",
+				txt: "draft-payment-transport-mcp-00.txt",
+				xml: "draft-payment-transport-mcp-00.xml",
+				pdf: "draft-payment-transport-mcp-00.pdf",
+			},
+		],
+	},
+];
+
+function CopyButton({ text }: { text: string }) {
+	const [copied, setCopied] = useState(false);
+	const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+	const handleCopy = useCallback(() => {
+		navigator.clipboard.writeText(text);
+		setCopied(true);
+		if (timeoutRef.current) clearTimeout(timeoutRef.current);
+		timeoutRef.current = setTimeout(() => setCopied(false), 2000);
+	}, [text]);
+
+	return (
+		<button
+			type="button"
+			onClick={handleCopy}
+			className="text-[#0166FF] hover:text-[#0052CC] transition-colors shrink-0"
+			aria-label="Copy to clipboard"
+		>
+			{copied ? (
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M20 6 9 17l-5-5" />
+				</svg>
+			) : (
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+				>
+					<rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+					<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+				</svg>
+			)}
+		</button>
+	);
+}
+
+function SpecRow({ spec, isLast }: { spec: Spec; isLast: boolean }) {
+	return (
+		<div className="pl-4 mb-4">
+			<div className="flex items-center gap-3">
+				<span className="text-gray-300 shrink-0 font-mono">
+					{isLast ? "└──" : "├──"}
+				</span>
+				<span className="text-gray-900">{spec.title}</span>
+				<span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded shrink-0">
+					Draft
+				</span>
+				<span className="text-xs text-gray-400 shrink-0">{spec.status}</span>
+			</div>
+			<div className="flex items-center gap-1.5 text-sm pl-10 mt-1">
+				<a
+					href={`${SPEC_BASE}/${spec.html}`}
+					className="text-[#0166FF] hover:underline no-underline"
+				>
+					HTML
+				</a>
+				<span className="text-gray-300">·</span>
+				<a
+					href={`${SPEC_BASE}/${spec.txt}`}
+					className="text-[#0166FF] hover:underline no-underline"
+				>
+					TXT
+				</a>
+				<span className="text-gray-300">·</span>
+				<a
+					href={`${SPEC_BASE}/${spec.xml}`}
+					className="text-[#0166FF] hover:underline no-underline"
+				>
+					XML
+				</a>
+				<span className="text-gray-300">·</span>
+				<a
+					href={`${SPEC_BASE}/${spec.pdf}`}
+					className="text-[#0166FF] hover:underline no-underline"
+				>
+					PDF
+				</a>
+			</div>
+		</div>
+	);
+}
+
 function TempoLogo({
 	className,
 	style,
@@ -47,7 +249,6 @@ function TempoLogo({
 	);
 }
 
-// Stripe logo SVG
 function StripeLogo({
 	className,
 	style,
@@ -73,682 +274,165 @@ function StripeLogo({
 	);
 }
 
-// GitHub icon
-function GitHubIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			className={className}
-			viewBox="0 0 24 24"
-			fill="currentColor"
-			xmlns="http://www.w3.org/2000/svg"
-			aria-hidden="true"
-		>
-			<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-		</svg>
-	);
-}
-
-// Arrow icon for CTAs
-function ArrowRightIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			className={className}
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<path d="M5 12h14M12 5l7 7-7 7" />
-		</svg>
-	);
-}
-
-// Feature icons
-function GlobeIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			className={className}
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.5"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="10" />
-			<path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-		</svg>
-	);
-}
-
-function LayersIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			className={className}
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.5"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-		</svg>
-	);
-}
-
-function ZapIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			className={className}
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.5"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-		</svg>
-	);
-}
-
-// Status badge component with proper theming
-function StatusBadge({
-	status,
-}: {
-	status: "production" | "beta" | "available" | "planned";
-}) {
-	const styles: Record<
-		typeof status,
-		{ bg: string; border: string; text: string; label: string }
-	> = {
-		production: {
-			bg: "rgba(34, 197, 94, 0.1)",
-			border: "rgba(34, 197, 94, 0.3)",
-			text: "#4ade80",
-			label: "Production",
-		},
-		beta: {
-			bg: "rgba(59, 130, 246, 0.1)",
-			border: "rgba(59, 130, 246, 0.3)",
-			text: "#60a5fa",
-			label: "Beta",
-		},
-		available: {
-			bg: "rgba(255, 255, 255, 0.05)",
-			border: "rgba(255, 255, 255, 0.1)",
-			text: "var(--vocs-text-color-secondary)",
-			label: "Available",
-		},
-		planned: {
-			bg: "rgba(255, 255, 255, 0.05)",
-			border: "rgba(255, 255, 255, 0.1)",
-			text: "var(--vocs-text-color-muted)",
-			label: "Planned",
-		},
-	};
-
-	const { bg, border, text, label } = styles[status];
-
-	return (
-		<span
-			className="text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-full"
-			style={{
-				backgroundColor: bg,
-				border: `1px solid ${border}`,
-				color: text,
-			}}
-		>
-			{label}
-		</span>
-	);
-}
-
-// Code tabs component for Client/Server examples
-function CodeTabs() {
-	const [activeTab, setActiveTab] = useState<"client" | "server">("client");
-
-	return (
-		<div className="w-full bg-[var(--vocs-background-color-surface)] rounded-xl overflow-hidden border border-white/20">
-			<div className="flex items-center gap-0 border-b border-white/20">
-				<button
-					type="button"
-					onClick={() => setActiveTab("client")}
-					className={`text-[13px] font-medium px-4 py-3 transition-colors border-b-2 ${
-						activeTab === "client"
-							? "text-[var(--vocs-text-color-primary)] border-[#0166FF]"
-							: "text-[var(--vocs-text-color-muted)] border-transparent hover:text-[var(--vocs-text-color-secondary)]"
-					}`}
-					style={{
-						background: "none",
-						cursor: "pointer",
-						marginBottom: "-1px",
-					}}
-				>
-					Client
-				</button>
-				<button
-					type="button"
-					onClick={() => setActiveTab("server")}
-					className={`text-[13px] font-medium px-4 py-3 transition-colors border-b-2 ${
-						activeTab === "server"
-							? "text-[var(--vocs-text-color-primary)] border-[#0166FF]"
-							: "text-[var(--vocs-text-color-muted)] border-transparent hover:text-[var(--vocs-text-color-secondary)]"
-					}`}
-					style={{
-						background: "none",
-						cursor: "pointer",
-						marginBottom: "-1px",
-					}}
-				>
-					Server
-				</button>
-			</div>
-			<div className="p-3 md:p-4 font-mono text-xs md:text-sm overflow-x-auto">
-				{activeTab === "client" ? (
-					<pre className="m-0 leading-relaxed">
-						<code>
-							<span className="text-[var(--vocs-text-color-muted)]">
-								{"// Polyfill fetch once at startup"}
-							</span>
-							{"\n"}
-							<span className="text-[#c678dd]">import</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{" "}
-								{"{"} Fetch, tempo {"}"}{" "}
-							</span>
-							<span className="text-[#c678dd]">from</span>
-							<span className="text-[#98c379]"> 'mpay/client'</span>
-							{"\n\n"}
-							<span className="text-[#e5c07b]">Fetch</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								.polyfill({"{"}
-							</span>
-							{"\n"}
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{"  "}methods: [
-							</span>
-							<span className="text-[#e5c07b]">tempo</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								({"{"} account {"}"})]
-							</span>
-							{"\n"}
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{"}"})
-							</span>
-							{"\n\n"}
-							<span className="text-[var(--vocs-text-color-muted)]">
-								{"// Now all fetch calls handle 402 automatically"}
-							</span>
-							{"\n"}
-							<span className="text-[#c678dd]">const</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{" "}
-								response ={" "}
-							</span>
-							<span className="text-[#c678dd]">await</span>
-							<span className="text-[var(--vocs-text-color-primary)]"> </span>
-							<span className="text-[#61afef]">fetch</span>
-							<span className="text-[var(--vocs-text-color-primary)]">(</span>
-							<span className="text-[#98c379]">
-								'https://api.example.com/resource'
-							</span>
-							<span className="text-[var(--vocs-text-color-primary)]">)</span>
-						</code>
-					</pre>
-				) : (
-					<pre className="m-0 leading-relaxed">
-						<code>
-							<span className="text-[var(--vocs-text-color-muted)]">
-								{"// Add payment middleware to your server"}
-							</span>
-							{"\n"}
-							<span className="text-[#c678dd]">import</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{" "}
-								{"{"} Mpay, tempo {"}"}{" "}
-							</span>
-							<span className="text-[#c678dd]">from</span>
-							<span className="text-[#98c379]"> 'mpay/server'</span>
-							{"\n\n"}
-							<span className="text-[#c678dd]">const</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{" "}
-								mpay ={" "}
-							</span>
-							<span className="text-[#e5c07b]">Mpay</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								.create({"{"}
-							</span>
-							{"\n"}
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{"  "}methods: [
-							</span>
-							<span className="text-[#e5c07b]">tempo</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								({"{"} recipient {"}"})]
-							</span>
-							{"\n"}
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{"}"})
-							</span>
-							{"\n\n"}
-							<span className="text-[var(--vocs-text-color-muted)]">
-								{"// Return 402 with payment challenge"}
-							</span>
-							{"\n"}
-							<span className="text-[#c678dd]">return</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{" "}
-								mpay.
-							</span>
-							<span className="text-[#61afef]">challenge</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								({"{"}{" "}
-							</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								amount:{" "}
-							</span>
-							<span className="text-[#d19a66]">0.01</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								, currency:{" "}
-							</span>
-							<span className="text-[#98c379]">'USD'</span>
-							<span className="text-[var(--vocs-text-color-primary)]">
-								{" "}
-								{"}"})
-							</span>
-						</code>
-					</pre>
-				)}
-			</div>
-		</div>
-	);
-}
-
 export function LandingPage() {
 	return (
-		<div className="not-prose" style={{ colorScheme: "dark" }}>
-			{/* Hero Section */}
-			<section className="relative py-12 md:py-24 border-b border-white/[0.06]">
-				<div className="mx-auto px-4 sm:px-6 lg:px-20">
-					<div className="flex flex-col lg:flex-row gap-8 lg:gap-20 items-center">
-						{/* Left side - Copy */}
-						<div className="flex-1 space-y-6 md:space-y-8">
-							{/* ASCII Logo as title */}
-							<AsciiLogo />
+		<div
+			className="not-prose min-h-screen"
+			style={{
+				colorScheme: "light",
+				backgroundColor: "#ffffff",
+				color: "#111",
+				fontFamily:
+					'"Commit Mono", "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+			}}
+		>
+			{/* Hero */}
+			<section className="mx-auto max-w-[1200px] px-6 pt-16 pb-12 md:pt-24 md:pb-16">
+				<div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-stretch">
+					{/* Left pane */}
+					<div className="flex-1 space-y-8 min-w-0">
+						{/* Logo */}
+						<div>
+							<AsciiLogo morph={false} />
+						</div>
 
-							{/* Subtitle */}
-							<p className="text-base sm:text-lg md:text-xl text-[var(--vocs-text-color-secondary)] leading-relaxed max-w-xl">
-								The machine-native payments protocol. Accept payments from
-								humans, software, or AI agents using standard HTTP—no billing
-								accounts or manual signup required.
+						{/* Tagline */}
+						<div className="space-y-2 max-w-xl">
+							<p className="text-base md:text-lg text-gray-600 font-medium leading-relaxed">
+								The machine-native payments protocol.
 							</p>
+							<p className="text-base md:text-lg text-gray-600 leading-relaxed">
+								Accept payments from humans, software, or AI agents using standard HTTP—no billing accounts or manual signup required.
+							</p>
+						</div>
 
-							{/* CTAs */}
-							<div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+						{/* Co-authored by */}
+						<div className="flex items-center gap-5">
+							<span className="text-xs font-medium tracking-widest text-gray-400 uppercase">
+								Co-authored by
+							</span>
+							<div className="flex items-center gap-5">
 								<a
-									href="/quickstart/client"
-									className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#0166FF] text-white font-medium rounded-lg transition-all hover:bg-[#0052CC] no-underline"
-								>
-									Get started
-									<ArrowRightIcon className="w-4 h-4" />
-								</a>
-								<a
-									href="https://github.com/tempoxyz/payment-auth-spec"
+									href="https://tempo.xyz"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-[var(--vocs-border-color-primary)] text-[var(--vocs-text-color-primary)] font-medium rounded-lg transition-all hover:bg-[var(--vocs-background-color-surface)] no-underline"
+									className="no-underline text-gray-400 hover:text-gray-600 transition-colors"
 								>
-									<GitHubIcon className="w-5 h-5" />
-									View on GitHub
+									<TempoLogo style={{ width: "70px" }} />
+								</a>
+								<a
+									href="https://stripe.com"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="no-underline text-gray-400 hover:text-gray-600 transition-colors"
+								>
+									<StripeLogo style={{ width: "55px" }} />
 								</a>
 							</div>
-
-							{/* Co-authors badge */}
-							<div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-								<span className="text-[13px] text-[var(--vocs-text-color-muted)] uppercase tracking-wider font-medium opacity-50">
-									Co-authored by
-								</span>
-								<div className="flex items-center gap-4 sm:gap-6">
-									<a
-										href="https://tempo.xyz"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="no-underline hover:opacity-80 transition-opacity"
-									>
-										<TempoLogo
-											className="text-[var(--vocs-text-color-secondary)]"
-											style={{ width: "70px" }}
-										/>
-									</a>
-									<a
-										href="https://stripe.com"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="no-underline hover:opacity-80 transition-opacity"
-									>
-										<StripeLogo
-											className="text-[var(--vocs-text-color-secondary)]"
-											style={{ width: "60px" }}
-										/>
-									</a>
-								</div>
-							</div>
 						</div>
 
-						{/* Right side - Demo (hidden on mobile) */}
-						<div className="hidden lg:block flex-1 min-w-0 relative">
-							<div className="absolute -inset-4 bg-gradient-to-r from-[#0166FF]/10 to-[#0166FF]/5 rounded-2xl blur-xl" />
-							<div className="relative">
-								<CliDemo />
-							</div>
+						{/* CTA buttons */}
+						<div className="flex flex-wrap gap-3">
+							<a
+								href="/quickstart/client"
+								className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0166FF] text-white text-sm font-medium rounded-md hover:bg-[#0052CC] transition-colors no-underline"
+							>
+								Get started
+								<svg
+									width="14"
+									height="14"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									strokeWidth="2"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M5 12h14M12 5l7 7-7 7" />
+								</svg>
+							</a>
+							<a
+								href="https://github.com/tempoxyz/payment-auth-spec"
+								className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors no-underline"
+							>
+								<svg
+									width="18"
+									height="18"
+									viewBox="0 0 24 24"
+									fill="currentColor"
+									aria-hidden="true"
+								>
+									<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+								</svg>
+								View on GitHub
+							</a>
 						</div>
+
+						{/* Copy-to-agent line */}
+						<div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-md px-4 py-3 max-w-md">
+							<code className="text-sm text-gray-500 select-all flex-1 truncate">
+								<span className="text-gray-300">$</span> claude -p &quot;read
+								mpp.dev/llms-full.txt&quot;
+							</code>
+							<CopyButton text='claude -p "read mpp.dev/llms-full.txt"' />
+						</div>
+					</div>
+
+					{/* Right pane — interactive demo */}
+					<div className="flex-1 w-full min-w-0 flex flex-col">
+						<CliDemo />
 					</div>
 				</div>
 			</section>
 
-			{/* Feature 1: Open Standard */}
-			<section className="relative py-12 md:py-20 border-b border-white/[0.06]">
-				<div className="mx-auto px-4 sm:px-6 lg:px-20">
-					<div className="flex flex-col lg:flex-row gap-8 lg:gap-20 items-center">
-						{/* Left - Copy */}
-						<div className="flex-1 space-y-4 md:space-y-6">
-							<div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#0166FF]/10">
-								<GlobeIcon className="w-6 h-6 text-[#0166FF]" />
-							</div>
-							<h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-[var(--vocs-text-color-primary)]">
-								Open standard built for the internet
-							</h2>
-							<p className="text-base md:text-lg text-[var(--vocs-text-color-secondary)] leading-relaxed">
-								MPP standardizes HTTP 402 "Payment Required" with an IETF-track
-								specification. No proprietary APIs or vendor lock-in—just HTTP
-								headers and standard authentication flows.
-							</p>
-							<ul className="space-y-3">
-								{[
-									"Challenge → Credential → Receipt flow",
-									"Works with any HTTP client or server",
-									"Idempotency and replay protection built-in",
-								].map((item) => (
-									<li
-										key={item}
-										className="flex items-center gap-3 text-sm md:text-base text-[var(--vocs-text-color-secondary)]"
-									>
-										<span className="w-1.5 h-1.5 rounded-full bg-[#0166FF] flex-shrink-0" />
-										{item}
-									</li>
-								))}
-							</ul>
+			{/* Divider */}
+			<div className="border-t border-gray-100" />
+
+			{/* Specs */}
+			<section className="mx-auto max-w-[1200px] px-6 pt-12 pb-16 md:pt-16 md:pb-20">
+				<h2 className="text-xl font-bold text-gray-900">
+					Protocol Specifications
+				</h2>
+
+				<hr className="border-gray-900 mb-8 mt-3" />
+
+				<div className="space-y-6 text-sm">
+					{SPEC_GROUPS.map((group) => (
+						<div key={group.path}>
+							<h3 className="text-base font-bold text-gray-900 mb-2">
+								{group.path}
+							</h3>
+							{group.specs.map((spec, i) => (
+								<SpecRow
+									key={spec.html}
+									spec={spec}
+									isLast={i === group.specs.length - 1}
+								/>
+							))}
 						</div>
-
-						{/* Right - Protocol Flow Diagram */}
-						<div className="flex-1 w-full bg-[var(--vocs-background-color-surface)] rounded-xl overflow-hidden border border-white/20">
-							{/* Step 1: Initial Request */}
-							<div className="px-4 py-3 border-b border-white/20">
-								<div className="flex items-center gap-2 mb-1">
-									<span className="text-[10px] font-medium uppercase tracking-wider text-[var(--vocs-text-color-muted)]">
-										1. Request
-									</span>
-								</div>
-								<code className="font-mono text-xs sm:text-sm">
-									<span className="text-[#0166FF]">GET</span>
-									<span className="text-[var(--vocs-text-color-primary)]">
-										{" "}
-										/resource
-									</span>
-								</code>
-							</div>
-
-							{/* Step 2: 402 Challenge */}
-							<div className="px-4 py-3 border-b border-white/20">
-								<div className="flex items-center gap-2 mb-1">
-									<span className="text-[10px] font-medium uppercase tracking-wider text-[var(--vocs-text-color-muted)]">
-										2. Challenge
-									</span>
-								</div>
-								<div className="font-mono text-xs sm:text-sm space-y-0.5">
-									<div>
-										<span className="text-[var(--vocs-color-destructive)]">
-											402
-										</span>
-										<span className="text-[var(--vocs-text-color-secondary)]">
-											{" "}
-											Payment Required
-										</span>
-									</div>
-									<div className="text-[var(--vocs-text-color-muted)] break-all">
-										WWW-Authenticate: Payment method="tempo" ...
-									</div>
-								</div>
-							</div>
-
-							{/* Step 3: Retry with Credential */}
-							<div className="px-4 py-3 border-b border-white/20">
-								<div className="flex items-center gap-2 mb-1">
-									<span className="text-[10px] font-medium uppercase tracking-wider text-[var(--vocs-text-color-muted)]">
-										3. Retry with credential
-									</span>
-								</div>
-								<div className="font-mono text-xs sm:text-sm space-y-0.5">
-									<div>
-										<span className="text-[#0166FF]">GET</span>
-										<span className="text-[var(--vocs-text-color-primary)]">
-											{" "}
-											/resource
-										</span>
-									</div>
-									<div className="text-[var(--vocs-text-color-muted)] break-all">
-										Authorization: Payment {"<credential>"}
-									</div>
-								</div>
-							</div>
-
-							{/* Step 4: Success with Receipt */}
-							<div className="px-4 py-3">
-								<div className="flex items-center gap-2 mb-1">
-									<span className="text-[10px] font-medium uppercase tracking-wider text-[var(--vocs-text-color-muted)]">
-										4. Success
-									</span>
-								</div>
-								<div className="font-mono text-xs sm:text-sm space-y-0.5">
-									<div>
-										<span className="text-[#16a34a]">200</span>
-										<span className="text-[var(--vocs-text-color-secondary)]">
-											{" "}
-											OK
-										</span>
-									</div>
-									<div className="text-[var(--vocs-text-color-muted)] break-all">
-										Payment-Receipt: {"<receipt>"}
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+					))}
 				</div>
 			</section>
 
-			{/* Feature 2: Multi-Rail (reversed layout) */}
-			<section className="relative py-12 md:py-20 border-b border-white/[0.06]">
-				<div className="mx-auto px-4 sm:px-6 lg:px-20">
-					<div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-20 items-center">
-						{/* Left - Payment Methods Grid */}
-						<div className="flex-1 w-full">
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-								{/* Tempo Card */}
-								<div className="bg-[var(--vocs-background-color-surface)] rounded-xl p-4 md:p-5 space-y-3 border border-white/20">
-									<div className="flex items-center justify-between gap-2">
-										<TempoLogo
-											className="text-[var(--vocs-text-color-primary)]"
-											style={{ width: "60px", height: "auto" }}
-										/>
-										<StatusBadge status="production" />
-									</div>
-									<p className="text-xs md:text-sm text-[var(--vocs-text-color-secondary)] leading-relaxed">
-										Instant stablecoin settlement on Tempo. Sub-second finality
-										with USDC payments directly to your wallet—no invoices or
-										delayed payouts.
-									</p>
-								</div>
-
-								{/* Stripe Card */}
-								<div className="bg-[var(--vocs-background-color-surface)] rounded-xl p-4 md:p-5 space-y-3 border border-white/20">
-									<div className="flex items-center justify-between gap-2">
-										<StripeLogo
-											className="text-[var(--vocs-text-color-primary)]"
-											style={{ width: "48px", height: "auto" }}
-										/>
-										<StatusBadge status="beta" />
-									</div>
-									<p className="text-xs md:text-sm text-[var(--vocs-text-color-secondary)] leading-relaxed">
-										Accept cards, bank transfers, and invoices through Stripe.
-										Leverage existing Stripe infrastructure with MPP's
-										standardized protocol layer.
-									</p>
-								</div>
-
-								{/* Custom Card */}
-								<div className="bg-[var(--vocs-background-color-surface)] rounded-xl p-4 md:p-5 space-y-3 border border-white/20">
-									<div className="flex items-center justify-between gap-2">
-										<span className="font-semibold text-[var(--vocs-text-color-primary)]">
-											Custom
-										</span>
-										<StatusBadge status="available" />
-									</div>
-									<p className="text-xs md:text-sm text-[var(--vocs-text-color-secondary)] leading-relaxed">
-										Build your own payment method. MPP's extensible architecture
-										lets you integrate any payment rail—internal credits,
-										loyalty points, or custom currencies.
-									</p>
-								</div>
-
-								{/* More Coming Card */}
-								<div className="bg-[var(--vocs-background-color-surface)] rounded-xl p-4 md:p-5 space-y-3 border border-white/20">
-									<div className="flex items-center justify-between gap-2">
-										<span className="font-semibold text-[var(--vocs-text-color-primary)]">
-											More coming
-										</span>
-										<StatusBadge status="planned" />
-									</div>
-									<p className="text-xs md:text-sm text-[var(--vocs-text-color-secondary)] leading-relaxed">
-										Lightning Network for instant Bitcoin micropayments, ACH for
-										low-cost bank transfers, and more payment rails on the
-										roadmap.
-									</p>
-								</div>
-							</div>
-						</div>
-
-						{/* Right - Copy */}
-						<div className="flex-1 space-y-4 md:space-y-6">
-							<div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#0166FF]/10">
-								<LayersIcon className="w-6 h-6 text-[#0166FF]" />
-							</div>
-							<h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-[var(--vocs-text-color-primary)]">
-								Multi-rail, multi-currency
-							</h2>
-							<p className="text-base md:text-lg text-[var(--vocs-text-color-secondary)] leading-relaxed">
-								MPP is payment method agnostic. Crypto, cards, bank transfers,
-								invoices—all payment methods work through one protocol. Support
-								USD, EUR, BTC, USDC, or any currency.
-							</p>
-							<ul className="space-y-3">
-								{[
-									"Single integration, multiple payment rails",
-									"Currency agnostic—from fiat to crypto",
-									"Extensible: define your own payment methods",
-								].map((item) => (
-									<li
-										key={item}
-										className="flex items-center gap-3 text-sm md:text-base text-[var(--vocs-text-color-secondary)]"
-									>
-										<span className="w-1.5 h-1.5 rounded-full bg-[#0166FF] flex-shrink-0" />
-										{item}
-									</li>
-								))}
-							</ul>
-						</div>
-					</div>
+			{/* Footer */}
+			<div className="border-t border-gray-100" />
+			<footer className="mx-auto max-w-[1200px] px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+				<div className="flex items-center gap-4">
+					<a
+						href="https://github.com/tempoxyz/payment-auth-spec"
+						className="text-gray-400 hover:text-gray-600 no-underline"
+					>
+						GitHub
+					</a>
+					<a
+						href="https://x.com/mpp"
+						className="text-gray-400 hover:text-gray-600 no-underline"
+					>
+						X
+					</a>
 				</div>
-			</section>
-
-			{/* Feature 3: Developer Experience */}
-			<section className="relative py-12 md:py-20 border-b border-white/[0.06]">
-				<div className="mx-auto px-4 sm:px-6 lg:px-20">
-					<div className="flex flex-col lg:flex-row gap-8 lg:gap-20 items-center">
-						{/* Left - Copy */}
-						<div className="flex-1 space-y-4 md:space-y-6">
-							<div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#0166FF]/10">
-								<ZapIcon className="w-6 h-6 text-[#0166FF]" />
-							</div>
-							<h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-[var(--vocs-text-color-primary)]">
-								Developer-first experience
-							</h2>
-							<p className="text-base md:text-lg text-[var(--vocs-text-color-secondary)] leading-relaxed">
-								Official SDKs for TypeScript, Python, and Rust. Polyfill fetch
-								or go low-level—MPP works the way you work. Add payments with
-								minimal code changes.
-							</p>
-							<ul className="space-y-3">
-								{[
-									"Client: Polyfill fetch for automatic 402 handling",
-									"Server: Works with Hono, Express, Next.js, and more",
-									"CLI: Test with pget, a curl for paid resources",
-								].map((item) => (
-									<li
-										key={item}
-										className="flex items-center gap-3 text-sm md:text-base text-[var(--vocs-text-color-secondary)]"
-									>
-										<span className="w-1.5 h-1.5 rounded-full bg-[#0166FF] flex-shrink-0" />
-										{item}
-									</li>
-								))}
-							</ul>
-						</div>
-
-						{/* Right - Code Snippet with Tabs */}
-						<div className="flex-1 w-full">
-							<CodeTabs />
-						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* CTA Section */}
-			<section className="relative py-12 md:py-20">
-				<div className="max-w-[900px] mx-auto px-4 sm:px-6 lg:px-20 text-center">
-					<h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-[var(--vocs-text-color-primary)] mb-4">
-						Start accepting payments today
-					</h2>
-					<p className="text-base md:text-lg text-[var(--vocs-text-color-secondary)] mb-6 md:mb-8 max-w-2xl mx-auto">
-						Add payments to your API in minutes. No signup required—just install
-						the SDK and start charging for your resources.
-					</p>
-					<div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4">
-						<a
-							href="/quickstart/server"
-							className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#0166FF] text-white font-medium rounded-lg transition-all hover:bg-[#0052CC] no-underline"
-						>
-							Server quickstart
-							<ArrowRightIcon className="w-4 h-4" />
-						</a>
-						<a
-							href="/quickstart/client"
-							className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-[var(--vocs-border-color-primary)] text-[var(--vocs-text-color-primary)] font-medium rounded-lg transition-all hover:bg-[var(--vocs-background-color-surface)] no-underline"
-						>
-							Client quickstart
-						</a>
-					</div>
-				</div>
-			</section>
+				</footer>
 		</div>
 	);
 }

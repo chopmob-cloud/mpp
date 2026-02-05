@@ -68,7 +68,7 @@ interface CharState {
 	cycleDuration: number;
 }
 
-export function AsciiLogo() {
+export function AsciiLogo({ morph = true }: { morph?: boolean } = {}) {
 	const [morphProgress, setMorphProgress] = useState(0);
 	const morphStartTime = useRef<number | null>(null);
 	const morphStartProgress = useRef(0);
@@ -215,8 +215,8 @@ export function AsciiLogo() {
 		<>
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: decorative animation, no keyboard interaction needed */}
 			<div
-				onMouseEnter={() => startMorph(1)}
-				onMouseLeave={() => startMorph(0)}
+				onMouseEnter={morph ? () => startMorph(1) : undefined}
+				onMouseLeave={morph ? () => startMorph(0) : undefined}
 				onContextMenu={handleContextMenu}
 				className="overflow-x-auto max-w-full -mx-4 px-4 sm:mx-0 sm:px-0"
 				style={{
@@ -224,10 +224,9 @@ export function AsciiLogo() {
 					lineHeight: 1.15,
 					whiteSpace: "pre",
 					letterSpacing: "1px",
-					color: "#0166FF",
+					color: "#111",
 					opacity: 0.85,
-					textShadow: "0 0 20px rgba(1, 102, 255, 0.3)",
-					cursor: "pointer",
+					cursor: morph ? "pointer" : "default",
 				}}
 			>
 				<div

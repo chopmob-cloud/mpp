@@ -1,3 +1,6 @@
+@import "@fontsource/commit-mono/400.css";
+@import "@fontsource/commit-mono/700.css";
+
 @import "tailwindcss" important;
 
 @import "./_vocs.generated.css";
@@ -52,8 +55,38 @@
 	max-width: 1400px;
 }
 
-/* Force dark mode on landing page to prevent flash */
+/* Force light mode on the landing page (minimal layout) */
+[data-layout="minimal"],
+[data-layout="minimal"] * {
+	color-scheme: light !important;
+}
+
 [data-layout="minimal"] {
-	color-scheme: dark;
-	background-color: var(--vocs-color-gray2);
+	--vocs-color-background: #ffffff !important;
+	--vocs-color-background-2: #f5f5f5 !important;
+	background-color: #ffffff !important;
+}
+
+[data-layout="minimal"] [data-v-gutter-top] {
+	background-color: #ffffff !important;
+}
+
+/* Commit Mono as primary monospace + body font */
+:root {
+	--font-mono:
+		"Commit Mono", "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+		Consolas, monospace;
+}
+
+body,
+[data-v-content],
+[data-layout] {
+	font-family: var(--font-mono);
+}
+
+pre,
+code,
+.vocs_Code,
+[data-v-code] {
+	font-family: var(--font-mono) !important;
 }
