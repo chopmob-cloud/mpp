@@ -221,8 +221,6 @@ export function LandingPage() {
 		<div
 			className="not-prose min-h-screen"
 			style={{
-				colorScheme: "light",
-				backgroundColor: "#ffffff",
 				color: "#111",
 				fontFamily:
 					'"Berkeley Mono", "Commit Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
