@@ -114,7 +114,7 @@ export function CliPlayground() {
 					</Cli.Block>
 				</Cli.Panel>
 
-				<Cli.CtaBar
+				<Cli.FooterBar
 					left={<Cli.Hint />}
 					right={
 						<>

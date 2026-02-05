@@ -142,18 +142,18 @@ export function TitleBar({ title, children, className }: TitleBar.Props) {
 	return (
 		<div
 			className={cx(
-				"flex items-center justify-between px-4 h-9 border-b border-primary bg-primary text-secondary",
+				"flex items-center justify-between px-4 h-9 border-b border-primary bg-primary text-secondary gap-3",
 				className,
 			)}
 		>
-			<div className="flex items-center gap-2">
-				<div className="flex gap-1.5">
+			<div className="flex items-center gap-2 min-w-0">
+				<div className="flex gap-1.5 shrink-0">
 					<span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
 					<span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
 					<span className="w-3 h-3 rounded-full bg-[#27c93f]" />
 				</div>
 				{title && (
-					<span className="text-[13px] tracking-tight ml-2 mt-[2px]">
+					<span className="text-[13px] tracking-tight ml-2 mt-[2px] truncate">
 						{title}
 					</span>
 				)}
@@ -340,7 +340,7 @@ export namespace Blank {
 	};
 }
 
-export function CtaBar({ className, left, right }: CtaBar.Props) {
+export function FooterBar({ className, left, right }: FooterBar.Props) {
 	return (
 		<div
 			className={cx(
@@ -348,13 +348,13 @@ export function CtaBar({ className, left, right }: CtaBar.Props) {
 				className,
 			)}
 		>
-			<div className="flex items-center gap-3">{left}</div>
+			<div className="hidden sm:flex items-center gap-3">{left}</div>
 			<div className="flex items-center gap-3">{right}</div>
 		</div>
 	);
 }
 
-export namespace CtaBar {
+export namespace FooterBar {
 	export type Props = {
 		className?: string;
 		left?: ReactNode;
@@ -423,7 +423,7 @@ export function Spent({ className, label = "Spent" }: Spent.Props) {
 	});
 
 	return (
-		<span className={cx("text-secondary", className)}>
+		<span className={cx("text-secondary hidden sm:inline", className)}>
 			{label}: <span className="text-warning">${display}</span>
 		</span>
 	);
@@ -779,7 +779,7 @@ export function Account({ className }: Account.Props) {
 
 	return (
 		<span className={cx("flex items-center gap-3", className)}>
-			<span className="text-primary">
+			<span className="text-primary hidden sm:inline">
 				{address.slice(0, 6)}…{address.slice(-4)}
 			</span>
 			<button
@@ -875,7 +875,7 @@ export function Demo({
 				</Steps>
 			</Panel>
 
-			<CtaBar
+			<FooterBar
 				left={<Hint />}
 				right={
 					<>
