@@ -106,10 +106,7 @@ export function CliPlayground() {
 
 					<Cli.Block>
 						<Cli.Line variant="info">Welcome to the demo:</Cli.Line>
-						<Cli.Toggle
-							autoFocus
-							onSubmit={(v) => console.log("Submit:", v)}
-						>
+						<Cli.Toggle autoFocus onSubmit={(v) => console.log("Submit:", v)}>
 							<Cli.Toggle.Option value="signin">Sign In</Cli.Toggle.Option>
 							<Cli.Toggle.Option value="signup">Sign Up</Cli.Toggle.Option>
 						</Cli.Toggle>
@@ -130,20 +127,19 @@ export function CliPlayground() {
 
 			<Cli.Window>
 				<Cli.TitleBar title="Connect Wallet">
+					<Cli.Refresh />
 					<Cli.Account />
 				</Cli.TitleBar>
 
 				<Cli.Panel height={200}>
-					<Cli.Block>
-						<Cli.Line>MPP Agent Demo v0.1.0</Cli.Line>
-						<Cli.Line variant="success" prefix="✓">
-							Agent ready
-						</Cli.Line>
-					</Cli.Block>
-
-					<Cli.Block.ConnectWallet
-						onConnect={() => console.log("Connected!")}
-					/>
+					<Cli.Steps>
+						<Cli.Step>
+							<Cli.Block.Startup />
+						</Cli.Step>
+						<Cli.Step>
+							<Cli.Block.ConnectWallet />
+						</Cli.Step>
+					</Cli.Steps>
 				</Cli.Panel>
 
 				<Cli.CtaBar

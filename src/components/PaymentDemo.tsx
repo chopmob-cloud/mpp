@@ -16,8 +16,8 @@ import {
 	useReadContract,
 	useWalletClient,
 } from "wagmi";
+import { alphaUsd } from "../wagmi.config";
 import { PaymentProviders } from "./PaymentProviders";
-import { alphaUsd } from "./wagmi.config";
 
 interface ProtocolData {
 	challengeHeader: string | null;

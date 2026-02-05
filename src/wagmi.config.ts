@@ -30,6 +30,7 @@ export const config = createConfig({
 	],
 	chains: [chain],
 	multiInjectedProviderDiscovery: false,
+	pollingInterval: 1_000,
 	transports: {
 		[tempoModerato.id]: webSocket(),
 	},

@@ -8,8 +8,10 @@ import {
 	createContext,
 	isValidElement,
 	type ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -33,7 +35,13 @@ export const Context = createContext<Context.Value>({
 	},
 	interaction: {
 		active: null,
-		setActive: () => { },
+		setActive: () => {},
+	},
+	steps: {
+		index: 0,
+		next: () => {},
+		prev: () => {},
+		reset: () => {},
 	},
 });
 
@@ -52,9 +60,17 @@ export namespace Context {
 		setActive: (type: InteractionType) => void;
 	};
 
+	export type Steps = {
+		index: number;
+		next: () => void;
+		prev: () => void;
+		reset: () => void;
+	};
+
 	export type Value = {
 		balance: Balance;
 		interaction: Interaction;
+		steps: Steps;
 	};
 }
 
@@ -63,6 +79,7 @@ export function Window({ children, className, token }: Window.Props) {
 
 	const [initial, setInitial] = useState<bigint | undefined>(undefined);
 	const [active, setActive] = useState<Context.InteractionType>(null);
+	const [stepIndex, setStepIndex] = useState(0);
 
 	const { data: balance, refetch: refetchBalance } = Hooks.token.useGetBalance({
 		account: address,
@@ -91,11 +108,21 @@ export function Window({ children, className, token }: Window.Props) {
 			? initial - balance
 			: 0n;
 
+	const next = useCallback(() => setStepIndex((i) => i + 1), []);
+	const prev = useCallback(() => setStepIndex((i) => Math.max(i - 1, 0)), []);
+	const reset = useCallback(() => setStepIndex(0), []);
+
+	const steps = useMemo(
+		() => ({ index: stepIndex, next, prev, reset }),
+		[stepIndex, next, prev, reset],
+	);
+
 	return (
 		<Context.Provider
 			value={{
 				balance: { address, initial, spent, token },
 				interaction: { active, setActive },
+				steps,
 			}}
 		>
 			<div
@@ -285,10 +312,43 @@ export namespace Block {
 		className?: string;
 	};
 
-	export function ConnectWallet({ onConnect }: ConnectWallet.Props) {
+	export function Startup() {
+		const { steps } = useContext(Context);
+		const [phase, setPhase] = useState<"init" | "ready">("init");
+
+		useEffect(() => {
+			if (steps.index !== 0) return;
+
+			setPhase("init");
+
+			const initTimer = setTimeout(() => setPhase("ready"), 1000);
+			const nextTimer = setTimeout(() => steps.next(), 2000);
+
+			return () => {
+				clearTimeout(initTimer);
+				clearTimeout(nextTimer);
+			};
+		}, [steps]);
+
+		return (
+			<Block>
+				<Line>MPP Agent Demo v0.1.0</Line>
+				{phase === "init" ? (
+					<Line variant="loading">Initializing...</Line>
+				) : (
+					<Line variant="success" prefix="✓">
+						Agent ready
+					</Line>
+				)}
+			</Block>
+		);
+	}
+
+	export function ConnectWallet() {
+		const { steps } = useContext(Context);
 		const { address } = useConnection();
 		const connectors = useConnectors();
-		const { connect } = useConnect();
+		const { connect, isPending } = useConnect();
 
 		const connector = connectors[0];
 
@@ -301,6 +361,8 @@ export namespace Block {
 					<Line variant="success" prefix="✓">
 						Connected: {address.slice(0, 10)}…{address.slice(-8)}
 					</Line>
+				) : isPending ? (
+					<Line variant="loading">Connecting...</Line>
 				) : (
 					<Toggle
 						autoFocus
@@ -311,7 +373,7 @@ export namespace Block {
 										connector,
 										capabilities: { type: type as "sign-in" | "sign-up" },
 									},
-									{ onSuccess: () => onConnect?.() },
+									{ onSuccess: () => steps.next() },
 								);
 							}
 						}}
@@ -322,12 +384,6 @@ export namespace Block {
 				)}
 			</Block>
 		);
-	}
-
-	export namespace ConnectWallet {
-		export type Props = {
-			onConnect?: () => void;
-		};
 	}
 }
 
@@ -665,9 +721,8 @@ export function Toggle({
 
 	useEffect(() => {
 		if (autoFocus && !disabled && ref.current) {
-			const firstRadio = ref.current.querySelector<HTMLElement>(
-				'[role="radio"]',
-			);
+			const firstRadio =
+				ref.current.querySelector<HTMLElement>('[role="radio"]');
 			firstRadio?.focus();
 		}
 	}, [autoFocus, disabled]);
@@ -748,9 +803,12 @@ export function Hint({ className }: Hint.Props) {
 
 	if (!interaction.active) {
 		return (
-			<span className={cx("text-gray8", className)}>
+			<StatusDot
+				variant={address ? "success" : "offline"}
+				className={className}
+			>
 				{address ? "Connected" : "Disconnected"}
-			</span>
+			</StatusDot>
 		);
 	}
 
@@ -797,5 +855,51 @@ export function Account({ className }: Account.Props) {
 export namespace Account {
 	export type Props = {
 		className?: string;
+	};
+}
+
+export function Refresh({ className }: Refresh.Props) {
+	const { steps } = useContext(Context);
+
+	return (
+		<button
+			type="button"
+			onClick={() => steps.reset()}
+			className={cx(
+				"text-gray8 hover:text-primary transition-colors tracking-tight",
+				className,
+			)}
+		>
+			Refresh
+		</button>
+	);
+}
+
+export namespace Refresh {
+	export type Props = {
+		className?: string;
+	};
+}
+
+export function Steps({ children }: Steps.Props) {
+	const { steps } = useContext(Context);
+	const childArray = Children.toArray(children);
+
+	return <>{childArray.slice(0, steps.index + 1)}</>;
+}
+
+export namespace Steps {
+	export type Props = {
+		children: ReactNode;
+	};
+}
+
+export function Step({ children }: Step.Props) {
+	return <>{children}</>;
+}
+
+export namespace Step {
+	export type Props = {
+		children: ReactNode;
 	};
 }
