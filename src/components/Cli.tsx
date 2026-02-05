@@ -28,8 +28,11 @@ import {
 } from "wagmi";
 import { Hooks } from "wagmi/tempo";
 import IconLogOut from "~icons/lucide/log-out";
+import IconNetwork from "~icons/lucide/network";
 import IconRefresh from "~icons/lucide/refresh-cw";
+import IconTerminal from "~icons/lucide/terminal";
 import { fetch } from "../mpay.client";
+import { useNetworkRequests } from "../lib/network-store";
 
 export const Context = createContext<Context.Value>({
 	initialBalance: {
@@ -47,10 +50,15 @@ export const Context = createContext<Context.Value>({
 		reset: () => {},
 	},
 	token: undefined,
+	view: {
+		current: "main",
+		set: () => {},
+	},
 });
 
 export namespace Context {
 	export type InteractionType = "select" | "toggle" | null;
+	export type ViewType = "main" | "network";
 
 	export type InitialBalance = {
 		reset: () => void;
@@ -69,11 +77,17 @@ export namespace Context {
 		reset: () => void;
 	};
 
+	export type View = {
+		current: ViewType;
+		set: (view: ViewType) => void;
+	};
+
 	export type Value = {
 		initialBalance: InitialBalance;
 		interaction: Interaction;
 		steps: Steps;
 		token: Address | undefined;
+		view: View;
 	};
 }
 
@@ -83,6 +97,7 @@ export function Window({ children, className, token }: Window.Props) {
 	const [initial, setInitial] = useState<bigint | undefined>(undefined);
 	const [active, setActive] = useState<Context.InteractionType>(null);
 	const [stepIndex, setStepIndex] = useState(0);
+	const [currentView, setCurrentView] = useState<Context.ViewType>("main");
 
 	const { data: balance } = Hooks.token.useGetBalance({
 		account: address,
@@ -109,6 +124,11 @@ export function Window({ children, className, token }: Window.Props) {
 		[stepIndex, next, prev, reset],
 	);
 
+	const view = useMemo(
+		() => ({ current: currentView, set: setCurrentView }),
+		[currentView],
+	);
+
 	return (
 		<Context.Provider
 			value={{
@@ -116,6 +136,7 @@ export function Window({ children, className, token }: Window.Props) {
 				token,
 				interaction: { active, setActive },
 				steps,
+				view,
 			}}
 		>
 			<div
@@ -827,6 +848,41 @@ export namespace Refresh {
 	};
 }
 
+export function NetworkToggle({ className }: NetworkToggle.Props) {
+	const { view } = useContext(Context);
+	const requests = useNetworkRequests();
+
+	const isNetwork = view.current === "network";
+	const hasPending = requests.some((r) => r.status === "pending");
+
+	return (
+		<button
+			type="button"
+			onClick={() => view.set(isNetwork ? "main" : "network")}
+			className={cx(
+				"text-secondary hover:text-primary transition-colors relative",
+				className,
+			)}
+			aria-label={isNetwork ? "Show terminal" : "Show network"}
+		>
+			{isNetwork ? (
+				<IconTerminal className="w-3.5 h-3.5" />
+			) : (
+				<IconNetwork className="w-3.5 h-3.5" />
+			)}
+			{hasPending && !isNetwork && (
+				<span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-warning rounded-full animate-pulse" />
+			)}
+		</button>
+	);
+}
+
+export namespace NetworkToggle {
+	export type Props = {
+		className?: string;
+	};
+}
+
 export function Steps({ children }: Steps.Props) {
 	const { steps } = useContext(Context);
 	const childArray = Children.toArray(children);
@@ -850,6 +906,53 @@ export namespace Step {
 	};
 }
 
+export function NetworkPanel({ className }: NetworkPanel.Props) {
+	const requests = useNetworkRequests();
+
+	if (requests.length === 0) return null;
+
+	return (
+		<Block className={className}>
+			<Line variant="info">Network activity:</Line>
+			{requests.map((request) => (
+				<div key={request.id} className="flex items-center gap-2">
+					<span
+						className={cva("w-2 h-2 rounded-full shrink-0", {
+							variants: {
+								status: {
+									pending: "bg-warning animate-pulse",
+									success: "bg-success",
+									error: "bg-destructive",
+								},
+							},
+						})({ status: request.status })}
+					/>
+					<span className="text-gray8 uppercase text-[10px] w-8 shrink-0">
+						{request.method}
+					</span>
+					<span className="text-secondary truncate">{request.url}</span>
+					{request.statusCode && (
+						<span
+							className={cx(
+								"text-[10px] shrink-0",
+								request.statusCode >= 400 ? "text-destructive" : "text-success",
+							)}
+						>
+							{request.statusCode}
+						</span>
+					)}
+				</div>
+			))}
+		</Block>
+	);
+}
+
+export namespace NetworkPanel {
+	export type Props = {
+		className?: string;
+	};
+}
+
 export function Demo({
 	className,
 	height = 200,
@@ -861,19 +964,11 @@ export function Demo({
 		<Window className={className} token={token}>
 			<TitleBar title={title}>
 				<Account />
+				<NetworkToggle />
 				<Refresh />
 			</TitleBar>
 
-			<Panel height={height}>
-				<Steps>
-					{steps.map((StepComponent, i) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: stable array
-						<Step key={i}>
-							<StepComponent />
-						</Step>
-					))}
-				</Steps>
-			</Panel>
+			<Demo.Content height={height} steps={steps} />
 
 			<FooterBar
 				left={<Hint />}
@@ -896,6 +991,31 @@ export namespace Demo {
 		title?: string;
 		token?: Address;
 	};
+
+	export function Content({ height, steps }: { height: number; steps: Array<() => ReactNode> }) {
+		const { view } = useContext(Context);
+
+		if (view.current === "network") {
+			return (
+				<Panel height={height}>
+					<NetworkPanel />
+				</Panel>
+			);
+		}
+
+		return (
+			<Panel height={height}>
+				<Steps>
+					{steps.map((StepComponent, i) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: stable array
+						<Step key={i}>
+							<StepComponent />
+						</Step>
+					))}
+				</Steps>
+			</Panel>
+		);
+	}
 }
 
 export function Startup() {
