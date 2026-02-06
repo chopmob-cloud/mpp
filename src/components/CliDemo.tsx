@@ -589,7 +589,7 @@ export function CliDemo() {
 					}
 
 					// Delay between calls to allow on-chain nonce settlement
-					await new Promise((r) => setTimeout(r, 1000));
+					await new Promise((r) => setTimeout(r, 1500));
 				} catch (err) {
 					addLine({
 						type: "error",
