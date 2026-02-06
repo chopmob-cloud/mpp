@@ -98,12 +98,14 @@ for (const [heading, matcher, parent] of categories) {
 	lines.push("");
 	for (const spec of matched) {
 		const hasTxt = fs.existsSync(path.join(specsDir, `${spec.basename}.txt`));
-		const txtLink = hasTxt
-			? ` <a href="/specs/${spec.basename}.txt"><code data-v="true">.txt</code></a>`
-			: "";
-		lines.push(
-			`- ${spec.title} <a href="/specs/${spec.basename}.html"><code data-v="true">.html</code></a>${txtLink}`,
-		);
+		const links = [
+			`<a href="/specs/${spec.basename}.html"><code data-v="true">.html</code></a>`,
+		];
+		if (hasTxt)
+			links.push(
+				`<a href="/specs/${spec.basename}.txt"><code data-v="true">.txt</code></a>`,
+			);
+		lines.push(`- ${spec.title} [${links.join(", ")}]`);
 		used.add(spec.basename);
 	}
 	lines.push("");
@@ -115,12 +117,14 @@ if (uncategorized.length > 0) {
 	lines.push("");
 	for (const spec of uncategorized) {
 		const hasTxt = fs.existsSync(path.join(specsDir, `${spec.basename}.txt`));
-		const txtLink = hasTxt
-			? ` <a href="/specs/${spec.basename}.txt"><code data-v="true">.txt</code></a>`
-			: "";
-		lines.push(
-			`- ${spec.title} <a href="/specs/${spec.basename}.html"><code data-v="true">.html</code></a>${txtLink}`,
-		);
+		const links = [
+			`<a href="/specs/${spec.basename}.html"><code data-v="true">.html</code></a>`,
+		];
+		if (hasTxt)
+			links.push(
+				`<a href="/specs/${spec.basename}.txt"><code data-v="true">.txt</code></a>`,
+			);
+		lines.push(`- ${spec.title} [${links.join(", ")}]`);
 	}
 	lines.push("");
 }

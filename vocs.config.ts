@@ -15,7 +15,7 @@ export default defineConfig({
 	baseUrl,
 	redirects: [
 		{ source: "/docs", destination: "/overview" },
-		{ source: "/specifications", destination: "/specs/" },
+		{ source: "/specifications", destination: "/specs" },
 	],
 	description:
 		"Machine Payments Protocol - Machine-native payments for machine-to-machine transactions",
@@ -49,7 +49,7 @@ export default defineConfig({
 				text: "Introduction",
 				items: [
 					{ text: "Overview", link: "/overview" },
-					{ text: "Specifications", link: "/specs/" },
+					{ text: "Specifications", link: "/specs" },
 					{ text: "FAQ", link: "/faq" },
 				],
 			},
@@ -380,17 +380,13 @@ export default defineConfig({
 					},
 				],
 			},
-			{
-				text: "Resources",
-				items: [{ text: "Brand", link: "/brand" }],
-			},
 		],
 	},
 	socials: [
-		{ icon: "github", link: "https://github.com/tempoxyz/payment-auth-spec" },
 		{ icon: "x", link: "https://x.com/mpp" },
+		{ icon: "github", link: "https://github.com/tempoxyz/payment-auth-spec" },
 	],
-	title: "MPP",
+	title: "Machine Payments Protocol",
 	titleTemplate: "%s | MPP",
 	twoslash: {
 		twoslashOptions: {
@@ -402,18 +398,17 @@ export default defineConfig({
 	topNav: [
 		{ text: "Docs", link: "/overview", match: (path) => path !== "/" },
 		{ text: "SDKs & Tools", link: "/sdk" },
-		{ text: "Specs", link: "/specs/" },
+		{ text: "Specs", link: "/specs" },
 		{
 			text: "GitHub",
 			items: [
-				{ text: "mpay (TypeScript)", link: "https://github.com/wevm/mpay" },
-				{ text: "mpay-rs (Rust)", link: "https://github.com/tempoxyz/mpay-rs" },
-				{ text: "pympay (Python)", link: "https://github.com/tempoxyz/pympay" },
+				{ text: "mpay [TypeScript]", link: "https://github.com/wevm/mpay" },
+				{ text: "mpay-rs [Rust]", link: "https://github.com/tempoxyz/mpay-rs" },
+				{ text: "pympay [Python]", link: "https://github.com/tempoxyz/pympay" },
 				{
 					text: "Specifications",
 					link: "https://github.com/tempoxyz/payment-auth-spec",
 				},
-				{ text: "Docs", link: "https://github.com/tempoxyz/mpp" },
 			],
 		},
 	],

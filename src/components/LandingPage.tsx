@@ -313,7 +313,7 @@ export function LandingPage() {
 								</svg>
 							</a>
 							<a
-								href="/specs/"
+								href="/specs"
 								className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors no-underline"
 							>
 								Read the specs
@@ -334,14 +334,11 @@ export function LandingPage() {
 				<div className="flex items-center gap-4">
 					<a
 						href="https://github.com/tempoxyz/payment-auth-spec"
-						className="text-gray-400 hover:text-gray-600 no-underline"
+						className="text-[#0166ff] underline"
 					>
 						GitHub
 					</a>
-					<a
-						href="https://x.com/mpp"
-						className="text-gray-400 hover:text-gray-600 no-underline"
-					>
+					<a href="https://x.com/mpp" className="text-[#0166ff] underline">
 						X
 					</a>
 				</div>
