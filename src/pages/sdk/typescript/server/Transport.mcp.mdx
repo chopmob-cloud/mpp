@@ -5,10 +5,11 @@ MCP transport for server-side payment handling with raw JSON-RPC.
 ## Usage
 
 ```ts twoslash
+// @noErrors
 import { Mpay, tempo, Transport } from 'mpay/server'
 
-const payment = Mpay.create({
-  method: tempo(),
+const mpay = Mpay.create({
+  methods: [tempo.charge()],
   transport: Transport.mcp(),
 })
 ```
