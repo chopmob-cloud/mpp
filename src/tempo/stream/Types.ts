@@ -22,20 +22,19 @@ export interface SignedVoucher extends Voucher {
 export type StreamCredentialPayload =
   | {
       action: 'open'
-      type: 'hash' | 'transaction'
+      type: 'transaction'
       channelId: Hex
-      hash?: Hex | undefined
-      signature?: Hex | undefined
+      transaction: Hex
+      signature: Hex
       authorizedSigner?: Address | undefined
       cumulativeAmount: string
-      voucherSignature: Hex
     }
   | {
       action: 'topUp'
+      type: 'transaction'
       channelId: Hex
-      topUpTxHash: Hex
-      cumulativeAmount: string
-      voucherSignature: Hex
+      transaction: Hex
+      additionalDeposit: string
     }
   | {
       action: 'voucher'
@@ -47,7 +46,7 @@ export type StreamCredentialPayload =
       action: 'close'
       channelId: Hex
       cumulativeAmount: string
-      voucherSignature: Hex
+      signature: Hex
     }
 
 /**

@@ -11,8 +11,11 @@ export interface ChannelState {
   token: Address
   authorizedSigner: Address
   deposit: bigint
+  settledOnChain: bigint
   highestVoucherAmount: bigint
   highestVoucher: SignedVoucher | null
+  activeSessionId?: string | undefined
+  finalized: boolean
   createdAt: Date
 }
 

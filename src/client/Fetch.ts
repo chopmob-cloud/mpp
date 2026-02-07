@@ -23,6 +23,7 @@ let originalFetch: typeof globalThis.fetch | undefined
  * // Use the wrapped fetch — handles 402 automatically
  * const res = await fetch('https://api.example.com/resource')
  * ```
+ *
  */
 export function from<const methods extends readonly MethodIntent.AnyClient[]>(
   config: from.Config<methods>,
@@ -30,17 +31,25 @@ export function from<const methods extends readonly MethodIntent.AnyClient[]>(
   const { fetch = globalThis.fetch, methods } = config
 
   return async (input, init) => {
-    const context = init?.context
-    const response = await fetch(input, init)
+    const { context, ...fetchInit } = init ?? {}
+    const response = await fetch(input, fetchInit)
 
     if (response.status !== 402) return response
 
-    const credential = await createCredential(response, { context, methods })
+    const challenge = Challenge.fromResponse(response)
+
+    const mi = methods.find((m) => m.method === challenge.method && m.name === challenge.intent)
+    if (!mi)
+      throw new Error(
+        `No method intent found for "${challenge.method}.${challenge.intent}". Available: ${methods.map((m) => `${m.method}.${m.name}`).join(', ')}`,
+      )
+
+    const credential = await resolveCredential(challenge, mi, context)
 
     return fetch(input, {
-      ...init,
+      ...fetchInit,
       headers: {
-        ...init?.headers,
+        ...fetchInit.headers,
         Authorization: credential,
       },
     })
@@ -136,22 +145,11 @@ export function restore(): void {
 }
 
 /** @internal */
-async function createCredential<methods extends readonly MethodIntent.AnyClient[]>(
-  response: Response,
-  config: {
-    context?: unknown
-    methods: methods
-  },
+async function resolveCredential(
+  challenge: Challenge.Challenge,
+  mi: MethodIntent.AnyClient,
+  context: unknown,
 ): Promise<string> {
-  const { context, methods } = config
-  const challenge = Challenge.fromResponse(response)
-
-  const mi = methods.find((m) => m.method === challenge.method && m.name === challenge.intent)
-  if (!mi)
-    throw new Error(
-      `No method intent found for "${challenge.method}.${challenge.intent}". Available: ${methods.map((m) => `${m.method}.${m.name}`).join(', ')}`,
-    )
-
   const parsedContext = mi.context && context !== undefined ? mi.context.parse(context) : undefined
   return mi.createCredential(
     parsedContext !== undefined ? { challenge, context: parsedContext } : ({ challenge } as never),
