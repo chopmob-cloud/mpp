@@ -38,7 +38,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from mpay import Challenge
 from mpay.server import Mpay
-from mpay.methods.tempo import tempo
+from mpay.methods.tempo import tempo, ChargeIntent
 
 app = FastAPI()
 
@@ -46,6 +46,7 @@ mpay = Mpay.create(
     method=tempo(
         currency="0x20c0000000000000000000000000000000000001",
         recipient="0xa726a1CD723409074DF9108A2187cfA19899aCF8",
+        intents={"charge": ChargeIntent()},
     ),
 )
 
@@ -72,12 +73,12 @@ async def get_resource(request: Request):
 ```python [client.py]
 import asyncio
 from mpay.client import Client
-from mpay.methods.tempo import tempo, TempoAccount
+from mpay.methods.tempo import tempo, TempoAccount, ChargeIntent
 
 async def main():
     account = TempoAccount.from_env()
 
-    async with Client(methods=[tempo(account=account)]) as client:
+    async with Client(methods=[tempo(account=account, intents={"charge": ChargeIntent()})]) as client:
         response = await client.get("https://mpp.dev/api/ping/paid")
         print(response.json())
 

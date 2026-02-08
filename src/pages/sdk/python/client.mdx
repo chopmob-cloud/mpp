@@ -6,11 +6,11 @@ Handle `402` Payment Required responses automatically.
 
 ```python [client.py]
 from mpay.client import Client
-from mpay.methods.tempo import tempo, TempoAccount
+from mpay.methods.tempo import tempo, TempoAccount, ChargeIntent
 
 account = TempoAccount.from_key("0x...")
 
-async with Client(methods=[tempo(account=account)]) as client:
+async with Client(methods=[tempo(account=account, intents={"charge": ChargeIntent()})]) as client:
     response = await client.get("https://api.example.com/resource")
     print(response.json())
 ```
@@ -29,11 +29,11 @@ async with Client(methods=[tempo(account=account)]) as client:
 
 ```python [client.py]
 from mpay.client import get
-from mpay.methods.tempo import tempo, TempoAccount
+from mpay.methods.tempo import tempo, TempoAccount, ChargeIntent
 
 response = await get(
     "https://api.example.com/resource",
-    methods=[tempo(account=TempoAccount.from_key("0x..."))],
+    methods=[tempo(account=TempoAccount.from_key("0x..."), intents={"charge": ChargeIntent()})],
 )
 ```
 
@@ -73,11 +73,11 @@ async with httpx.AsyncClient(transport=transport, timeout=60.0) as client:
 ```python [transport.py]
 import httpx
 from mpay.client import PaymentTransport
-from mpay.methods.tempo import tempo, TempoAccount
+from mpay.methods.tempo import tempo, TempoAccount, ChargeIntent
 
 account = TempoAccount.from_key("0x...")
 transport = PaymentTransport(
-    methods=[tempo(account=account)],
+    methods=[tempo(account=account, intents={"charge": ChargeIntent()})],
     inner=httpx.AsyncHTTPTransport(retries=3),
 )
 

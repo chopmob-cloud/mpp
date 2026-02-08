@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from mpay import Challenge
 from mpay.server import Mpay
-from mpay.methods.tempo import tempo
+from mpay.methods.tempo import tempo, ChargeIntent
 
 app = FastAPI()
 
@@ -19,6 +19,7 @@ mpay = Mpay.create(
     method=tempo(
         currency="0x20c0000000000000000000000000000000000001",
         recipient="0xa726a1CD723409074DF9108A2187cfA19899aCF8",
+        intents={"charge": ChargeIntent()},
     ),
 )
 
@@ -47,6 +48,7 @@ mpay = Mpay.create(
     method=tempo(
         currency="0x20c0000000000000000000000000000000000001",
         recipient="0xa726a1CD723409074DF9108A2187cfA19899aCF8",
+        intents={"charge": ChargeIntent()},
     ),
     realm="api.example.com",
     secret_key="my-server-secret",
@@ -55,23 +57,24 @@ mpay = Mpay.create(
 
 ## `tempo()` factory
 
-`tempo()` creates a `TempoMethod` that bundles a payment network, its intents, and default parameters together. By default it registers a `charge` intent. Pass additional intents (like `StreamIntent`) via the `intents` parameter.
+`tempo()` creates a `TempoMethod` that bundles a payment network, its intents, and default parameters together. Each intent must be explicitly registered via the `intents` parameter.
 
 ```python [server.py]
-from mpay.methods.tempo import tempo
+from mpay.methods.tempo import tempo, ChargeIntent
 
 method = tempo(
     currency="0x20c0000000000000000000000000000000000001",
     recipient="0xa726a1CD723409074DF9108A2187cfA19899aCF8",
+    intents={"charge": ChargeIntent()},
 )
 ```
 
 ### With charge and stream
 
-Register both intents on a single method by passing a `StreamIntent` via `intents`:
+Register both intents on a single method:
 
 ```python [server.py]
-from mpay.methods.tempo import tempo, StreamIntent
+from mpay.methods.tempo import tempo, ChargeIntent, StreamIntent
 from mpay.methods.tempo.stream.storage import MemoryStorage
 
 mpay = Mpay.create(
@@ -79,6 +82,7 @@ mpay = Mpay.create(
         currency="0x20c0000000000000000000000000000000000001",
         recipient="0xa726a1CD723409074DF9108A2187cfA19899aCF8",
         intents={
+            "charge": ChargeIntent(),
             "stream": StreamIntent(
                 storage=MemoryStorage(),
                 rpc_url="https://rpc.tempo.xyz",
@@ -103,11 +107,11 @@ Default TIP-20 token address for charges.
 
 Token decimal places for amount conversion (6 for pathUSD).
 
-### intents (optional)
+### intents
 
 - **Type:** `dict[str, Intent]`
 
-Additional intents to register, merged with the default `charge` intent. Use this to add stream support.
+Intents to register (e.g. `charge`, `stream`). Each intent must be explicitly provided.
 
 ### recipient (optional)
 
