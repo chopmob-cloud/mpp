@@ -140,27 +140,39 @@ export function Panel({
 	height,
 	autoScroll,
 	className,
-	reverse = true,
 }: Panel.Props) {
-	const ref = useRef<HTMLDivElement>(null);
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const contentRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		if (autoScroll && ref.current) {
-			ref.current.scrollTop = ref.current.scrollHeight;
+		if (autoScroll && scrollRef.current) {
+			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
 		}
 	});
 
+	useEffect(() => {
+		const scrollEl = scrollRef.current;
+		const contentEl = contentRef.current;
+		if (!scrollEl || !contentEl) return;
+
+		const observer = new ResizeObserver(() => {
+			scrollEl.scrollTop = scrollEl.scrollHeight;
+		});
+		observer.observe(contentEl);
+
+		return () => observer.disconnect();
+	}, []);
+
 	return (
 		<div
-			ref={ref}
+			ref={scrollRef}
 			className={cx(
-				"p-4 overflow-y-auto bg-surface flex",
-				reverse ? "flex-col-reverse" : "flex-col",
+				"p-4 overflow-y-auto bg-surface flex flex-col",
 				className,
 			)}
 			style={height ? { height } : undefined}
 		>
-			<div className="flex flex-col gap-6">{children}</div>
+			<div ref={contentRef} className="flex flex-col gap-6">{children}</div>
 		</div>
 	);
 }
@@ -171,7 +183,6 @@ export namespace Panel {
 		children: ReactNode;
 		className?: string;
 		height?: number;
-		reverse?: boolean;
 	};
 }
 
@@ -513,7 +524,7 @@ export function Select({
 		if (autoFocus && !disabled && ref.current) {
 			const firstRadio =
 				ref.current.querySelector<HTMLElement>('[role="radio"]');
-			firstRadio?.focus();
+			firstRadio?.focus({ preventScroll: true });
 		}
 	}, [autoFocus, disabled]);
 
@@ -624,7 +635,7 @@ export function Toggle({
 		if (autoFocus && !disabled && ref.current) {
 			const firstRadio =
 				ref.current.querySelector<HTMLElement>('[role="radio"]');
-			firstRadio?.focus();
+			firstRadio?.focus({ preventScroll: true });
 		}
 	}, [autoFocus, disabled]);
 
