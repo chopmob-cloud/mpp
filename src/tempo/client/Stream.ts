@@ -1,11 +1,5 @@
-import {
-  type Account,
-  type Address,
-  encodeFunctionData,
-  type Hex,
-  toHex,
-  type Client as viem_Client,
-} from 'viem'
+import { Hex } from 'ox'
+import { type Account, type Address, encodeFunctionData, type Client as viem_Client } from 'viem'
 import { prepareTransactionRequest, signTransaction } from 'viem/actions'
 import { tempo as tempo_chain } from 'viem/chains'
 import { Abis } from 'viem/tempo'
@@ -34,8 +28,8 @@ export const streamContextSchema = z.object({
 export type StreamContext = z.infer<typeof streamContextSchema>
 
 type ChannelEntry = {
-  channelId: Hex
-  salt: Hex
+  channelId: Hex.Hex
+  salt: Hex.Hex
   cumulativeAmount: bigint
   opened: boolean
 }
@@ -88,12 +82,6 @@ export function stream(parameters: stream.Parameters = {}) {
     return `${payee.toLowerCase()}:${currency.toLowerCase()}:${escrow.toLowerCase()}`
   }
 
-  function randomSalt(): Hex {
-    const bytes = new Uint8Array(32)
-    globalThis.crypto.getRandomValues(bytes)
-    return toHex(bytes, { size: 32 })
-  }
-
   function resolveEscrow(
     challenge: { request: { methodDetails?: unknown } },
     chainId: number,
@@ -119,7 +107,7 @@ export function stream(parameters: stream.Parameters = {}) {
   async function voucherPayload(
     client: viem_Client,
     account: Account,
-    channelId: Hex,
+    channelId: Hex.Hex,
     cumulativeAmount: bigint,
     escrowContract: Address,
     chainId: number,
@@ -171,7 +159,7 @@ export function stream(parameters: stream.Parameters = {}) {
     let entry = channels.get(key)
 
     if (!entry) {
-      const suggestedChannelId = md?.channelId as Hex | undefined
+      const suggestedChannelId = md?.channelId as Hex.Hex | undefined
       if (suggestedChannelId)
         entry = await tryRecoverChannel(client, escrowContract, suggestedChannelId, key)
     }
@@ -219,7 +207,7 @@ export function stream(parameters: stream.Parameters = {}) {
     chainId: number,
     feePayer?: boolean | undefined,
   ): Promise<{ entry: ChannelEntry; payload: StreamCredentialPayload }> {
-    const salt = randomSalt()
+    const salt = Hex.random(32)
 
     const channelId = Channel.computeId({
       authorizedSigner: account.address,
@@ -252,7 +240,7 @@ export function stream(parameters: stream.Parameters = {}) {
       ...(feePayer && { feePayer: true }),
     } as never)
     prepared.gas = prepared.gas! + 5_000n
-    const transaction = (await signTransaction(client, prepared as never)) as Hex
+    const transaction = (await signTransaction(client, prepared as never)) as Hex.Hex
 
     const signature = await signVoucher(
       client,
@@ -279,7 +267,7 @@ export function stream(parameters: stream.Parameters = {}) {
   async function tryRecoverChannel(
     client: viem_Client,
     escrowContract: Address,
-    channelId: Hex,
+    channelId: Hex.Hex,
     key: string,
   ): Promise<ChannelEntry | undefined> {
     try {
@@ -288,7 +276,7 @@ export function stream(parameters: stream.Parameters = {}) {
       if (onChain.deposit > 0n && !onChain.finalized) {
         const entry: ChannelEntry = {
           channelId,
-          salt: '0x' as Hex,
+          salt: '0x' as Hex.Hex,
           cumulativeAmount: onChain.settled,
           opened: true,
         }
@@ -320,7 +308,7 @@ export function stream(parameters: stream.Parameters = {}) {
       authorizedSigner,
       additionalDeposit,
     } = context
-    const channelId = channelIdRaw as Hex
+    const channelId = channelIdRaw as Hex.Hex
 
     const escrowContract = resolveEscrow(challenge, chainId, channelId)
     escrowContractMap.set(channelId, escrowContract)
@@ -343,7 +331,7 @@ export function stream(parameters: stream.Parameters = {}) {
           action: 'open',
           type: 'transaction',
           channelId,
-          transaction: transaction as Hex,
+          transaction: transaction as Hex.Hex,
           authorizedSigner: (authorizedSigner as Address) ?? account.address,
           cumulativeAmount: cumulativeAmount.toString(),
           signature,
@@ -359,7 +347,7 @@ export function stream(parameters: stream.Parameters = {}) {
           action: 'topUp',
           type: 'transaction',
           channelId,
-          transaction: transaction as Hex,
+          transaction: transaction as Hex.Hex,
           additionalDeposit: additionalDeposit.toString(),
         }
         break
