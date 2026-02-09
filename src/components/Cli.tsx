@@ -375,7 +375,8 @@ export namespace Balance {
 }
 
 export function Spent({ className, label = "Spent", type }: Spent.Props) {
-	if (type === "stream") return <Spent.Stream className={className} label={label} />;
+	if (type === "stream")
+		return <Spent.Stream className={className} label={label} />;
 	return <Spent.Charge className={className} label={label} />;
 }
 
@@ -427,7 +428,11 @@ export namespace Spent {
 		return <Display className={className} label={label} spent={spent} />;
 	}
 
-	function Display({ className, label, spent }: DisplayProps & { spent: bigint }) {
+	function Display({
+		className,
+		label,
+		spent,
+	}: DisplayProps & { spent: bigint }) {
 		const formatted = formatUnits(spent, 6);
 		const display = Number(formatted).toLocaleString("en-US", {
 			maximumFractionDigits: 4,
