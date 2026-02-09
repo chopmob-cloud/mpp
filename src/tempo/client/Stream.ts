@@ -43,12 +43,10 @@ type ChannelEntry = {
  * import { Mpay, tempo } from 'mpay/client'
  *
  * const mpay = Mpay.create({
- *   methods: [
- *     tempo.stream({
- *       account: privateKeyToAccount('0x...'),
- *       deposit: 10_000_000n,
- *     }),
- *   ],
+ *   methods: [tempo({
+ *     account: privateKeyToAccount('0x...'),
+ *     deposit: 10_000_000n,
+ *   })],
  * })
  *
  * const res = await mpay.fetch('/api/chat?prompt=hello')
@@ -58,7 +56,7 @@ type ChannelEntry = {
  * ```ts
  * // Manual mode
  * const mpay = Mpay.create({
- *   methods: [tempo.stream({ account })],
+ *   methods: [tempo({ account })],
  * })
  *
  * const credential = await mpay.createCredential(response, {

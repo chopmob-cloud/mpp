@@ -4,7 +4,7 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 const account = privateKeyToAccount(generatePrivateKey())
 
 Mpay.create({
-  methods: [tempo.charge({ account })],
+  methods: [tempo({ account })],
 })
 
 document.getElementById('button')!.addEventListener('click', async () => {

@@ -16,12 +16,10 @@ import { Mpay, tempo } from 'mpay/client'
 import { privateKeyToAccount } from 'viem/accounts'
 
 Mpay.create({
-  methods: [
-    tempo.charge({
-      account: privateKeyToAccount('0x...'),
-      rpcUrl: 'https://rpc.tempo.xyz',
-    }),
-  ],
+  methods: [tempo({
+    account: privateKeyToAccount('0x...'),
+    rpcUrl: 'https://rpc.tempo.xyz',
+  })],
 })
 
 // Global fetch now handles 402 automatically
@@ -41,12 +39,10 @@ import { privateKeyToAccount } from 'viem/accounts'
 
 const mpay = Mpay.create({
   polyfill: false,
-  methods: [
-    tempo.charge({
-      account: privateKeyToAccount('0x...'),
-      rpcUrl: 'https://rpc.tempo.xyz',
-    }),
-  ],
+  methods: [tempo({
+    account: privateKeyToAccount('0x...'),
+    rpcUrl: 'https://rpc.tempo.xyz',
+  })],
 })
 
 // Use returned fetch — handles 402 automatically
@@ -63,11 +59,9 @@ import { privateKeyToAccount } from 'viem/accounts'
 
 const mpay = Mpay.create({
   polyfill: false,
-  methods: [
-    tempo.charge({
-      rpcUrl: 'https://rpc.tempo.xyz',
-    }),
-  ],
+  methods: [tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+  })],
 })
 
 const res = await mpay.fetch('https://api.example.com/resource', {
@@ -85,11 +79,9 @@ import { privateKeyToAccount } from 'viem/accounts'
 
 const mpay = Mpay.create({
   polyfill: false,
-  methods: [
-    tempo.charge({
-      rpcUrl: 'https://rpc.tempo.xyz',
-    }),
-  ],
+  methods: [tempo({
+    rpcUrl: 'https://rpc.tempo.xyz',
+  })],
 })
 
 const response = await fetch('/resource')

@@ -37,7 +37,7 @@ export type Mpay<
  * import { Mpay, tempo } from 'mpay/client'
  *
  * const mpay = Mpay.create({
- *   methods: [tempo.charge({ account })],
+ *   methods: [tempo({ account })],
  * })
  *
  * // Use the returned fetch — handles 402 automatically
@@ -94,7 +94,7 @@ export function create<
  * ```ts
  * import { Mpay, tempo } from 'mpay/client'
  *
- * Mpay.create({ methods: [tempo.charge({ account })] })
+ * Mpay.create({ methods: [tempo({ account })] })
  *
  * // ... use payment-aware fetch ...
  *

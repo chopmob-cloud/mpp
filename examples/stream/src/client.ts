@@ -26,7 +26,7 @@ console.log(`Balance: ${Number(balance) / 1e6} alphaUSD`)
 const mpay = Mpay.create({
   polyfill: false,
   methods: [
-    tempo.stream({
+    tempo({
       account,
       deposit: 10_000_000n,
     }),
