@@ -20,11 +20,14 @@
 		"wrangler:dev": "wrangler dev"
 	},
 	"dependencies": {
+		"@base-ui/react": "^1.1.0",
 		"@fontsource/commit-mono": "^5.2.5",
 		"@tanstack/react-query": "^5.90.20",
+		"@tanstack/react-store": "^0.8.0",
+		"class-variance-authority": "^0.7.1",
 		"dayjs": "^1.11.19",
 		"mermaid": "^11.12.2",
-		"mpay": "https://pkg.pr.new/wevm/mpay@3e967dc",
+		"mpay": "https://pkg.pr.new/wevm/mpay@4591ec6",
 		"react": "^19",
 		"react-dom": "^19",
 		"tailwindcss": "^4.1.18",
