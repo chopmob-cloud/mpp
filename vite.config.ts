@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import nodeLoaderCloudflare from "@hiogawa/node-loader-cloudflare/vite";
 import react from "@vitejs/plugin-react";
 import Icons from "unplugin-icons/vite";
@@ -5,6 +6,13 @@ import { defineConfig } from "vite";
 import { vocs } from "vocs/vite";
 
 export default defineConfig({
+	resolve: {
+		alias: {
+			"shiki/bundle/web": fileURLToPath(
+				new URL("./src/shiki-langs.ts", import.meta.url),
+			),
+		},
+	},
 	optimizeDeps: {
 		include: ["@braintree/sanitize-url", "dayjs", "mermaid"],
 	},

@@ -1,0 +1,23 @@
+// @ts-nocheck — Shiki lang subpath imports lack type declarations
+export const bundledLanguages = {
+	bash: () => import("@shikijs/langs/bash"),
+	html: () => import("@shikijs/langs/html"),
+	"html-derivative": () => import("@shikijs/langs/html-derivative"),
+	http: () => import("@shikijs/langs/http"),
+	javascript: () => import("@shikijs/langs/javascript"),
+	js: () => import("@shikijs/langs/js"),
+	json: () => import("@shikijs/langs/json"),
+	jsonc: () => import("@shikijs/langs/jsonc"),
+	jsx: () => import("@shikijs/langs/jsx"),
+	markdown: () => import("@shikijs/langs/markdown"),
+	md: () => import("@shikijs/langs/md"),
+	mdx: () => import("@shikijs/langs/mdx"),
+	python: () => import("@shikijs/langs/python"),
+	rust: () => import("@shikijs/langs/rust"),
+	shellscript: () => import("@shikijs/langs/shellscript"),
+	toml: () => import("@shikijs/langs/toml"),
+	ts: () => import("@shikijs/langs/ts"),
+	tsx: () => import("@shikijs/langs/tsx"),
+	typescript: () => import("@shikijs/langs/typescript"),
+	yaml: () => import("@shikijs/langs/yaml"),
+};
