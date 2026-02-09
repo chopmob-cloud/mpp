@@ -80,38 +80,39 @@ See [`tempo.charge` server reference](/sdk/typescript/server/Method.tempo.charge
 
 ## Client
 
-Use [`tempo.charge`](/sdk/typescript/client/Method.tempo.charge) with `Fetch.from` to automatically handle `402` responses. The client parses the Challenge, signs a TIP-20 transfer, and retries with the Credential.
+Use [`tempo.charge`](/sdk/typescript/client/Method.tempo.charge) with `Mpay.create` to automatically handle `402` responses. The client parses the Challenge, signs a TIP-20 transfer, and retries with the Credential.
 
 ```ts twoslash
 // @noErrors
-import { Fetch, tempo } from 'mpay/client'
+import { Mpay, tempo } from 'mpay/client'
 import { privateKeyToAccount } from 'viem/accounts'
 
 const account = privateKeyToAccount('0x...')
 
-const fetch = Fetch.from({
+Mpay.create({
   methods: [tempo.charge({ account })],
 })
 
 const response = await fetch('https://api.example.com/resource')
 ```
 
-### With polyfill
+### Without polyfill
 
-For a drop-in replacement that patches `globalThis.fetch`:
+If you don't want to patch `globalThis.fetch`, use `mpay.fetch` directly:
 
 ```ts twoslash
 // @noErrors
-import { Fetch, tempo } from 'mpay/client'
+import { Mpay, tempo } from 'mpay/client'
 import { privateKeyToAccount } from 'viem/accounts'
 
 const account = privateKeyToAccount('0x...')
 
-Fetch.polyfill({
+const mpay = Mpay.create({
+  polyfill: false,
   methods: [tempo.charge({ account })],
 })
 
-const response = await fetch('https://api.example.com/resource')
+const response = await mpay.fetch('https://api.example.com/resource')
 ```
 
 :::info

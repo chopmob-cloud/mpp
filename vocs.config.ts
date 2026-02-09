@@ -130,30 +130,16 @@ export default defineConfig({
 								text: "Client Reference",
 								items: [
 									{
-										text: "Fetch",
-										collapsed: true,
-										items: [
-											{
-												text: ".from",
-												link: "/sdk/typescript/client/Fetch.from",
-											},
-											{
-												text: ".polyfill",
-												link: "/sdk/typescript/client/Fetch.polyfill",
-											},
-											{
-												text: ".restore",
-												link: "/sdk/typescript/client/Fetch.restore",
-											},
-										],
-									},
-									{
 										text: "Mpay",
 										collapsed: true,
 										items: [
 											{
 												text: ".create",
 												link: "/sdk/typescript/client/Mpay.create",
+											},
+											{
+												text: ".restore",
+												link: "/sdk/typescript/client/Mpay.restore",
 											},
 										],
 									},
@@ -180,15 +166,11 @@ export default defineConfig({
 										collapsed: true,
 										items: [
 											{
-												text: ".tempo",
-												link: "/sdk/typescript/client/Method.tempo",
-											},
-											{
-												text: ".tempo.charge",
+												text: "tempo.charge",
 												link: "/sdk/typescript/client/Method.tempo.charge",
 											},
 											{
-												text: ".tempo.stream",
+												text: "tempo.stream",
 												link: "/sdk/typescript/client/Method.tempo.stream",
 											},
 										],
@@ -239,15 +221,11 @@ export default defineConfig({
 										collapsed: true,
 										items: [
 											{
-												text: ".tempo",
-												link: "/sdk/typescript/server/Method.tempo",
-											},
-											{
-												text: ".tempo.charge",
+												text: "tempo.charge",
 												link: "/sdk/typescript/server/Method.tempo.charge",
 											},
 											{
-												text: ".tempo.stream",
+												text: "tempo.stream",
 												link: "/sdk/typescript/server/Method.tempo.stream",
 											},
 										],
