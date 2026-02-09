@@ -36,7 +36,7 @@ With Tempo, you can also use [Passkey or WebCrypto accounts](https://viem.sh/tem
 
 ### Create payment handler
 
-Call `Mpay.create` at startup. All `fetch` calls then handle payment challenges.
+Call `Mpay.create` at startup. This polyfills `globalThis.fetch` so all `fetch` calls automatically handle `402` payment challenges.
 
 ```ts twoslash [polyfill-fetch.ts]
 import { privateKeyToAccount } from 'viem/accounts'
