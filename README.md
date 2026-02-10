@@ -14,6 +14,12 @@ Full documentation, API reference, and guides are available at **[machinepayment
 ```bash
 npm i mpay
 ```
+```bash
+pnpm add mpay
+```
+```bash
+bun add mpay
+```
 
 ## Quick Start
 
@@ -64,6 +70,12 @@ const res = await fetch('https://api.example.com/resource')
 ```bash
 npx gitpick wevm/mpay/examples/basic
 ```
+```bash
+pnpx gitpick wevm/mpay/examples/basic
+```
+```bash
+bunx gitpick wevm/mpay/examples/basic
+```
 
 ## CLI
 
@@ -71,10 +83,10 @@ mpay includes a basic CLI for making HTTP requests with automatic payment handli
 
 ```bash
 # create account - stored in keychain, autofunded on testnet
-npm run mpay account create
+pnpm mpay account create
 
 # make request - automatic payment handling, curl-like api
-npm run mpay example.com
+pnpm mpay example.com
 ```
 
 <details>
@@ -121,6 +133,20 @@ Options:
 ```
 
 </details>
+
+### Global Install
+
+Install globally to use `mpay` from anywhere:
+
+```bash
+npm i -g mpay
+
+```bash
+pnpm add -g mpay
+```
+```bash
+bun add -g mpay
+```
 
 ## Protocol
 
