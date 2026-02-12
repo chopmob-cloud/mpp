@@ -12,7 +12,7 @@ declare const storage: tempo.ChannelStorage
 const mpay = Mpay.create({
   // [!code focus:start]
   methods: [
-    tempo.stream({
+    tempo.session({
       currency: '0x20c0000000000000000000000000000000000000',
       recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
       storage,
@@ -34,7 +34,7 @@ declare const storage: tempo.ChannelStorage
 const mpay = Mpay.create({
   methods: [
     tempo.charge(),
-    tempo.stream({
+    tempo({
       storage,
     }),
   ],
@@ -50,6 +50,12 @@ type ReturnType = MethodIntent.Server
 ```
 
 ## Parameters
+
+### account (optional)
+
+- **Type:** `Account | undefined`
+
+Account used as the recipient and for stream closure.
 
 ### amount (optional)
 
@@ -112,7 +118,7 @@ import { tempo } from 'mpay/server'
 
 declare const storage: tempo.ChannelStorage
 
-const method = tempo.stream({
+const method = tempo({
   storage, // [!code focus]
 })
 ```

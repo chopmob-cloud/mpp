@@ -30,7 +30,7 @@ const account = privateKeyToAccount('0xabc…123')
 Mpay.create({
   methods: [
     tempo.charge({ account }),
-    tempo.stream({ account }),
+    tempo.session({ account }),
   ],
 })
 ```

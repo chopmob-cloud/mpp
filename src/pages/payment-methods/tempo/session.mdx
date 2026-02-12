@@ -96,7 +96,7 @@ Tempo handles payments at scale and has properties that make it a uniquely good 
   <Tab title="Server">
   <div className="space-y-4">
 
-Use [`tempo.stream`](/sdk/typescript/server/Method.tempo.session) to accept payment sessions. The server needs an RPC URL for on-chain verification during channel open/close, and a storage backend for channel state.
+Use [`tempo`](/sdk/typescript/server/Method.tempo) to accept payment sessions. The server needs an RPC URL for on-chain verification during channel open/close, and a storage backend for channel state.
 
 ```ts twoslash
 import { Mpay, tempo } from 'mpay/server'
@@ -105,7 +105,7 @@ declare const storage: tempo.ChannelStorage
 
 const mpay = Mpay.create({
   methods: [
-    tempo.stream({
+    tempo({
       currency: '0x20c0000000000000000000000000000000000000',
       recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
       storage,
@@ -125,7 +125,7 @@ declare const storage: tempo.ChannelStorage
 
 const mpay = Mpay.create({
   methods: [
-    tempo.stream({
+    tempo.session({
       currency: '0x20c0000000000000000000000000000000000000',
       recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
       storage,
@@ -136,8 +136,6 @@ const mpay = Mpay.create({
 export async function handler(request: Request) {
   const result = await mpay.stream({
     amount: '25',
-    currency: '0x20c0000000000000000000000000000000000000',
-    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
     unitType: 'llm_token',
   })(request)
 
@@ -161,7 +159,7 @@ declare const storage: tempo.ChannelStorage
 const mpay = Mpay.create({
   methods: [
     tempo.charge(),
-    tempo.stream({
+    tempo.session({
       storage,
     }),
   ],
@@ -177,7 +175,7 @@ See [`tempo.stream` server reference](/sdk/typescript/server/Method.tempo.sessio
   <Tab title="Client">
   <div className="space-y-4">
 
-Use [`tempo.stream`](/sdk/typescript/client/Method.tempo.session) with `Mpay.create` to sign vouchers automatically when the server requests payment sessions.
+Use [`tempo`](/sdk/typescript/client/Method.tempo) with `Mpay.create` to sign vouchers automatically when the server requests payment sessions.
 
 ```ts twoslash
 import { Mpay, tempo } from 'mpay/client'
@@ -186,7 +184,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 const account = privateKeyToAccount('0xabc…123')
 
 Mpay.create({
-  methods: [tempo.stream({ account })],
+  methods: [tempo({ account })],
 })
 
 const response = await fetch('https://api.example.com/v1/chat/completions')
@@ -205,7 +203,7 @@ const account = privateKeyToAccount('0xabc…123')
 
 const mpay = Mpay.create({
   polyfill: false,
-  methods: [tempo.stream({ account })],
+  methods: [tempo.session({ account })],
 })
 
 const response = await mpay.fetch('https://api.example.com/v1/chat/completions')
@@ -226,7 +224,7 @@ const account = privateKeyToAccount('0xabc…123')
 Mpay.create({
   methods: [
     tempo.charge({ account }),
-    tempo.stream({ account }),
+    tempo.session({ account }),
   ],
 })
 ```
