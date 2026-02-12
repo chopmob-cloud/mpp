@@ -35,8 +35,8 @@ importers:
         specifier: ^11.12.2
         version: 11.12.2
       mpay:
-        specifier: https://pkg.pr.new/wevm/mpay@6a2a8b9
-        version: https://pkg.pr.new/wevm/mpay@6a2a8b9(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))(zod@4.3.6)
+        specifier: https://pkg.pr.new/wevm/mpay@1a1dfdd
+        version: https://pkg.pr.new/wevm/mpay@1a1dfdd(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(express@5.2.1)(hono@4.11.7)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))
       react:
         specifier: ^19
         version: 19.2.4
@@ -48,7 +48,7 @@ importers:
         version: 4.1.18
       tempo.ts:
         specifier: ~0.14.0
-        version: 0.14.0(@remix-run/headers@0.17.2)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))(zod@4.3.6)
+        version: 0.14.0(@remix-run/headers@0.19.0)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))(zod@4.3.6)
       viem:
         specifier: latest
         version: 2.45.0(typescript@5.9.3)(zod@4.3.6)
@@ -1008,6 +1008,9 @@ packages:
     peerDependencies:
       react: '>=16.8'
 
+  '@remix-run/fetch-proxy@0.7.1':
+    resolution: {integrity: sha512-rPLfOpAaCXtm1dLI45uIPKERNbXbrh0P9AJc1sliz8pWd/McaFYjdr5KzB4QrFSfPvEt/Wmy6F2521qB1kK0ug==}
+
   '@remix-run/fetch-router@0.12.0':
     resolution: {integrity: sha512-BDG/VepZg2ZJ7wav3HDrB9ZJLpzZONHi9ItOkFMcKsrbm5g7jjrxW5Vdijbbebz12pbJQu6VKTwLVXp/LgFusA==}
     peerDependencies:
@@ -1015,8 +1018,8 @@ packages:
       '@remix-run/route-pattern': ^0.15.3
       '@remix-run/session': ^0.4.0
 
-  '@remix-run/headers@0.17.2':
-    resolution: {integrity: sha512-IfHVCftsRKfk7kIQUxP9WDCe0OXj9X0lDRfFxk3CPcXJenBUEsYEPeBoW/YCZlKhdRWZjQlrofdk63lMSJmy8w==}
+  '@remix-run/headers@0.19.0':
+    resolution: {integrity: sha512-+62NbkXuXm9r/NdG6KfH9OCKofCWm8VjkrVPICiHKtRl8Gf2Vi6eFTN4mGgBlZRhd5mmEVRV4hTIn/JUSHDAOw==}
 
   '@remix-run/node-fetch-server@0.13.0':
     resolution: {integrity: sha512-1EsNo0ZpgXu/90AWoRZf/oE3RVTUS80tiTUpt+hv5pjtAkw7icN4WskDwz/KdAw5ARbJLMhZBrO1NqThmy/McA==}
@@ -3019,17 +3022,24 @@ packages:
   mlly@1.8.0:
     resolution: {integrity: sha512-l8D9ODSRWLe2KHJSifWGwBqpTZXIXTeo8mlKjY+E2HAakaTeNpqAyBZ8GSqLzHgw4XmHmC8whvpjJNMbFZN7/g==}
 
-  mpay@https://pkg.pr.new/wevm/mpay@6a2a8b9:
-    resolution: {tarball: https://pkg.pr.new/wevm/mpay@6a2a8b9}
+  mpay@https://pkg.pr.new/wevm/mpay@1a1dfdd:
+    resolution: {integrity: sha512-WhBhus6TEJkjgF0nATkWPpWUAVm/tj68Cz7Zw2kvS0lHWZkkHhv37t9LKyxonBnwXmkIZmzncnp59cQ0ZjX3wQ==, tarball: https://pkg.pr.new/wevm/mpay@1a1dfdd}
     version: 0.1.0
+    hasBin: true
     peerDependencies:
       '@modelcontextprotocol/sdk': '>=1.25.0'
+      elysia: '>=1'
+      express: '>=5'
+      hono: '>=4'
       viem: '>=2.44.4'
-      zod: '>=4.0.0'
     peerDependenciesMeta:
       '@modelcontextprotocol/sdk':
         optional: true
-      viem:
+      elysia:
+        optional: true
+      express:
+        optional: true
+      hono:
         optional: true
 
   ms@2.1.3:
@@ -4847,13 +4857,17 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  '@remix-run/fetch-router@0.12.0(@remix-run/headers@0.17.2)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)':
+  '@remix-run/fetch-proxy@0.7.1':
     dependencies:
-      '@remix-run/headers': 0.17.2
+      '@remix-run/headers': 0.19.0
+
+  '@remix-run/fetch-router@0.12.0(@remix-run/headers@0.19.0)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)':
+    dependencies:
+      '@remix-run/headers': 0.19.0
       '@remix-run/route-pattern': 0.15.3
       '@remix-run/session': 0.4.1
 
-  '@remix-run/headers@0.17.2': {}
+  '@remix-run/headers@0.19.0': {}
 
   '@remix-run/node-fetch-server@0.13.0': {}
 
@@ -7177,13 +7191,18 @@ snapshots:
       pkg-types: 1.3.1
       ufo: 1.6.3
 
-  mpay@https://pkg.pr.new/wevm/mpay@6a2a8b9(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))(zod@4.3.6):
+  mpay@https://pkg.pr.new/wevm/mpay@1a1dfdd(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(express@5.2.1)(hono@4.11.7)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6)):
     dependencies:
+      '@remix-run/fetch-proxy': 0.7.1
+      '@remix-run/node-fetch-server': 0.13.0
+      cac: 6.7.14
       ox: 0.12.0(typescript@5.9.3)(zod@4.3.6)
+      viem: 2.45.0(typescript@5.9.3)(zod@4.3.6)
       zod: 4.3.6
     optionalDependencies:
       '@modelcontextprotocol/sdk': 1.25.3(hono@4.11.7)(zod@4.3.6)
-      viem: 2.45.0(typescript@5.9.3)(zod@4.3.6)
+      express: 5.2.1
+      hono: 4.11.7
     transitivePeerDependencies:
       - typescript
 
@@ -7833,9 +7852,9 @@ snapshots:
 
   tapable@2.3.0: {}
 
-  tempo.ts@0.14.0(@remix-run/headers@0.17.2)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))(zod@4.3.6):
+  tempo.ts@0.14.0(@remix-run/headers@0.19.0)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))(zod@4.3.6):
     dependencies:
-      '@remix-run/fetch-router': 0.12.0(@remix-run/headers@0.17.2)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)
+      '@remix-run/fetch-router': 0.12.0(@remix-run/headers@0.19.0)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.1)
       ox: 0.11.3(typescript@5.9.3)(zod@4.3.6)
     optionalDependencies:
       viem: 2.45.0(typescript@5.9.3)(zod@4.3.6)

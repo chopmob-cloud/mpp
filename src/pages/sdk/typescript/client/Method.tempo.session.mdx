@@ -13,7 +13,7 @@ const account = privateKeyToAccount('0xabc…123')
 Mpay.create({
   methods: [
     // [!code focus:start]
-    tempo.stream({ account }),
+    tempo.session({ account }),
     // [!code focus:end]
   ],
 })
@@ -32,7 +32,7 @@ const account = privateKeyToAccount('0xabc…123')
 Mpay.create({
   methods: [
     tempo.charge({ account }),
-    tempo.stream({ account }),
+    tempo.session({ account }),
   ],
 })
 ```
@@ -57,7 +57,7 @@ Account to sign vouchers with. You can override this per call using the context.
 import { tempo } from 'mpay/client'
 import { privateKeyToAccount } from 'viem/accounts'
 
-const method = tempo.stream({
+const method = tempo.session({
   account: privateKeyToAccount('0xabc…123'), // [!code focus]
 })
 ```
