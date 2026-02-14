@@ -35,8 +35,8 @@ importers:
         specifier: ^11.12.2
         version: 11.12.2
       mppx:
-        specifier: ~0.1.0
-        version: 0.1.0(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(express@5.2.1)(hono@4.11.7)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))
+        specifier: https://pkg.pr.new/wevm/mppx@4bcdf0c
+        version: https://pkg.pr.new/wevm/mppx@4bcdf0c(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(express@5.2.1)(hono@4.11.7)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6))
       react:
         specifier: ^19
         version: 19.2.4
@@ -3022,8 +3022,9 @@ packages:
   mlly@1.8.0:
     resolution: {integrity: sha512-l8D9ODSRWLe2KHJSifWGwBqpTZXIXTeo8mlKjY+E2HAakaTeNpqAyBZ8GSqLzHgw4XmHmC8whvpjJNMbFZN7/g==}
 
-  mppx@0.1.0:
-    resolution: {integrity: sha512-7mmXsmjz3uqf05rYw9NdgskmsdN66wKDfSS2dZqagH1dyL76A2C50kqdJsyy1PHXIh8G21Hy0ppIhYouSBR7Lw==}
+  mppx@https://pkg.pr.new/wevm/mppx@4bcdf0c:
+    resolution: {integrity: sha512-be1Mii7ICb/sFEWH+2HlFxCpAEwpP3/eoS2rUKET21fBxvknmLBDtEMA50mEPs2Fwohid80nXSV/YfR0yBbyFQ==, tarball: https://pkg.pr.new/wevm/mppx@4bcdf0c}
+    version: 0.1.0
     hasBin: true
     peerDependencies:
       '@modelcontextprotocol/sdk': '>=1.25.0'
@@ -7190,7 +7191,7 @@ snapshots:
       pkg-types: 1.3.1
       ufo: 1.6.3
 
-  mppx@0.1.0(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(express@5.2.1)(hono@4.11.7)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6)):
+  mppx@https://pkg.pr.new/wevm/mppx@4bcdf0c(@modelcontextprotocol/sdk@1.25.3(hono@4.11.7)(zod@4.3.6))(express@5.2.1)(hono@4.11.7)(typescript@5.9.3)(viem@2.45.0(typescript@5.9.3)(zod@4.3.6)):
     dependencies:
       '@remix-run/fetch-proxy': 0.7.1
       '@remix-run/node-fetch-server': 0.13.0
