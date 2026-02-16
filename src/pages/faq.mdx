@@ -2,7 +2,7 @@
 
 ## What is MPP?
 
-MPP (Machine Payments Protocol) lets any client—humans, software, or AI agents—pay for services inline over HTTP. Servers return `402 Payment Required` with a Challenge describing what to pay. Clients fulfill the payment and retry with a Credential. The server verifies payment before delivering the response and returns a Receipt. The protocol is payment-method agnostic, standards-track at the IETF, and designed for extension.
+MPP (Machine Payments Protocol) lets any client— AI agents, software, or humans—pay for services inline over HTTP. The protocol is payment-method agnostic, standards-track at the IETF, and designed for extensibility, performance, and security.
 
 ## Is MPP only for stablecoins?
 
@@ -12,20 +12,22 @@ Today, [Tempo](/payment-methods/tempo) stablecoin payments and [Stripe](/payment
 
 ## Do I need a stablecoin wallet?
 
-For Tempo payments, yes—you need an account (a private key) to sign transactions. The SDK and `presto` CLI handle key management for you.
+No! With Stripe, you can use traditional cards and wallets without stablecoins.
 
-With Stripe, you can use traditional cards and bank transfers without stablecoins.
+For Tempo payments, you need an crypto wallet to sign transactions. The SDK and `presto` CLI handle key management for you.
 
 ## How is MPP different from x402?
 
 Both MPP and x402 use HTTP `402` to signal that a request requires payment. The key differences:
 
 - **Payment-method agnostic.** MPP supports stablecoins, cards, bank transfers, and custom rails through extensible payment method specifications. x402 supports a single on-chain method tied to EIP-3009—which excludes USDT and most stablecoins outside USDC.
-- **Streaming payments.** MPP's session intent enables pay-as-you-go streaming with off-chain vouchers—clients pay only for what they consume. Streaming payments require blockchain settlement; card rails lack the speed and granularity. x402 has no equivalent.
-- **No relay dependency.** MPP settles directly between client and server. x402 routes payments through third-party relayers that bear gas costs with no protocol-level compensation—an architecture that struggles to scale.
-- **Replay protection.** MPP binds every Challenge to a specific request with a unique ID and expiration. x402 payment signatures lack this binding, meaning a signed authorization can be replayed.
-- **Multiple intents.** MPP defines distinct payment intents—charge, session, authorize—each with its own flow. x402 supports only one-shot charges.
-- **Permissionless extension.** Anyone can author and publish a new payment method or intent specification without approval from a foundation or intermediary. Extensions compete on adoption, not governance.
+- **Designed for production.** MPP supports idempotency, expiration, and request-tempering mitigations, as first class primitives.
+- **Performant payments.** MPP's session intent enables pay-as-you-go metering for payments as small as 0.0001 USD. MPP sessions can achieve sub-100ms latency and near-zero per-request fees, enabling high-throughput, low-value payments for applications like token streaming or high throughput content aggregation.
+- **Permissionless extension.** Anyone can author and publish a new payment method or intent specification without approval from a foundation or intermediary. Payment methods are able to compete on adoption, and be independantly maintained without the explicit permission of a central authority.
+
+## Is MPP compatible with x402?
+
+Yes. The core x402 "exact" flows map directly onto MPP's charge intent. MPP clients can consume existing x402 services, and MPP extends beyond what x402 supports with sessions, authorization flows, and multi-rail payment methods.
 
 ## Why build MPP on Tempo?
 
@@ -88,22 +90,6 @@ The core Payment HTTP Authentication Scheme is on the IETF standards track. Paym
 
 Yes. MPP includes an [MCP transport binding](/protocol/transports/mcp) that maps the Challenge-Credential-Receipt flow onto the Model Context Protocol. This means MCP servers can monetize tool calls directly, and agents pay autonomously without OAuth or account setup.
 
-## Is MPP compatible with x402?
-
-Yes. Basic x402 charge flows map directly onto MPP's charge intent. MPP clients can consume existing x402 services, and MPP extends beyond what x402 supports with sessions, authorization flows, and multi-rail payment methods.
-
 ## Who is building MPP?
 
 MPP is co-authored by Tempo and Stripe. The core specification is developed in the open and designed to be extended by any payment network or provider. The [Payment HTTP Authentication Scheme](https://datatracker.ietf.org/doc/draft-ryan-httpauth-payment/) is submitted to the IETF.
-
-## Do I need to sign every request?
-
-For individual charge payments, yes—each request includes a signed Credential. For session-based payments, the initial session open requires an on-chain deposit, but subsequent requests use lightweight signed vouchers that do not require on-chain transactions. This makes sessions ideal for high-frequency use cases like streaming LLM tokens.
-
-## Why not just use Stripe directly?
-
-Stripe requires a KYC'd account, a dashboard, and API keys before you can make a single payment. AI agents do not have bank accounts or identities. With MPP over Tempo, an agent needs only a private key—it can start paying for services immediately with no signup, no account, and no human in the loop. MPP still supports Stripe as a payment method for use cases where traditional rails make sense.
-
-## When is x402 the better choice?
-
-If you only need one-shot USDC charges on Base and your service already integrates with an x402 relayer, x402 works. Choose MPP when you need streaming payments, card rails, support for stablecoins beyond USDC, replay protection, or the ability to extend the protocol with new payment methods.
