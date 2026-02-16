@@ -4,17 +4,17 @@
 
 MPP (Machine Payments Protocol) lets any client—humans, software, or AI agents—pay for services inline over HTTP. Servers return `402 Payment Required` with a Challenge describing what to pay. Clients fulfill the payment and retry with a Credential. The server verifies payment before delivering the response and returns a Receipt. The protocol is payment-method agnostic, standards-track at the IETF, and designed for extension.
 
-## Is MPP only for crypto?
+## Is MPP only for stablecoins?
 
 No. MPP is payment-method agnostic—the protocol works with any payment rail.
 
 Today, [Tempo](/payment-methods/tempo) stablecoin payments are in production. [Stripe](/payment-methods/stripe) support (credit cards, bank transfers, invoices) is launching soon. Anyone can build a [custom payment method](/payment-methods/custom) by implementing the Challenge-Credential-Receipt flow for their rail.
 
-## Do I need a crypto wallet?
+## Do I need a stablecoin wallet?
 
 For Tempo payments, yes—you need an account (a private key) to sign transactions. The SDK and `tempoctl` CLI handle key management for you.
 
-When Stripe support launches, you can use traditional cards and bank transfers without any crypto.
+When Stripe support launches, you can use traditional cards and bank transfers without stablecoins.
 
 ## How is MPP different from x402?
 
