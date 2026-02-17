@@ -530,15 +530,9 @@ header {
 
 /* Header z-index handles content layering — no overflow clip needed */
 
-/* Callouts — use accent color scheme */
+/* Callouts — subtle border, accent icon + title */
 aside[data-v-callout] {
-  --color-tip: var(--vocs-color-accent) !important;
-  --color-tip-tint: oklch(
-    from var(--vocs-color-accent) l c h /
-    0.08
-  ) !important;
-  --vocs-color-tip: var(--vocs-color-accent) !important;
-  border-color: var(--vocs-color-accent) !important;
+  border-color: var(--vocs-border-color-primary) !important;
 }
 
 aside[data-v-callout] [data-v-callout-icon] {
