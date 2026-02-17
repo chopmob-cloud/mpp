@@ -107,6 +107,21 @@
  * in Head.tsx. No manual overrides needed.
  */
 
+/* Prevent layout shift when scrollbar appears/disappears between routes */
+html,
+body {
+  scrollbar-gutter: stable;
+  overflow-x: hidden;
+}
+
+/* Pagination: hide "Next" / "Previous" label text, keep only shortcut (Shift → / ←) */
+[data-v-pagination] a > span:last-of-type {
+  font-size: 0;
+}
+[data-v-pagination] a > span:last-of-type > span {
+  font-size: 0.75rem;
+}
+
 /* Custom utility for muted text */
 .text-muted {
   color: var(--vocs-text-color-muted);
@@ -129,9 +144,13 @@
   height: 20px;
 }
 
+/* Active top nav route — heading color so it is visible on dark backgrounds */
 [data-v-gutter-top] nav a[data-v-active="true"] {
-  border-color: light-dark(var(--vocs-color-accent), var(--vocs-color-accent8));
-  color: light-dark(var(--vocs-color-accent), var(--vocs-color-accent8));
+  border-color: light-dark(
+    var(--vocs-color-accent),
+    var(--vocs-text-color-heading)
+  );
+  color: light-dark(var(--vocs-color-accent), var(--vocs-text-color-heading));
 }
 
 [data-v-gutter-top] nav a:hover {
@@ -161,29 +180,70 @@ a[class*="rounded-md"][class*="border"]:hover {
   text-decoration: none;
 }
 
+/* Links in docs content get persistent underlines for visibility */
+[data-v-content] a[data-v-link] {
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+  text-decoration-thickness: 1px !important;
+}
 [data-v-content] a:hover {
   text-decoration: underline;
 }
 
-/* Sidebar links - default color, no underline */
-[data-v-sidebar] a:not([data-active="true"]),
-[data-v-sidebar] a:link:not([data-active="true"]),
-[data-v-sidebar] a:visited:not([data-active="true"]),
-[data-v-sidebar] a:hover:not([data-active="true"]),
-[data-v-sidebar] [data-v-sidebar-item]:not([data-active="true"]),
-[data-v-sidebar] [data-v-sidebar-item]:hover:not([data-active="true"]) {
-  color: inherit !important;
+/* Sidebar — no underlines anywhere */
+[data-v-sidebar] a {
   text-decoration: none !important;
 }
 
-/* Active sidebar item - white text on accent background */
-/* -webkit-text-fill-color is needed to override Tailwind v4 @layer utilities */
+/* Active sidebar item */
 a[data-v-sidebar-item][data-active="true"],
 a[data-v-sidebar-item][data-active="true"]:link,
 a[data-v-sidebar-item][data-active="true"]:visited {
-  background-color: var(--vocs-color-accent) !important;
-  color: #fff !important;
-  -webkit-text-fill-color: #fff !important;
+  color: var(--vocs-text-color-heading) !important;
+  -webkit-text-fill-color: var(--vocs-text-color-heading) !important;
+  font-weight: 500 !important;
+}
+
+/* Sidebar hover — use theme heading color so dark mode stays visible (Tailwind hover can resolve to black) */
+[data-v-sidebar] a:hover,
+[data-v-sidebar] button:hover,
+[data-v-sidebar] a:hover *,
+[data-v-sidebar] button:hover * {
+  color: var(--text-color-heading) !important;
+  -webkit-text-fill-color: var(--text-color-heading) !important;
+}
+
+/* Collapsible section header rows (div with role=button) — same theme heading color on hover */
+[data-v-sidebar] [data-v-sidebar-section-header]:hover,
+[data-v-sidebar] [data-v-sidebar-section-header]:hover * {
+  color: var(--text-color-heading) !important;
+  -webkit-text-fill-color: var(--text-color-heading) !important;
+}
+
+/* Inactive sidebar items — muted */
+a[data-v-sidebar-item]:not([data-active="true"]):not(:hover) {
+  color: var(--vocs-text-color-secondary) !important;
+  -webkit-text-fill-color: var(--vocs-text-color-secondary) !important;
+}
+
+/* ALL sidebar text — uniform color for sections, subsections, labels */
+[data-v-sidebar] [data-v-sidebar-group] > span,
+[data-v-sidebar] [data-v-sidebar-group] > button,
+[data-v-sidebar] [data-v-sidebar-group] span[class*="font-medium"],
+[data-v-sidebar] [data-v-sidebar-group] [data-v-sidebar-group] > span {
+  color: var(--vocs-text-color-heading) !important;
+  -webkit-text-fill-color: var(--vocs-text-color-heading) !important;
+}
+
+/* Uniform sidebar font size */
+[data-v-sidebar] {
+  font-size: 14px !important;
+}
+
+/* More vertical breathing room for nested sidebar groups */
+[data-v-sidebar] [data-v-sidebar-group] [data-v-sidebar-group] {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
 }
 
 /* Sidebar section headings */
@@ -213,45 +273,29 @@ a[data-v-sidebar-item][data-active="true"]:visited {
   padding-bottom: 1.5rem !important;
 }
 
-/* TOC active item - translucent accent bg with accent text */
-/* Use accent8 in dark mode so the text is visible against the dark background */
+/* TOC active item — heading color so it is visible on dark backgrounds */
 [data-v-outline-items] a[data-active="true"] {
   background-color: oklch(
-    from light-dark(var(--vocs-color-accent), var(--vocs-color-accent8)) l c h /
+    from var(--vocs-text-color-heading) l c h /
     0.08
   ) !important;
-  color: light-dark(
-    var(--vocs-color-accent),
-    var(--vocs-color-accent8)
-  ) !important;
-  -webkit-text-fill-color: light-dark(
-    var(--vocs-color-accent),
-    var(--vocs-color-accent8)
-  ) !important;
+  color: var(--vocs-text-color-heading) !important;
+  -webkit-text-fill-color: var(--vocs-text-color-heading) !important;
   border-radius: 4px;
 }
 
 [data-v-outline-items] a[data-active="true"] *,
 [data-v-outline-items] a[data-active="true"] span,
 [data-v-outline-items] a[data-active="true"] div {
-  color: light-dark(
-    var(--vocs-color-accent),
-    var(--vocs-color-accent8)
-  ) !important;
-  -webkit-text-fill-color: light-dark(
-    var(--vocs-color-accent),
-    var(--vocs-color-accent8)
-  ) !important;
+  color: var(--vocs-text-color-heading) !important;
+  -webkit-text-fill-color: var(--vocs-text-color-heading) !important;
   background-color: transparent !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
 
 [data-v-outline-indicator] {
-  background-color: light-dark(
-    var(--vocs-color-accent),
-    var(--vocs-color-accent8)
-  );
+  background-color: var(--vocs-text-color-heading);
 }
 
 [data-v-step-content] {
@@ -286,10 +330,10 @@ a[data-v-sidebar-item][data-active="true"]:visited {
   /* Accent button text - always white since accent bg is near-black */
   --accent-button-text: white;
 
-  /* Lighter inline code background for better visibility */
+  /* Inline code background — kept for reference, actual override is on the element */
   --background-color-inline-code: light-dark(
     var(--vocs-color-gray12),
-    var(--vocs-color-gray7)
+    var(--vocs-color-gray5)
   );
 
   --font-pilat:
@@ -341,6 +385,9 @@ body,
 
 [data-v-content] {
   font-size: 15px;
+  /* Prevent content area from growing after load (avoids jitter) */
+  max-width: var(--spacing-content);
+  overflow-x: hidden;
 }
 
 pre,
@@ -349,6 +396,18 @@ code,
 [data-v-code] {
   letter-spacing: 0;
   font-family: var(--font-mono) !important;
+}
+
+/* Inline code — brighter bg and text for dark mode readability */
+:not(pre) > code[data-v]:not(.twoslash-popup-code) {
+  background-color: light-dark(
+    var(--vocs-color-gray12),
+    var(--vocs-color-gray6)
+  ) !important;
+  color: light-dark(
+    var(--vocs-color-gray3),
+    var(--vocs-color-gray12)
+  ) !important;
 }
 
 [data-empty-line] {
@@ -375,7 +434,7 @@ pre[data-v] {
 
 [data-v-footer] a:hover,
 [data-v-socials] a:hover {
-  color: var(--vocs-color-accent);
+  color: var(--vocs-text-color-heading);
   text-decoration: underline;
 }
 
@@ -401,6 +460,37 @@ pre[data-v] {
   min-width: 9rem;
 }
 
+/* Endpoint column — min 210px, left-aligned so it lines up across tables */
+[data-v-content] table th:nth-child(3),
+[data-v-content] table td:nth-child(3) {
+  min-width: 210px;
+  text-align: left;
+}
+
+/* Status column (e.g. Coming soon table) — left align, colored dot before text */
+[data-v-content] table td .status-planned,
+[data-v-content] table td .status-in-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+[data-v-content] table td .status-planned::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: oklch(0.75 0.15 55);
+  flex-shrink: 0;
+}
+[data-v-content] table td .status-in-progress::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: oklch(0.65 0.2 145);
+  flex-shrink: 0;
+}
+
 /* Description column wraps, with gap between text and endpoint */
 [data-v-content] table td:nth-child(2) {
   white-space: normal;
@@ -411,6 +501,14 @@ pre[data-v] {
 [data-v-content] table td:nth-child(2) code {
   display: inline-block;
   margin-top: 0.5rem;
+}
+
+/* Inline code — 1px less padding each side, 1px margin each side so background isn’t tight to surrounding text */
+[data-v-content] :not(pre) > code {
+  margin-left: 1px !important;
+  margin-right: 1px !important;
+  padding-left: calc(0.375rem - 1px) !important;
+  padding-right: calc(0.375rem - 1px) !important;
 }
 
 /* Service logo hover — icon turns accent color (set via --accent inline) */
@@ -480,10 +578,10 @@ a[class*="vocs:rounded-md"][class*="vocs:border"]:hover {
   border-color: var(--vocs-border-color-primary) !important;
 }
 
-/* Card title turns accent color on hover */
+/* Card title turns heading color on hover (accent is invisible on dark) */
 a[class*="vocs:rounded-md"][class*="vocs:border"]:hover strong,
 a[class*="vocs:rounded-md"][class*="vocs:border"]:hover [class*="font-medium"] {
-  color: var(--vocs-color-accent) !important;
+  color: var(--vocs-text-color-heading) !important;
 }
 
 /* Card description - smaller font */
@@ -525,56 +623,89 @@ header {
 
 /* Header z-index handles content layering — no overflow clip needed */
 
-/* Callouts — use accent color scheme */
+/* Callouts — subtle border, default Vocs type colors for icons/titles */
 aside[data-v-callout] {
-  --color-tip: var(--vocs-color-accent) !important;
-  --color-tip-tint: oklch(
-    from var(--vocs-color-accent) l c h /
-    0.08
-  ) !important;
-  --vocs-color-tip: var(--vocs-color-accent) !important;
-  border-color: var(--vocs-color-accent) !important;
+  border-color: var(--vocs-border-color-primary) !important;
 }
 
-aside[data-v-callout] [data-v-callout-icon] {
-  color: var(--vocs-color-accent) !important;
-}
-
-aside[data-v-callout] [data-v-callout-title],
-aside[data-v-callout] [data-v-callout-title] strong {
-  color: var(--vocs-color-accent) !important;
-  -webkit-text-fill-color: var(--vocs-color-accent) !important;
-}
-
-/* Links inside callouts — accent color with underline */
+/* Links inside callouts — inherit callout type color (blue, yellow, etc.) */
 [data-v-callout] a,
 [data-v-callout] a:link,
 [data-v-callout] a:visited,
 aside[data-v-callout] a {
-  color: var(--vocs-color-accent) !important;
-  -webkit-text-fill-color: var(--vocs-color-accent) !important;
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
   text-decoration: underline !important;
 }
 
 [data-v-callout] a:hover,
 aside[data-v-callout] a:hover {
-  opacity: 0.8;
+  opacity: 0.7;
   text-decoration: underline !important;
+}
+
+/* TOC a bit narrower — 80% of gutter width, left edge unchanged */
+[data-v-outline][data-v-gutter-right] {
+  left: calc(100vw - var(--spacing-gutter)) !important;
+  right: auto !important;
+  width: calc(var(--spacing-gutter) * 0.8) !important;
+  max-width: calc(var(--spacing-gutter) * 0.8) !important;
+}
+
+/* More space between main content and TOC */
+[data-v-outline-nav] {
+  margin-left: 1.5rem !important;
+}
+
+/* Copy page for AI — align with TOC left edge */
+[data-v-outline] [data-v-copy-for-ai] {
+  margin-left: 1.5rem !important;
 }
 
 /* Move Ask AI to bottom-right corner instead of centered over content */
 [data-v-ask-ai-container] {
   left: auto !important;
-  right: 1.5rem !important;
+  right: 1rem !important;
   bottom: 1.5rem !important;
   transform: none !important;
 }
 
 @media (min-width: 1280px) {
   [data-v-ask-ai-container] {
-    right: 2rem !important;
+    right: 0.75rem !important;
     bottom: 2rem !important;
   }
+}
+
+/* Ask AI component — darker background for visibility */
+[data-v-ask-ai-trigger] {
+  background: var(--vocs-background-color-primary) !important;
+  border: 1px solid var(--vocs-border-color-primary) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Non-selected code-group / tab icons greyscale */
+[data-v-code-group] button:not([data-v-active="true"]) img,
+[data-v-code-group] button:not([data-v-active="true"]) svg {
+  filter: grayscale(1);
+  opacity: 0.6;
+  transition:
+    filter 0.15s,
+    opacity 0.15s;
+}
+[data-v-code-group] button[data-v-active="true"] img,
+[data-v-code-group] button[data-v-active="true"] svg {
+  filter: none;
+  opacity: 1;
+}
+
+/* Card icons visible on dark mode — force heading color so black SVGs show */
+a[class*="vocs:rounded-md"][class*="vocs:border"] svg {
+  color: var(--vocs-text-color-heading) !important;
+  opacity: 0.7;
+}
+a[class*="vocs:rounded-md"][class*="vocs:border"] img {
+  opacity: 0.7;
 }
 
 /* Let clicks pass through hero to background animation, but keep interactive elements clickable */

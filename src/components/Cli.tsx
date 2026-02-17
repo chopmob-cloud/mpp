@@ -739,11 +739,11 @@ export namespace Toggle {
         className={cx(
           "flex items-center px-4 py-2 rounded-md cursor-pointer transition-colors text-sm font-medium",
           "text-secondary border border-transparent",
-          "has-[[data-checked]]:bg-[light-dark(var(--vocs-color-accent),var(--vocs-color-accent8))]/10",
-          "has-[[data-checked]]:text-[light-dark(var(--vocs-color-accent),var(--vocs-color-accent8))]",
-          "has-[[data-checked]]:border-[light-dark(var(--vocs-color-accent),var(--vocs-color-accent8))]/30",
-          "has-[:focus-visible]:bg-[light-dark(var(--vocs-color-accent),var(--vocs-color-accent8))]/10",
-          "has-[:focus-visible]:text-[light-dark(var(--vocs-color-accent),var(--vocs-color-accent8))]",
+          "has-[[data-checked]]:bg-[#e8873a]/10",
+          "has-[[data-checked]]:text-[#e8873a]",
+          "has-[[data-checked]]:border-[#e8873a]/30",
+          "has-[:focus-visible]:bg-[#e8873a]/10",
+          "has-[:focus-visible]:text-[#e8873a]",
           className,
         )}
         onPointerUp={() => onSubmit?.(value)}
@@ -1191,17 +1191,15 @@ export function ConnectWallet() {
     }
   }, [address]);
 
+  if (address) return null;
+
   return (
     <Block className="flex-1">
       <Line variant="info">
         Use <span className="text-accent">Tempo Wallet</span> and{" "}
         <span className="text-accent">authorize $5</span> to get started:
       </Line>
-      {address ? (
-        <Line variant="success" prefix="✓">
-          Connected: {address.slice(0, 10)}…{address.slice(-8)}
-        </Line>
-      ) : isPending ? (
+      {isPending ? (
         <Line variant="loading">Connecting...</Line>
       ) : (
         <div className="mt-auto pt-4">
@@ -1216,8 +1214,8 @@ export function ConnectWallet() {
               }
             }}
           >
-            <Toggle.Option value="sign-up">Sign Up</Toggle.Option>
-            <Toggle.Option value="sign-in">Sign In</Toggle.Option>
+            <Toggle.Option value="sign-up">Sign up</Toggle.Option>
+            <Toggle.Option value="sign-in">Sign in</Toggle.Option>
           </Toggle>
         </div>
       )}
@@ -1418,14 +1416,11 @@ export function Faucet() {
 
   const funded = isSuccess || alreadyFunded;
 
+  if (funded) return null;
+
   return (
     <Block>
       {isPending && <Line variant="loading">Funding wallet...</Line>}
-      {funded && (
-        <Line variant="success" prefix="✓">
-          Wallet funded
-        </Line>
-      )}
     </Block>
   );
 }

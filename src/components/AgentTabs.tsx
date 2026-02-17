@@ -2,55 +2,48 @@
 
 import { useCallback, useRef, useState } from "react";
 
-function CopyButton({ text, className }: { text: string; className?: string }) {
-  const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+const AGENT_COLOR = "#e8873a";
+const CMD_PURPLE = "#c084fc";
+const PRESTO_GREEN = "#4ade80";
+const FLAG_GREY = "var(--vocs-text-color-muted)";
+const PRESTO_INSTALL =
+  "curl -fsSL https://raw.githubusercontent.com/tempoxyz/presto/main/install.sh | bash";
+const PRESTO_LOGIN = "presto login";
+const SETUP_URL = "https://mpp.tempo.xyz/setup.md";
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setCopied(false), 2000);
-  }, [text]);
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className={`text-accent hover:text-accent6 transition-colors shrink-0 ${className ?? ""}`}
-      aria-label="Copy to clipboard"
+function CopyIcon({ copied }: { copied: boolean }) {
+  const color = copied
+    ? "var(--vocs-text-color-heading)"
+    : "var(--vocs-text-color-muted)";
+  return copied ? (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
     >
-      {copied ? (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
-      ) : (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-        </svg>
-      )}
-    </button>
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  ) : (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </svg>
   );
 }
 
@@ -66,7 +59,6 @@ function ClaudeLogo({ className }: { className?: string }) {
     </svg>
   );
 }
-
 function CodexLogo({ className }: { className?: string }) {
   return (
     <svg
@@ -79,7 +71,6 @@ function CodexLogo({ className }: { className?: string }) {
     </svg>
   );
 }
-
 function AmpLogo({ className }: { className?: string }) {
   return (
     <svg
@@ -96,100 +87,183 @@ function AmpLogo({ className }: { className?: string }) {
   );
 }
 
-const AGENT_COMMANDS = [
-  {
-    label: "Claude",
-    bin: "claude",
-    args: "-p",
-    str: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
-    icon: ClaudeLogo,
-  },
-  {
-    label: "Codex",
-    bin: "codex",
-    args: "--full-auto",
-    str: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
-    icon: CodexLogo,
-  },
-  {
-    label: "Amp",
-    bin: "amp",
-    args: null,
-    str: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
-    icon: AmpLogo,
-  },
+const SETUP_PROMPT = `"Add ${SETUP_URL} to my SKILLS.md for future reference."`;
+const TASK_PROMPT = `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`;
+
+const AGENTS = [
+  { label: "Claude", bin: "claude", args: "-p", icon: ClaudeLogo },
+  { label: "Codex", bin: "codex", args: "--full-auto", icon: CodexLogo },
+  { label: "Amp", bin: "amp", args: null, icon: AmpLogo },
 ];
 
 export function AgentTabs() {
   const [active, setActive] = useState(0);
-  const cmd = AGENT_COMMANDS[active];
+  const [copied, setCopied] = useState(false);
+  const t = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const agent = AGENTS[active];
+  const setupCmd = [agent.bin, agent.args, SETUP_PROMPT]
+    .filter(Boolean)
+    .join(" ");
+  const taskCmd = [agent.bin, agent.args, TASK_PROMPT]
+    .filter(Boolean)
+    .join(" ");
+  const allSteps = `${PRESTO_INSTALL} && ${PRESTO_LOGIN} && ${setupCmd} && ${taskCmd}`;
+
+  const copy = useCallback(() => {
+    const sel = window.getSelection();
+    if (sel && sel.toString().length > 0) return;
+    navigator.clipboard.writeText(allSteps);
+    setCopied(true);
+    if (t.current) clearTimeout(t.current);
+    t.current = setTimeout(() => setCopied(false), 2000);
+  }, [allSteps]);
 
   return (
-    <div
-      className="max-w-xl rounded-md overflow-clip text-left"
-      style={{ border: "1px solid var(--vocs-border-color-secondary)" }}
-    >
+    <div className="not-prose flex flex-col gap-3" style={{ maxWidth: 620 }}>
       <div
-        className="flex"
+        className="rounded-md overflow-hidden text-left"
         style={{
-          background: "var(--vocs-background-color-surfaceMuted)",
-          borderBottom: "1px solid var(--vocs-border-color-secondary)",
+          border: "1px solid var(--vocs-border-color-primary)",
+          boxShadow: "0 1px 3px light-dark(rgba(0,0,0,0.08), rgba(0,0,0,0.2))",
         }}
       >
-        {AGENT_COMMANDS.map((a, i) => {
-          const Icon = a.icon;
-          return (
-            <button
-              key={a.label}
-              type="button"
-              onClick={() => setActive(i)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer"
-              style={{
-                color:
-                  i === active
-                    ? "var(--vocs-text-color-heading)"
-                    : "var(--vocs-text-color-muted)",
-                background:
-                  i === active
-                    ? "var(--vocs-background-color-surface)"
-                    : "transparent",
-                borderBottom:
-                  i === active
-                    ? "2px solid var(--vocs-text-color-heading)"
-                    : "none",
-                marginBottom: i === active ? "-1px" : "0",
-              }}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {a.label}
-            </button>
-          );
-        })}
-      </div>
-      <div
-        className="flex items-center gap-3 pl-4 pr-4 py-3"
-        style={{ background: "var(--vocs-background-color-surface)" }}
-      >
-        <span
-          className="text-sm select-none flex-1 font-mono whitespace-pre-wrap text-left"
-          style={{ margin: 0, padding: 0 }}
+        {/* Agent tabs */}
+        <div
+          className="flex"
+          style={{
+            background:
+              "light-dark(var(--vocs-background-color-surfaceMuted), oklch(0.22 0 0))",
+            borderBottom: "1px solid var(--vocs-border-color-primary)",
+          }}
         >
-          <span style={{ color: "var(--vocs-text-color-muted)" }}>$</span>
-          <span style={{ color: "var(--vocs-text-color-primary)" }}>
-            {" "}
-            {cmd.bin}
-          </span>
-          {cmd.args && (
-            <span style={{ color: "var(--vocs-text-color-secondary)" }}>
+          {AGENTS.map((a, i) => {
+            const Icon = a.icon;
+            return (
+              <button
+                key={a.label}
+                type="button"
+                onClick={() => setActive(i)}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer"
+                style={{
+                  color:
+                    i === active
+                      ? "var(--vocs-text-color-heading)"
+                      : "var(--vocs-text-color-muted)",
+                  background:
+                    i === active
+                      ? "var(--vocs-background-color-surface)"
+                      : "transparent",
+                  borderRight:
+                    i < AGENTS.length - 1
+                      ? "1px solid var(--vocs-border-color-secondary)"
+                      : "none",
+                }}
+              >
+                <Icon className="w-4.5 h-4.5" />
+                {a.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* biome-ignore lint/a11y/useSemanticElements: code block with divs can't be a button */}
+        {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard copy via Cmd+C is standard */}
+        <div
+          role="button"
+          tabIndex={0}
+          className="px-4 py-3 font-mono text-sm whitespace-pre-wrap break-words text-left cursor-pointer"
+          onClick={copy}
+          style={{
+            userSelect: "text",
+            WebkitUserSelect: "text",
+            lineHeight: 1.7,
+            background: "var(--vocs-background-color-primary)",
+          }}
+        >
+          <div style={{ color: "var(--vocs-text-color-muted)", opacity: 0.7 }}>
+            # Install presto
+          </div>
+          <div>
+            <span style={{ color: CMD_PURPLE }}>curl</span>
+            <span style={{ color: FLAG_GREY }}> -fsSL</span>
+            <span style={{ color: "var(--vocs-text-color-heading)" }}>
               {" "}
-              {cmd.args}
+              https://raw.githubusercontent.com/tempoxyz/presto/main/install.sh
             </span>
-          )}
-          <span style={{ color: "var(--vocs-color-success)" }}> {cmd.str}</span>
-        </span>
-        <CopyButton
-          text={[cmd.bin, cmd.args, cmd.str].filter(Boolean).join(" ")}
-        />
+            <span style={{ color: FLAG_GREY }}> |</span>
+            <span style={{ color: CMD_PURPLE }}> bash</span>
+          </div>
+          <div
+            style={{
+              color: "var(--vocs-text-color-muted)",
+              opacity: 0.7,
+              marginTop: 8,
+            }}
+          >
+            # Connect wallet
+          </div>
+          <div>
+            <span style={{ color: PRESTO_GREEN }}>presto</span>
+            <span style={{ color: "var(--vocs-text-color-heading)" }}>
+              {" "}
+              login
+            </span>
+          </div>
+          <div
+            style={{
+              color: "var(--vocs-text-color-muted)",
+              opacity: 0.7,
+              marginTop: 8,
+            }}
+          >
+            # Setup
+          </div>
+          <div>
+            <span style={{ color: AGENT_COLOR }}>{agent.bin}</span>
+            {agent.args && (
+              <span style={{ color: FLAG_GREY }}> {agent.args}</span>
+            )}
+            <span style={{ color: "var(--vocs-text-color-heading)" }}>
+              {" "}
+              {SETUP_PROMPT}
+            </span>
+          </div>
+          <div
+            style={{
+              color: "var(--vocs-text-color-muted)",
+              opacity: 0.7,
+              marginTop: 8,
+            }}
+          >
+            # Try it
+          </div>
+          <div>
+            <span style={{ color: AGENT_COLOR }}>{agent.bin}</span>
+            {agent.args && (
+              <span style={{ color: FLAG_GREY }}> {agent.args}</span>
+            )}
+            <span style={{ color: "var(--vocs-text-color-heading)" }}>
+              {" "}
+              {TASK_PROMPT}
+            </span>
+          </div>
+
+          {/* Copy indicator */}
+          <div
+            className="flex items-center gap-2 pt-3 mt-3"
+            style={{
+              borderTop: "1px solid var(--vocs-border-color-secondary)",
+            }}
+          >
+            <CopyIcon copied={copied} />
+            <span
+              className="text-xs"
+              style={{ color: "var(--vocs-text-color-muted)", opacity: 0.6 }}
+            >
+              {copied ? "Copied!" : "Click to copy"}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
