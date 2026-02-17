@@ -1207,9 +1207,7 @@ function AgentTabs() {
     },
   ];
   const cmd = commands[active];
-  const setupCmd = [cmd.bin, cmd.args, setupPrompt]
-    .filter(Boolean)
-    .join(" ");
+  const setupCmd = [cmd.bin, cmd.args, setupPrompt].filter(Boolean).join(" ");
   const taskCmd = [cmd.bin, cmd.args, taskPrompt].filter(Boolean).join(" ");
   const handleCopy = () => {
     navigator.clipboard.writeText(

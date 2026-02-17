@@ -181,8 +181,8 @@ export function AgentTabs() {
             lineHeight: 1.7,
           }}
         >
-          <div style={{ color: "var(--vocs-text-color-muted)", opacity: 0.5 }}>
-            # install presto
+          <div style={{ color: "var(--vocs-text-color-muted)", opacity: 0.7 }}>
+            # Install presto
           </div>
           <div style={{ color: "var(--vocs-text-color-heading)" }}>
             {PRESTO_INSTALL}
@@ -190,11 +190,11 @@ export function AgentTabs() {
           <div
             style={{
               color: "var(--vocs-text-color-muted)",
-              opacity: 0.5,
+              opacity: 0.7,
               marginTop: 8,
             }}
           >
-            # connect wallet
+            # Connect wallet
           </div>
           <div style={{ color: "var(--vocs-text-color-heading)" }}>
             {PRESTO_LOGIN}
@@ -202,11 +202,11 @@ export function AgentTabs() {
           <div
             style={{
               color: "var(--vocs-text-color-muted)",
-              opacity: 0.5,
+              opacity: 0.7,
               marginTop: 8,
             }}
           >
-            # setup
+            # Setup
           </div>
           <div>
             <span style={{ color: AGENT_COLOR }}>{agent.bin}</span>
@@ -229,38 +229,33 @@ export function AgentTabs() {
           <div
             style={{
               color: "var(--vocs-text-color-muted)",
-              opacity: 0.5,
+              opacity: 0.7,
               marginTop: 8,
             }}
           >
-            # try it
+            # Try it
           </div>
-          <div>
-            <span style={{ color: AGENT_COLOR }}>{agent.bin}</span>
-            {agent.args && (
-              <span
-                style={{
-                  color: "var(--vocs-text-color-heading)",
-                  opacity: 0.6,
-                }}
-              >
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <span style={{ color: AGENT_COLOR }}>{agent.bin}</span>
+              {agent.args && (
+                <span
+                  style={{
+                    color: "var(--vocs-text-color-heading)",
+                    opacity: 0.6,
+                  }}
+                >
+                  {" "}
+                  {agent.args}
+                </span>
+              )}
+              <span style={{ color: "var(--vocs-text-color-heading)" }}>
                 {" "}
-                {agent.args}
+                {TASK_PROMPT}
               </span>
-            )}
-            <span style={{ color: "var(--vocs-text-color-heading)" }}>
-              {" "}
-              {TASK_PROMPT}
-            </span>
+            </div>
+            <CopyButton text={allSteps} />
           </div>
-        </div>
-
-        {/* Copy all button */}
-        <div
-          className="flex justify-end px-4 py-2"
-          style={{ borderTop: "1px solid var(--vocs-border-color-secondary)" }}
-        >
-          <CopyButton text={allSteps} />
         </div>
       </div>
     </div>
