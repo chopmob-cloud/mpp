@@ -51,8 +51,8 @@ export default defineConfig({
   },
   iconUrl: "/favicon-dollar.svg",
   logoUrl: {
-    light: "/mpp-logo-light.png",
-    dark: "/mpp-logo-dark.png",
+    light: "/logo-light.svg",
+    dark: "/logo-dark.svg",
   },
   mcp: {
     enabled: true,
