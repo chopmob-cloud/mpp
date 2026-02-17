@@ -138,7 +138,10 @@ body {
 
 /* Active top nav route — heading color so it is visible on dark backgrounds */
 [data-v-gutter-top] nav a[data-v-active="true"] {
-  border-color: light-dark(var(--vocs-color-accent), var(--vocs-text-color-heading));
+  border-color: light-dark(
+    var(--vocs-color-accent),
+    var(--vocs-text-color-heading)
+  );
   color: light-dark(var(--vocs-color-accent), var(--vocs-text-color-heading));
 }
 
@@ -258,7 +261,8 @@ a[data-v-sidebar-item]:not([data-active="true"]):not(:hover) {
 /* TOC active item — heading color so it is visible on dark backgrounds */
 [data-v-outline-items] a[data-active="true"] {
   background-color: oklch(
-    from var(--vocs-text-color-heading) l c h / 0.08
+    from var(--vocs-text-color-heading) l c h /
+    0.08
   ) !important;
   color: var(--vocs-text-color-heading) !important;
   -webkit-text-fill-color: var(--vocs-text-color-heading) !important;

@@ -6,6 +6,7 @@ const AGENT_COLOR = "#e8873a";
 const PRESTO_INSTALL =
   "curl -fsSL https://raw.githubusercontent.com/tempoxyz/presto/main/install.sh | bash";
 const PRESTO_LOGIN = "presto login";
+const DISCOVER_URL = "https://payments.tempo.xyz/discover";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -103,27 +104,29 @@ function AmpLogo({ className }: { className?: string }) {
   );
 }
 
+const AGENT_PROMPT = `"Read ${DISCOVER_URL} for available services. Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`;
+
 const AGENTS = [
   {
     label: "Claude",
     bin: "claude",
     args: "-p",
     icon: ClaudeLogo,
-    prompt: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
+    prompt: AGENT_PROMPT,
   },
   {
     label: "Codex",
     bin: "codex",
     args: "--full-auto",
     icon: CodexLogo,
-    prompt: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
+    prompt: AGENT_PROMPT,
   },
   {
     label: "Amp",
     bin: "amp",
     args: null,
     icon: AmpLogo,
-    prompt: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
+    prompt: AGENT_PROMPT,
   },
 ];
 
@@ -133,7 +136,7 @@ export function AgentTabs() {
   const fullPrompt = [agent.bin, agent.args, agent.prompt]
     .filter(Boolean)
     .join(" ");
-  const allSteps = `# install presto\n${PRESTO_INSTALL}\n\n# connect wallet\n${PRESTO_LOGIN}\n\n# try it\n${fullPrompt}`;
+  const allSteps = `${PRESTO_INSTALL} && ${PRESTO_LOGIN} && ${fullPrompt}`;
 
   return (
     <div className="not-prose flex flex-col gap-3" style={{ maxWidth: 620 }}>

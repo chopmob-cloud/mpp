@@ -14,7 +14,10 @@ import { AsciiLogo } from "./AsciiLogo";
 const ACCENT = "var(--vocs-text-color-heading)";
 const AGENT_COLOR = "#e8873a";
 const ANIM_SESSION_KEY = "mpp-landing-animated";
-const PRESTO_SETUP = `# install presto\ncurl -fsSL https://raw.githubusercontent.com/tempoxyz/presto/main/install.sh | bash\n\n# connect wallet\npresto login\n\n# try it\n`;
+const PRESTO_INSTALL =
+  "curl -fsSL https://raw.githubusercontent.com/tempoxyz/presto/main/install.sh | bash";
+const PRESTO_LOGIN = "presto login";
+const DISCOVER_URL = "https://payments.tempo.xyz/discover";
 
 // ---------------------------------------------------------------------------
 // Context — shares active agent tab index across components
@@ -853,7 +856,9 @@ function DesktopTooltip({
   const prefix = [agent.bin, agent.args].filter(Boolean).join(" ");
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(PRESTO_SETUP + fullPrompt);
+    navigator.clipboard.writeText(
+      `${PRESTO_INSTALL} && ${PRESTO_LOGIN} && ${fullPrompt}`,
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -965,7 +970,9 @@ function MobileServiceCard({
   const Logo = service.logo;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(PRESTO_SETUP + fullPrompt);
+    navigator.clipboard.writeText(
+      `${PRESTO_INSTALL} && ${PRESTO_LOGIN} && ${fullPrompt}`,
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -1176,7 +1183,7 @@ function AgentTabs() {
   const { activeAgent: active, setActiveAgent: setActive } =
     useContext(AgentContext);
   const [copied, setCopied] = useState(false);
-  const prompt = `"Log in (https://mpp.tempo.xyz/quickstart/presto), and use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed. Available services: https://payments.tempo.xyz/llms.txt and https://payments.tempo.xyz/services"`;
+  const prompt = `"Read ${DISCOVER_URL} for available services. Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`;
   const displayPrompt = `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`;
   const commands = [
     {
@@ -1207,7 +1214,9 @@ function AgentTabs() {
   const cmd = commands[active];
   const fullCommand = [cmd.bin, cmd.args, cmd.str].filter(Boolean).join(" ");
   const handleCopy = () => {
-    navigator.clipboard.writeText(PRESTO_SETUP + fullCommand);
+    navigator.clipboard.writeText(
+      `${PRESTO_INSTALL} && ${PRESTO_LOGIN} && ${fullCommand}`,
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
