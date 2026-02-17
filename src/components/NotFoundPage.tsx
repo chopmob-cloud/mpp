@@ -183,10 +183,10 @@ export function NotFoundPage() {
           lineHeight: 1.15,
           whiteSpace: "pre",
           letterSpacing: "1px",
-          color:
-            "light-dark(var(--vocs-color-accent), var(--vocs-color-accent8))",
+          color: "var(--vocs-color-accent)",
           opacity: 0.85,
-          textShadow: "0 0 20px rgba(1, 102, 255, 0.3)",
+          textShadow:
+            "0 0 20px color-mix(in srgb, var(--vocs-color-accent) 30%, transparent)",
           cursor: "pointer",
         }}
       >
@@ -234,11 +234,8 @@ export function NotFoundPage() {
         </p>
         <a
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-lg transition-all no-underline"
-          style={{
-            backgroundColor:
-              "light-dark(var(--vocs-color-accent), var(--vocs-color-accent8))",
-          }}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-accent font-medium rounded-lg transition-all hover:bg-accent6 no-underline"
+          style={{ color: "var(--accent-button-text)" }}
         >
           ← Back to Home
         </a>

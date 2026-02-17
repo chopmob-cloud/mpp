@@ -9,11 +9,16 @@ type Page =
 | { path: '/404'; render: 'static' }
 | { path: '/_cli'; render: 'static' }
 | { path: '/brand'; render: 'static' }
+| { path: '/demo'; render: 'static' }
 | { path: '/faq'; render: 'static' }
+| { path: '/get-started'; render: 'static' }
 | { path: '/'; render: 'static' }
 | { path: '/overview'; render: 'static' }
 | { path: '/tools/presto'; render: 'static' }
 | { path: '/tools/presto/examples'; render: 'static' }
+| { path: '/setup/agents'; render: 'static' }
+| { path: '/setup/faq'; render: 'static' }
+| { path: '/setup/integrate'; render: 'static' }
 | { path: '/sdk'; render: 'static' }
 | { path: '/sdk/typescript/Challenge.fromIntent'; render: 'static' }
 | { path: '/sdk/typescript/Method.from'; render: 'static' }
@@ -95,7 +100,6 @@ type Page =
 | { path: '/payment-methods/stripe'; render: 'static' }
 | { path: '/intents/charge'; render: 'static' }
 | { path: '/guides/building-with-ai'; render: 'static' }
-| { path: '/guides/one-time-payments'; render: 'static' }
 | { path: '/_api/api/og'; render: 'static' };
 
 // prettier-ignore

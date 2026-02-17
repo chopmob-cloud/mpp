@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, className }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -17,11 +17,7 @@ function CopyButton({ text }: { text: string }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="transition-colors shrink-0"
-      style={{
-        color:
-          "light-dark(var(--vocs-color-accent), var(--vocs-color-accent8))",
-      }}
+      className={`text-accent hover:text-accent6 transition-colors shrink-0 ${className ?? ""}`}
       aria-label="Copy to clipboard"
     >
       {copied ? (
@@ -105,21 +101,21 @@ const AGENT_COMMANDS = [
     label: "Claude",
     bin: "claude",
     args: "-p",
-    str: '"charge $0.01 per api call with MPP"',
+    str: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
     icon: ClaudeLogo,
   },
   {
     label: "Codex",
     bin: "codex",
     args: "--full-auto",
-    str: '"charge $0.01 per api call with MPP"',
+    str: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
     icon: CodexLogo,
   },
   {
     label: "Amp",
     bin: "amp",
     args: null,
-    str: '"charge $0.01 per api call with MPP"',
+    str: `"Use fal.ai to generate a logo for my startup called 'Moonshot Labs' - modern, minimal, space themed."`,
     icon: AmpLogo,
   },
 ];
@@ -129,8 +125,17 @@ export function AgentTabs() {
   const cmd = AGENT_COMMANDS[active];
 
   return (
-    <div className="max-w-xl rounded-md overflow-hidden border border-primary">
-      <div className="flex bg-surfaceMuted border-b border-primary">
+    <div
+      className="max-w-xl rounded-md overflow-clip text-left"
+      style={{ border: "1px solid var(--vocs-border-color-secondary)" }}
+    >
+      <div
+        className="flex"
+        style={{
+          background: "var(--vocs-background-color-surfaceMuted)",
+          borderBottom: "1px solid var(--vocs-border-color-secondary)",
+        }}
+      >
         {AGENT_COMMANDS.map((a, i) => {
           const Icon = a.icon;
           return (
@@ -138,11 +143,22 @@ export function AgentTabs() {
               key={a.label}
               type="button"
               onClick={() => setActive(i)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
-                i === active
-                  ? "text-heading bg-surface border-b-2 border-[var(--text-color-heading)] -mb-px"
-                  : "text-muted"
-              }`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer"
+              style={{
+                color:
+                  i === active
+                    ? "var(--vocs-text-color-heading)"
+                    : "var(--vocs-text-color-muted)",
+                background:
+                  i === active
+                    ? "var(--vocs-background-color-surface)"
+                    : "transparent",
+                borderBottom:
+                  i === active
+                    ? "2px solid var(--vocs-text-color-heading)"
+                    : "none",
+                marginBottom: i === active ? "-1px" : "0",
+              }}
             >
               <Icon className="w-3.5 h-3.5" />
               {a.label}
@@ -150,15 +166,27 @@ export function AgentTabs() {
           );
         })}
       </div>
-      <div className="flex items-center gap-3 px-4 py-3 bg-surface">
-        <pre className="text-sm select-none flex-1 truncate m-0 p-0 bg-transparent font-mono">
-          <code className="pl-0">
-            <span className="text-muted">$ </span>
-            <span className="text-primary">{cmd.bin}</span>
-            {cmd.args && <span className="text-secondary"> {cmd.args}</span>}
-            <span className="text-green"> {cmd.str}</span>
-          </code>
-        </pre>
+      <div
+        className="flex items-center gap-3 pl-4 pr-4 py-3"
+        style={{ background: "var(--vocs-background-color-surface)" }}
+      >
+        <span
+          className="text-sm select-none flex-1 font-mono whitespace-pre-wrap text-left"
+          style={{ margin: 0, padding: 0 }}
+        >
+          <span style={{ color: "var(--vocs-text-color-muted)" }}>$</span>
+          <span style={{ color: "var(--vocs-text-color-primary)" }}>
+            {" "}
+            {cmd.bin}
+          </span>
+          {cmd.args && (
+            <span style={{ color: "var(--vocs-text-color-secondary)" }}>
+              {" "}
+              {cmd.args}
+            </span>
+          )}
+          <span style={{ color: "var(--vocs-color-success)" }}> {cmd.str}</span>
+        </span>
         <CopyButton
           text={[cmd.bin, cmd.args, cmd.str].filter(Boolean).join(" ")}
         />
