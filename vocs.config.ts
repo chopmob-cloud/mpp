@@ -35,10 +35,7 @@ export default defineConfig({
   description:
     "Machine Payment Protocol: internet-native payments for machine-to-machine transactions",
   checkDeadlinks: "warn",
-  iconUrl: {
-    light: "/favicon-dark.png",
-    dark: "/favicon-light.png",
-  },
+  iconUrl: "/favicon.svg",
   logoUrl: {
     light: "/mpp-logo-dark.svg",
     dark: "/mpp-logo-light.svg",

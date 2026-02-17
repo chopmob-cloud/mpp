@@ -107,6 +107,11 @@
  * in Head.tsx. No manual overrides needed.
  */
 
+/* Prevent layout shift when scrollbar appears/disappears between routes */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* Custom utility for muted text */
 .text-muted {
   color: var(--vocs-text-color-muted);
