@@ -11,6 +11,16 @@ import { Terminal } from "./Terminal";
 
 const ACCENT = "var(--vocs-text-color-heading)";
 
+const TERMINAL_STEPS = [
+  Terminal.commands(["cat quickstart.txt", "./demo.sh"]),
+  Terminal.wizard([
+    Terminal.chat(),
+    Terminal.image(),
+    Terminal.search(),
+    Terminal.article(),
+  ]),
+];
+
 // ---------------------------------------------------------------------------
 // Context — shares active agent tab index across components
 // ---------------------------------------------------------------------------
@@ -194,7 +204,7 @@ function Hero() {
             height: 540,
           }}
         >
-          <Terminal className="absolute inset-0" />
+          <Terminal className="absolute inset-0" steps={TERMINAL_STEPS} />
         </div>
 
         {/* Designed by */}
@@ -216,8 +226,8 @@ function Tagline() {
     >
       <div>
         The open protocol for internet-native payments. Charge for API requests,
-        tool calls, or access to content. Agents, apps, and humans securely pay per
-        request.
+        tool calls, or access to content. Agents, apps, and humans securely pay
+        per request.
       </div>
     </div>
   );
@@ -351,7 +361,9 @@ function Lockup() {
       <span style={{ fontSize: "clamp(2.75rem, 7vw, 5rem)", display: "block" }}>
         Machine
       </span>
-      <span style={{ fontSize: "clamp(1.75rem, 4.5vw, 3.25rem)", display: "block" }}>
+      <span
+        style={{ fontSize: "clamp(1.75rem, 4.5vw, 3.25rem)", display: "block" }}
+      >
         Payments Protocol
       </span>
     </h1>

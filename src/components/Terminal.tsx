@@ -4,13 +4,31 @@ import { Receipt } from "mppx";
 import type { ReactNode } from "react";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { BlockCursorInput } from "./BlockCursorInput";
+import { SPINNER_FRAMES } from "./terminal-data";
 import {
-  ARTICLE_SUMMARIES,
-  CHAT_RESPONSES,
-  IMAGE_RESULTS,
-  SEARCH_RESULTS,
-  SPINNER_FRAMES,
-} from "./terminal-data";
+  article as _article,
+  ascii as _ascii,
+  charge as _charge,
+  chat as _chat,
+  commands as _commands,
+  gallery as _gallery,
+  image as _image,
+  lookup as _lookup,
+  photo as _photo,
+  ping as _ping,
+  poem as _poem,
+  search as _search,
+  session as _session,
+  stripe as _stripe,
+  wizard as _wizard,
+  COST_PER_TOKEN,
+  type CommandsStepConfig,
+  LOOKUP_COST,
+  type PaymentStepConfig,
+  type StepConfig,
+  shuffle,
+  type WizardStepConfig,
+} from "./terminal-steps";
 
 // ---------------------------------------------------------------------------
 // Demo client hook
@@ -83,6 +101,109 @@ const QUICKSTART_LABEL_WIDTH = "13em";
 
 function BlankLine() {
   return <div className="h-6" />;
+}
+
+function PhotoOutput({ url }: { url: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block relative rounded overflow-hidden"
+      style={{
+        width: 200,
+        height: 200,
+        borderColor: "var(--term-gray4)",
+        borderWidth: 1,
+        borderStyle: "solid",
+      }}
+    >
+      {!loaded && (
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: "var(--term-gray3)" }}
+        />
+      )}
+      <img
+        src={url}
+        alt="Generated"
+        onLoad={() => setLoaded(true)}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{
+          transition: "opacity 0.5s",
+          opacity: loaded ? 1 : 0,
+        }}
+      />
+    </a>
+  );
+}
+
+function GalleryThumb({ url }: { url: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block relative rounded overflow-hidden"
+      style={{
+        width: 80,
+        height: 80,
+        borderColor: "var(--term-gray4)",
+        borderWidth: 1,
+        borderStyle: "solid",
+      }}
+    >
+      {!loaded && (
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: "var(--term-gray3)" }}
+        />
+      )}
+      <img
+        src={url}
+        alt="Gallery"
+        onLoad={() => setLoaded(true)}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{
+          transition: "opacity 0.5s",
+          opacity: loaded ? 1 : 0,
+        }}
+      />
+    </a>
+  );
+}
+
+function GalleryGrid({
+  urls,
+  loading = false,
+}: {
+  urls: string[];
+  loading?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {urls.map((url) => (
+        <GalleryThumb key={url} url={url} />
+      ))}
+      {loading && (
+        <div
+          className="rounded"
+          style={{
+            width: 80,
+            height: 80,
+            borderColor: "var(--term-gray4)",
+            borderWidth: 1,
+            borderStyle: "solid",
+            backgroundColor: "var(--term-gray3)",
+          }}
+        />
+      )}
+    </div>
+  );
 }
 
 function SummaryRow({
@@ -195,20 +316,19 @@ function QuickstartOutput() {
 // Typewriter commands
 // ---------------------------------------------------------------------------
 
-const lines = ["cat quickstart.txt", "./demo.sh"];
-
 const BASE_DELAY = 30;
 const JITTER = 35;
 const LINE_DELAY = 500;
 
-function useTypewriter() {
-  const skip = SKIP_ANIMATION;
+function useTypewriter(commands: string[]) {
+  const noCommands = commands.length === 0;
+  const skip = SKIP_ANIMATION || noCommands;
   const [showLogin, setShowLogin] = useState(skip);
   const [showPrompt, setShowPrompt] = useState(skip);
   const [started, setStarted] = useState(skip);
-  const [lineIndex, setLineIndex] = useState(skip ? lines.length : 0);
+  const [lineIndex, setLineIndex] = useState(skip ? commands.length : 0);
   const [charIndex, setCharIndex] = useState(0);
-  const done = started && lineIndex >= lines.length;
+  const done = started && lineIndex >= commands.length;
 
   useEffect(() => {
     if (skip) return;
@@ -220,11 +340,11 @@ function useTypewriter() {
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, []);
+  }, [skip]);
 
   const advance = () => {
     if (done) return;
-    if (lineIndex >= lines.length) return;
+    if (lineIndex >= commands.length) return;
     setLineIndex((l) => l + 1);
     setCharIndex(0);
   };
@@ -232,7 +352,7 @@ function useTypewriter() {
   useEffect(() => {
     if (!started || done) return;
 
-    const currentLine = lines[lineIndex];
+    const currentLine = commands[lineIndex];
 
     if (charIndex < currentLine.length) {
       const delay = BASE_DELAY + Math.random() * JITTER;
@@ -246,7 +366,7 @@ function useTypewriter() {
       setCharIndex(0);
     }, delay);
     return () => clearTimeout(timer);
-  }, [started, lineIndex, charIndex, done]);
+  }, [started, lineIndex, charIndex, done, commands]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -364,34 +484,6 @@ export function randomStripeId(prefix: string) {
   return result;
 }
 
-export function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function createCyclicPicker<T>(items: T[], first?: T): () => T {
-  let queue = first
-    ? [first, ...shuffle(items.filter((i) => i !== first))]
-    : shuffle(items);
-  let index = 0;
-  return () => {
-    if (index >= queue.length) {
-      queue = shuffle(items);
-      index = 0;
-    }
-    return queue[index++];
-  };
-}
-
-const pickChat = createCyclicPicker(CHAT_RESPONSES);
-const pickImage = createCyclicPicker(IMAGE_RESULTS);
-const pickSearch = createCyclicPicker(SEARCH_RESULTS);
-const pickArticle = createCyclicPicker(ARTICLE_SUMMARIES);
-
 // ---------------------------------------------------------------------------
 // Service label for upstream API providers
 // ---------------------------------------------------------------------------
@@ -415,6 +507,14 @@ export function serviceLabel(endpoint: string): string | undefined {
 const SKIP_ANIMATION = import.meta.env.VITE_SKIP_ANIMATION === "true";
 const STREAM_DELAY = SKIP_ANIMATION ? 0 : 30;
 
+export type {
+  StepConfig,
+  PaymentStepConfig,
+  CommandsStepConfig,
+  WizardStepConfig,
+};
+export { COST_PER_TOKEN, LOOKUP_COST, shuffle };
+
 // biome-ignore format: contains unicode ✔︎
 function StepIcon({
   spinning,
@@ -434,13 +534,12 @@ function StepIcon({
   );
 }
 
-export const COST_PER_TOKEN = 0.0001;
-
 function AsyncSteps({
   endpoint,
   liveEndpoint,
   isRestart = false,
   output,
+  outputMode,
   walletState,
   paymentChannel = false,
   onDone,
@@ -454,6 +553,7 @@ function AsyncSteps({
   liveEndpoint?: string;
   isRestart?: boolean;
   output: string[];
+  outputMode?: "text" | "photo" | "gallery";
   walletState: WalletState;
   paymentChannel?: boolean;
   onDone?: () => void;
@@ -665,6 +765,17 @@ function AsyncSteps({
       return;
     }
     if (currentKey === "stream") {
+      if (outputMode === "gallery") {
+        if (tokenCount < output.length) {
+          const delay = SKIP_ANIMATION ? 0 : 400;
+          const timer = setTimeout(() => {
+            setTokenCount((t) => t + 1);
+          }, delay);
+          return () => clearTimeout(timer);
+        }
+        setStep((s) => s + 1);
+        return;
+      }
       if (streamChars < outputText.length) {
         const timer = setTimeout(() => {
           setStreamChars((c) => c + 1);
@@ -693,7 +804,10 @@ function AsyncSteps({
     streamChars,
     outputText.length,
     currentKey,
+    output.length,
+    outputMode,
     paymentChannel,
+    tokenCount,
     walletState.setBalance,
     walletState.setCreated,
     steps,
@@ -864,36 +978,65 @@ function AsyncSteps({
       {!paymentChannel && pastStep("req200") && (
         <>
           <BlankLine />
-          <pre
-            className="whitespace-pre-wrap"
-            style={{ color: "var(--term-gray10)" }}
-          >
-            {renderText(outputText)}
-          </pre>
+          {outputMode === "photo" && output.length > 0 ? (
+            <PhotoOutput url={output[0]} />
+          ) : (
+            <pre
+              className="whitespace-pre-wrap"
+              style={{ color: "var(--term-gray10)" }}
+            >
+              {renderText(outputText)}
+            </pre>
+          )}
         </>
       )}
       {paymentChannel && atOrPast("stream") && (
         <>
           <BlankLine />
-          <pre
-            className="whitespace-pre-wrap"
-            style={{ color: "var(--term-gray10)" }}
-          >
-            {outputText.slice(0, streamChars)}
-          </pre>
-          {/* biome-ignore format: contains unicode ✔︎ */}
-          {tokenCount > 0 && (
-            <p style={{ color: "var(--term-gray6)" }}>
-              {streamChars < outputText.length ? (
-                <Spinner />
-              ) : (
-                <span style={{ color: "var(--term-green9)" }}>✔︎</span>
-              )}{" "}
-              {tokenCount} tokens streamed —{" "}
-              <span style={{ color: "var(--term-amber9)" }}>
-                {(tokenCount * COST_PER_TOKEN).toFixed(4)} USDC
-              </span>
-            </p>
+          {outputMode === "gallery" ? (
+            <>
+              <GalleryGrid
+                urls={output.slice(0, tokenCount)}
+                loading={tokenCount < output.length}
+              />
+              {/* biome-ignore format: contains unicode ✔︎ */}
+              {tokenCount > 0 && (
+                <p style={{ color: "var(--term-gray6)", marginTop: "0.5em" }}>
+                  {tokenCount < output.length ? (
+                    <Spinner />
+                  ) : (
+                    <span style={{ color: "var(--term-green9)" }}>✔︎</span>
+                  )}{" "}
+                  {tokenCount} photos —{" "}
+                  <span style={{ color: "var(--term-amber9)" }}>
+                    {(tokenCount * 0.01).toFixed(2)} USDC
+                  </span>
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <pre
+                className="whitespace-pre-wrap"
+                style={{ color: "var(--term-gray10)" }}
+              >
+                {outputText.slice(0, streamChars)}
+              </pre>
+              {/* biome-ignore format: contains unicode ✔︎ */}
+              {tokenCount > 0 && (
+                <p style={{ color: "var(--term-gray6)" }}>
+                  {streamChars < outputText.length ? (
+                    <Spinner />
+                  ) : (
+                    <span style={{ color: "var(--term-green9)" }}>✔︎</span>
+                  )}{" "}
+                  {tokenCount} tokens streamed —{" "}
+                  <span style={{ color: "var(--term-amber9)" }}>
+                    {(tokenCount * COST_PER_TOKEN).toFixed(4)} USDC
+                  </span>
+                </p>
+              )}
+            </>
           )}
         </>
       )}
@@ -921,32 +1064,40 @@ function AsyncSteps({
               </a>
             </p>
           )}
-          {pastStep("closeChannel") && (
-            <p
-              style={{
-                color: "var(--term-gray6)",
-                paddingLeft: "2ch",
-              }}
-            >
-              spent{" "}
-              <span style={{ color: "var(--term-amber9)" }}>
-                {(tokenCount * COST_PER_TOKEN).toFixed(4)} USDC
-              </span>
-            </p>
-          )}
-          {pastStep("closeChannel") && (
-            <p
-              style={{
-                color: "var(--term-gray6)",
-                paddingLeft: "2ch",
-              }}
-            >
-              refunded{" "}
-              <span style={{ color: "var(--term-amber9)" }}>
-                {(5 - tokenCount * COST_PER_TOKEN).toFixed(4)} USDC
-              </span>
-            </p>
-          )}
+          {pastStep("closeChannel") &&
+            (() => {
+              const spent =
+                outputMode === "gallery"
+                  ? tokenCount * 0.01
+                  : tokenCount * COST_PER_TOKEN;
+              return (
+                <>
+                  <p
+                    style={{
+                      color: "var(--term-gray6)",
+                      paddingLeft: "2ch",
+                    }}
+                  >
+                    spent{" "}
+                    <span style={{ color: "var(--term-amber9)" }}>
+                      {spent.toFixed(outputMode === "gallery" ? 2 : 4)} USDC
+                    </span>
+                  </p>
+                  <p
+                    style={{
+                      color: "var(--term-gray6)",
+                      paddingLeft: "2ch",
+                    }}
+                  >
+                    refunded{" "}
+                    <span style={{ color: "var(--term-amber9)" }}>
+                      {(5 - spent).toFixed(outputMode === "gallery" ? 2 : 4)}{" "}
+                      USDC
+                    </span>
+                  </p>
+                </>
+              );
+            })()}
         </>
       )}
     </div>
@@ -956,8 +1107,6 @@ function AsyncSteps({
 // ---------------------------------------------------------------------------
 // Stripe card form
 // ---------------------------------------------------------------------------
-
-export const LOOKUP_COST = 1.0;
 
 type SavedCard = { last4: string; expiry: string };
 
@@ -1115,6 +1264,7 @@ function CardForm({
 function StripeSteps({
   endpoint,
   output,
+  outputMode,
   onDone,
   completed = false,
   savedCard,
@@ -1124,6 +1274,7 @@ function StripeSteps({
 }: {
   endpoint: string;
   output: string[];
+  outputMode?: "text" | "photo" | "gallery";
   onDone?: () => void;
   completed?: boolean;
   savedCard?: SavedCard;
@@ -1357,36 +1508,40 @@ function StripeSteps({
       {pastStep("req200") && output && output.length > 0 && (
         <>
           <BlankLine />
-          <div style={{ color: "var(--term-gray10)" }}>
-            {output.map((line, i) => {
-              const match = line.match(/^(\s*\S+\s+)(.*)$/);
-              if (match) {
-                const indent = match[1].length;
+          {outputMode === "photo" ? (
+            <PhotoOutput url={output[0]} />
+          ) : (
+            <div style={{ color: "var(--term-gray10)" }}>
+              {output.map((line, i) => {
+                const match = line.match(/^(\s*\S+\s+)(.*)$/);
+                if (match) {
+                  const indent = match[1].length;
+                  return (
+                    <pre
+                      // biome-ignore lint/suspicious/noArrayIndexKey: static output lines never reorder
+                      key={i}
+                      className="whitespace-pre-wrap"
+                      style={{
+                        paddingLeft: `${indent}ch`,
+                        textIndent: `-${indent}ch`,
+                      }}
+                    >
+                      {renderText(line)}
+                    </pre>
+                  );
+                }
                 return (
                   <pre
                     // biome-ignore lint/suspicious/noArrayIndexKey: static output lines never reorder
                     key={i}
                     className="whitespace-pre-wrap"
-                    style={{
-                      paddingLeft: `${indent}ch`,
-                      textIndent: `-${indent}ch`,
-                    }}
                   >
                     {renderText(line)}
                   </pre>
                 );
-              }
-              return (
-                <pre
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static output lines never reorder
-                  key={i}
-                  className="whitespace-pre-wrap"
-                >
-                  {renderText(line)}
-                </pre>
-              );
-            })}
-          </div>
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -1410,7 +1565,7 @@ export type WalletState = {
 export const INITIAL_BALANCE = 100;
 
 export type Run = {
-  chosen: string;
+  step: PaymentStepConfig;
   output: string[];
   url?: string;
   key: number;
@@ -1418,31 +1573,10 @@ export type Run = {
 };
 
 export function runCost(run: Run): number {
-  if (run.chosen === "Chat with AI") {
-    const tokens = Math.ceil(run.output.join("\n").length / 4);
-    return tokens * COST_PER_TOKEN;
-  }
-  if (run.chosen === "Generate image") return 0.003;
-  if (run.chosen === "Search the web") return 0.005;
-  if (run.chosen === "Summarize article") return LOOKUP_COST;
-  if (run.chosen === "Write poem") {
-    const tokens = Math.ceil(run.output.join("\n").length / 4);
-    return tokens * COST_PER_TOKEN;
-  }
-  if (run.chosen === "Create ASCII art") return 0.001;
-  if (run.chosen === "Lookup company") return LOOKUP_COST;
-  return 0;
+  const cost = run.step.cost;
+  if (typeof cost === "function") return cost(run.output);
+  return cost;
 }
-
-export const METHOD_LABELS: Record<string, string> = {
-  "Chat with AI": "Tempo session",
-  "Generate image": "Tempo charge",
-  "Search the web": "Tempo charge",
-  "Summarize article": "Stripe charge",
-  "Write poem": "Tempo session",
-  "Create ASCII art": "Tempo charge",
-  "Lookup company": "Stripe charge",
-};
 
 function scrollTerminalIntoView() {
   const el = document.querySelector("[data-terminal]");
@@ -1455,7 +1589,7 @@ function scrollTerminalIntoView() {
 }
 
 function Wizard({
-  options,
+  steps,
   demoClient,
   onRestart,
   address,
@@ -1463,7 +1597,7 @@ function Wizard({
   savedCard,
   setSavedCard,
 }: {
-  options: string[];
+  steps: PaymentStepConfig[];
   demoClient?: DemoClient | null;
   onRestart?: () => void;
   address: string;
@@ -1472,7 +1606,7 @@ function Wizard({
   setSavedCard: (card: SavedCard | undefined) => void;
 }) {
   const [selected, setSelected] = useState(0);
-  const [chosen, setChosen] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<PaymentStepConfig | null>(null);
   const [chosenOutput, setChosenOutput] = useState<string[]>([]);
   const [waitingForUrl, setWaitingForUrl] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -1484,20 +1618,18 @@ function Wizard({
   const [runs, setRuns] = useState<Run[]>([]);
   const [runKey, setRunKey] = useState(0);
 
-  const currentOptions = runs.length > 0 ? [...options, "Quit"] : options;
+  const currentItems: (PaymentStepConfig | "quit")[] =
+    runs.length > 0 ? [...steps, "quit"] : steps;
 
   const handleContentReceived = (content: string[]) => {
     setChosenOutput(content);
   };
 
   const confirm = (index?: number) => {
-    const opt = currentOptions[index ?? selected];
-    if (opt === "Quit") {
+    const item = currentItems[index ?? selected];
+    if (item === "quit") {
       const usdcSpent = runs
-        .filter(
-          (r) =>
-            r.chosen !== "Lookup company" && r.chosen !== "Summarize article",
-        )
+        .filter((r) => r.step.type !== "stripe")
         .reduce((sum, r) => sum + runCost(r), 0);
       walletState.setBalance(INITIAL_BALANCE - usdcSpent);
       setQuit(true);
@@ -1506,12 +1638,11 @@ function Wizard({
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    if (opt === "Write poem" || opt === "Create ASCII art") {
-      // Always set canned fallback — live mode overwrites via onContentReceived
-      if (opt === "Write poem") setChosenOutput(pickChat());
-      else setChosenOutput(pickImage());
+    const step = item;
+    if (step.skipPrompt) {
+      if (step.pickOutput) setChosenOutput(step.pickOutput());
       setChosenUrl(undefined);
-      setChosen(opt);
+      setChosen(step);
       scrollTerminalIntoView();
       return;
     }
@@ -1522,20 +1653,11 @@ function Wizard({
 
   const submitUrl = () => {
     if (!urlInput.trim()) return;
-    const opt = currentOptions[selected];
-
-    // Always set canned fallback — live mode overwrites via onContentReceived
-    if (opt === "Chat with AI" || opt === "Write poem")
-      setChosenOutput(pickChat());
-    else if (opt === "Generate image" || opt === "Create ASCII art")
-      setChosenOutput(pickImage());
-    else if (opt === "Search the web") setChosenOutput(pickSearch());
-    else if (opt === "Summarize article" || opt === "Lookup company")
-      setChosenOutput(pickArticle());
-
+    const step = currentItems[selected] as PaymentStepConfig;
+    if (step.pickOutput) setChosenOutput(step.pickOutput());
     setChosenUrl(urlInput.trim());
     setWaitingForUrl(false);
-    setChosen(opt);
+    setChosen(step);
     scrollTerminalIntoView();
   };
 
@@ -1543,7 +1665,7 @@ function Wizard({
     setRuns((prev) => [
       ...prev,
       {
-        chosen: chosen!,
+        step: chosen!,
         output: chosenOutput,
         url: chosenUrl,
         key: runKey,
@@ -1571,12 +1693,10 @@ function Wizard({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelected(
-          (s) => (s - 1 + currentOptions.length) % currentOptions.length,
-        );
+        setSelected((s) => (s - 1 + currentItems.length) % currentItems.length);
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelected((s) => (s + 1) % currentOptions.length);
+        setSelected((s) => (s + 1) % currentItems.length);
       } else if (e.key === "Enter") {
         confirm();
       }
@@ -1593,8 +1713,8 @@ function Wizard({
     };
   });
 
-  const renderSteps = (
-    choice: string,
+  const renderPaymentSteps = (
+    stepConfig: PaymentStepConfig,
     output: string[],
     key: number,
     opts?: {
@@ -1606,96 +1726,15 @@ function Wizard({
     },
   ) => {
     const isActive = !opts?.completed;
-    if (choice === "Chat with AI" || choice === "Write poem") {
-      const isPoem = choice === "Write poem";
-      const liveEndpoint = isPoem
-        ? `/api/demo/poem?prompt=${encodeURIComponent(opts?.url ?? "")}`
-        : `/api/demo/chat?prompt=${encodeURIComponent(opts?.url ?? "")}`;
-      return (
-        <AsyncSteps
-          key={key}
-          endpoint={isPoem ? "/api/poem" : "/api/chat"}
-          liveEndpoint={liveEndpoint}
-          isRestart={opts?.isRestart}
-          output={output}
-          walletState={walletState}
-          paymentChannel
-          onDone={opts?.onDone}
-          completed={opts?.completed}
-          demoClient={isActive ? demoClient : undefined}
-          onContentReceived={isActive ? handleContentReceived : undefined}
-          initialTxHash={opts?.txHash}
-          onTxHash={
-            isActive
-              ? (hash) => {
-                  currentTxHashRef.current = hash;
-                }
-              : undefined
-          }
-        />
-      );
-    }
-    if (choice === "Generate image" || choice === "Create ASCII art") {
-      const isAscii = choice === "Create ASCII art";
-      const liveEndpoint = isAscii
-        ? `/api/demo/ascii?prompt=${encodeURIComponent(opts?.url ?? "")}`
-        : `/api/demo/image?prompt=${encodeURIComponent(opts?.url ?? "")}`;
-      return (
-        <AsyncSteps
-          key={key}
-          endpoint={isAscii ? "/api/ascii" : "/api/image"}
-          liveEndpoint={liveEndpoint}
-          isRestart={opts?.isRestart}
-          output={output}
-          walletState={walletState}
-          onDone={opts?.onDone}
-          completed={opts?.completed}
-          demoClient={isActive ? demoClient : undefined}
-          onContentReceived={isActive ? handleContentReceived : undefined}
-          initialTxHash={opts?.txHash}
-          onTxHash={
-            isActive
-              ? (hash) => {
-                  currentTxHashRef.current = hash;
-                }
-              : undefined
-          }
-        />
-      );
-    }
-    if (choice === "Search the web")
-      return (
-        <AsyncSteps
-          key={key}
-          endpoint="/api/search"
-          liveEndpoint={`/api/demo/search?query=${encodeURIComponent(opts?.url ?? "")}`}
-          isRestart={opts?.isRestart}
-          output={output}
-          walletState={walletState}
-          onDone={opts?.onDone}
-          completed={opts?.completed}
-          demoClient={isActive ? demoClient : undefined}
-          onContentReceived={isActive ? handleContentReceived : undefined}
-          initialTxHash={opts?.txHash}
-          onTxHash={
-            isActive
-              ? (hash) => {
-                  currentTxHashRef.current = hash;
-                }
-              : undefined
-          }
-        />
-      );
-    if (choice === "Summarize article" || choice === "Lookup company") {
-      const endpoint =
-        choice === "Lookup company"
-          ? `/api/demo/lookup?url=${encodeURIComponent(opts?.url ?? "")}`
-          : `/api/demo/article?url=${encodeURIComponent(opts?.url ?? "")}`;
+    const liveEndpoint = stepConfig.liveEndpoint?.(opts?.url ?? "");
+
+    if (stepConfig.type === "stripe") {
       return (
         <StripeSteps
           key={key}
-          endpoint={endpoint}
+          endpoint={liveEndpoint ?? stepConfig.endpoint}
           output={output}
+          outputMode={stepConfig.outputMode}
           onDone={opts?.onDone}
           completed={opts?.completed}
           savedCard={savedCard}
@@ -1705,55 +1744,78 @@ function Wizard({
         />
       );
     }
-    return null;
+
+    return (
+      <AsyncSteps
+        key={key}
+        endpoint={stepConfig.endpoint}
+        liveEndpoint={liveEndpoint}
+        isRestart={opts?.isRestart}
+        output={output}
+        outputMode={stepConfig.outputMode}
+        walletState={walletState}
+        paymentChannel={stepConfig.type === "tempo-session"}
+        onDone={opts?.onDone}
+        completed={opts?.completed}
+        demoClient={isActive ? demoClient : undefined}
+        onContentReceived={isActive ? handleContentReceived : undefined}
+        initialTxHash={opts?.txHash}
+        onTxHash={
+          isActive
+            ? (hash) => {
+                currentTxHashRef.current = hash;
+              }
+            : undefined
+        }
+      />
+    );
   };
 
   return (
     <div className="flex flex-col">
       {runs.map((run, runIndex) => {
-        const runOptions = runIndex > 0 ? [...options, "Quit"] : options;
+        const runItems: (PaymentStepConfig | "quit")[] =
+          runIndex > 0 ? [...steps, "quit"] : steps;
         return (
           <div key={run.key}>
             <p style={{ color: "var(--term-gray10)" }}>
               What would you like to do?
             </p>
             <div className="flex flex-col" style={{ paddingLeft: "1rem" }}>
-              {runOptions.map((option) => (
-                <p
-                  key={option}
-                  style={{
-                    color:
-                      option === run.chosen
+              {runItems.map((item) => {
+                const label = item === "quit" ? "Quit" : item.label;
+                const isChosen = item !== "quit" && item === run.step;
+                return (
+                  <p
+                    key={label}
+                    style={{
+                      color: isChosen
                         ? "var(--term-pink9)"
                         : "var(--term-gray6)",
-                  }}
-                >
-                  {option === run.chosen ? (
-                    <>
-                      <CssTriangle />{" "}
-                    </>
-                  ) : (
-                    "  "
-                  )}
-                  {option}
-                  {METHOD_LABELS[option] && (
-                    <span className="ml-2">({METHOD_LABELS[option]})</span>
-                  )}
-                </p>
-              ))}
+                    }}
+                  >
+                    {isChosen ? (
+                      <>
+                        <CssTriangle />{" "}
+                      </>
+                    ) : (
+                      "  "
+                    )}
+                    {label}
+                    {item !== "quit" && (
+                      <span className="ml-2">({item.methodLabel})</span>
+                    )}
+                  </p>
+                );
+              })}
             </div>
-            {run.url && (
+            {run.url && run.step.prompt && (
               <p style={{ color: "var(--term-gray6)" }}>
-                {run.chosen === "Search the web"
-                  ? "Enter query: "
-                  : run.chosen === "Summarize article" ||
-                      run.chosen === "Lookup company"
-                    ? "Enter URL: "
-                    : "Enter prompt: "}
+                {run.step.prompt.label}:{" "}
                 <span style={{ color: "var(--term-gray10)" }}>{run.url}</span>
               </p>
             )}
-            {renderSteps(run.chosen, run.output, run.key, {
+            {renderPaymentSteps(run.step, run.output, run.key, {
               isRestart: walletExistedAtMount || runIndex > 0,
               completed: true,
               url: run.url,
@@ -1770,36 +1832,43 @@ function Wizard({
             What would you like to do?
           </p>
           <div className="flex flex-col" style={{ paddingLeft: "1rem" }}>
-            {currentOptions.map((option, i) => (
-              <button
-                key={option}
-                type="button"
-                className={`w-fit cursor-pointer text-left ${chosen || waitingForUrl ? "pointer-events-none" : ""}`}
-                style={{
-                  color:
-                    selected === i ? "var(--term-pink9)" : "var(--term-gray6)",
-                }}
-                onMouseEnter={() => !chosen && !waitingForUrl && setSelected(i)}
-                onClick={() => {
-                  if (!chosen && !waitingForUrl) {
-                    setSelected(i);
-                    confirm(i);
+            {currentItems.map((item, i) => {
+              const label = item === "quit" ? "Quit" : item.label;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  className={`w-fit cursor-pointer text-left ${chosen || waitingForUrl ? "pointer-events-none" : ""}`}
+                  style={{
+                    color:
+                      selected === i
+                        ? "var(--term-pink9)"
+                        : "var(--term-gray6)",
+                  }}
+                  onMouseEnter={() =>
+                    !chosen && !waitingForUrl && setSelected(i)
                   }
-                }}
-              >
-                {selected === i ? (
-                  <>
-                    <CssTriangle />{" "}
-                  </>
-                ) : (
-                  "  "
-                )}
-                {option}
-                {METHOD_LABELS[option] && (
-                  <span className="ml-2">({METHOD_LABELS[option]})</span>
-                )}
-              </button>
-            ))}
+                  onClick={() => {
+                    if (!chosen && !waitingForUrl) {
+                      setSelected(i);
+                      confirm(i);
+                    }
+                  }}
+                >
+                  {selected === i ? (
+                    <>
+                      <CssTriangle />{" "}
+                    </>
+                  ) : (
+                    "  "
+                  )}
+                  {label}
+                  {item !== "quit" && (
+                    <span className="ml-2">({item.methodLabel})</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
           {/* biome-ignore format: contains unicode ↑↓ */}
           {!chosen && !waitingForUrl && (
@@ -1810,12 +1879,9 @@ function Wizard({
           {waitingForUrl && (
             <p className="flex" style={{ color: "var(--term-gray6)" }}>
               <span className="shrink-0 whitespace-pre">
-                {currentOptions[selected] === "Search the web"
-                  ? "Enter query: "
-                  : currentOptions[selected] === "Summarize article" ||
-                      currentOptions[selected] === "Lookup company"
-                    ? "Enter URL: "
-                    : "Enter prompt: "}
+                {(currentItems[selected] as PaymentStepConfig).prompt?.label ??
+                  "Enter prompt"}
+                :{" "}
               </span>
               <BlockCursorInput
                 ref={urlRef}
@@ -1828,49 +1894,20 @@ function Wizard({
                 className="term-url-input min-w-0 flex-1 bg-transparent outline-none"
                 style={{ color: "var(--term-gray10)" }}
                 placeholder={
-                  currentOptions[selected] === "Chat with AI" ||
-                  currentOptions[selected] === "Write poem"
-                    ? "what are micropayments?"
-                    : currentOptions[selected] === "Generate image" ||
-                        currentOptions[selected] === "Create ASCII art"
-                      ? "a neon cityscape at night"
-                      : currentOptions[selected] === "Search the web"
-                        ? "AI agent payments"
-                        : "stripe.com"
+                  (currentItems[selected] as PaymentStepConfig).prompt
+                    ?.placeholder ?? ""
                 }
               />
             </p>
           )}
-          {chosen === "Summarize article" && chosenUrl && (
+          {chosen?.prompt && chosenUrl && (
             <p style={{ color: "var(--term-gray6)" }}>
-              Enter URL:{" "}
-              <span style={{ color: "var(--term-gray10)" }}>{chosenUrl}</span>
-            </p>
-          )}
-          {(chosen === "Chat with AI" ||
-            chosen === "Generate image" ||
-            chosen === "Write poem" ||
-            chosen === "Create ASCII art") &&
-            chosenUrl && (
-              <p style={{ color: "var(--term-gray6)" }}>
-                Enter prompt:{" "}
-                <span style={{ color: "var(--term-gray10)" }}>{chosenUrl}</span>
-              </p>
-            )}
-          {chosen === "Search the web" && chosenUrl && (
-            <p style={{ color: "var(--term-gray6)" }}>
-              Enter query:{" "}
-              <span style={{ color: "var(--term-gray10)" }}>{chosenUrl}</span>
-            </p>
-          )}
-          {chosen === "Lookup company" && chosenUrl && (
-            <p style={{ color: "var(--term-gray6)" }}>
-              Enter URL:{" "}
+              {chosen.prompt.label}:{" "}
               <span style={{ color: "var(--term-gray10)" }}>{chosenUrl}</span>
             </p>
           )}
           {chosen &&
-            renderSteps(chosen, chosenOutput, runKey, {
+            renderPaymentSteps(chosen, chosenOutput, runKey, {
               isRestart: walletExistedAtMount || runs.length > 0,
               onDone: handleDone,
               url: chosenUrl,
@@ -1881,18 +1918,10 @@ function Wizard({
       {quit &&
         (() => {
           const usdcSpent = runs
-            .filter(
-              (r) =>
-                r.chosen !== "Lookup company" &&
-                r.chosen !== "Summarize article",
-            )
+            .filter((r) => r.step.type !== "stripe")
             .reduce((sum, r) => sum + runCost(r), 0);
           const usdSpent = runs
-            .filter(
-              (r) =>
-                r.chosen === "Lookup company" ||
-                r.chosen === "Summarize article",
-            )
+            .filter((r) => r.step.type === "stripe")
             .reduce((sum, r) => sum + runCost(r), 0);
           const balance = INITIAL_BALANCE - usdcSpent;
           return (
@@ -1952,39 +1981,581 @@ function Wizard({
   );
 }
 
-function DiscoverServices({
+// ---------------------------------------------------------------------------
+// Gallery step (session-based multi-run with count picker)
+// ---------------------------------------------------------------------------
+
+const GALLERY_COST = 0.01;
+const GALLERY_COUNTS = [3, 5, 10] as const;
+
+type GalleryPhase =
+  | "gate"
+  | "setup"
+  | "picker"
+  | "fetch"
+  | "closing"
+  | "restart";
+
+function GalleryStep({
+  step,
+  walletState,
+}: {
+  step: PaymentStepConfig;
+  walletState: WalletState;
+}) {
+  const [phase, setPhase] = useState<GalleryPhase>("gate");
+  const [setupStep, setSetupStep] = useState(0);
+  const [channelTxHash] = useState(() => randomTxHash());
+  const [closeTxHash] = useState(() => randomTxHash());
+  const [selected, setSelected] = useState(0);
+  const [urls, setUrls] = useState<string[]>([]);
+  const [revealed, setRevealed] = useState(0);
+  const [targetCount, setTargetCount] = useState(0);
+  const [totalPhotos, setTotalPhotos] = useState(0);
+  const [runIndex, setRunIndex] = useState(0);
+  const [pastRuns, setPastRuns] = useState<{ count: number; urls: string[] }[]>(
+    [],
+  );
+
+  const setupSteps = useMemo(() => {
+    const d = (ms: number) => (SKIP_ANIMATION ? 0 : ms);
+    return [
+      { key: "wallet", delay: d(600) },
+      { key: "fund", delay: d(1500) },
+      { key: "req402", delay: d(1200) },
+      { key: "channel", delay: d(1200) },
+    ];
+  }, []);
+
+  const setupKey = setupSteps[setupStep]?.key ?? "done";
+  const setupPast = (key: string) => {
+    const idx = setupSteps.findIndex((s) => s.key === key);
+    return idx !== -1 && setupStep > idx;
+  };
+  const setupAtOrPast = (key: string) => {
+    const idx = setupSteps.findIndex((s) => s.key === key);
+    return idx !== -1 && setupStep >= idx;
+  };
+  const setupAt = (key: string) => setupKey === key;
+
+  // Setup phase: timed step progression
+  useEffect(() => {
+    if (phase !== "setup") return;
+    if (setupKey === "done") {
+      setPhase("picker");
+      return;
+    }
+    const delay = setupSteps[setupStep].delay;
+    const timer = setTimeout(() => {
+      if (setupKey === "wallet") walletState.setCreated(true);
+      if (setupKey === "fund") {
+        walletState.setFunded(true);
+        walletState.setBalance(INITIAL_BALANCE);
+      }
+      setSetupStep((s) => s + 1);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [phase, setupStep, setupKey, setupSteps, walletState]);
+
+  // Fetch phase: reveal photos one at a time
+  useEffect(() => {
+    if (phase !== "fetch") return;
+    if (revealed < targetCount) {
+      const delay = SKIP_ANIMATION ? 0 : 400;
+      const timer = setTimeout(() => setRevealed((r) => r + 1), delay);
+      return () => clearTimeout(timer);
+    }
+    // Run complete
+    const runUrls = urls.slice(urls.length - targetCount);
+    setPastRuns((prev) => [...prev, { count: targetCount, urls: runUrls }]);
+    setTotalPhotos((t) => t + targetCount);
+    setRunIndex((r) => r + 1);
+    setSelected(0);
+    setPhase("picker");
+  }, [phase, revealed, targetCount, urls]);
+
+  // Closing phase: timed
+  useEffect(() => {
+    if (phase !== "closing") return;
+    const delay = SKIP_ANIMATION ? 0 : 1000;
+    const timer = setTimeout(() => setPhase("restart"), delay);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  // Picker items
+  const pickerItems = useMemo(() => {
+    const items: { label: string; value: number | "done" }[] =
+      GALLERY_COUNTS.map((n) => ({
+        label: `${n} photos ($${(n * GALLERY_COST).toFixed(2)})`,
+        value: n as number,
+      }));
+    if (runIndex > 0) items.push({ label: "Done", value: "done" });
+    return items;
+  }, [runIndex]);
+
+  const pickCount = (count: number) => {
+    const newUrls = Array.from(
+      { length: count },
+      (_, i) =>
+        `https://picsum.photos/seed/mpp-gallery-${runIndex}-${i}/200/200`,
+    );
+    setUrls((prev) => [...prev, ...newUrls]);
+    setTargetCount(count);
+    setRevealed(0);
+    setPhase("fetch");
+  };
+
+  // Keyboard handling for gate, picker, restart
+  useEffect(() => {
+    if (phase === "gate") {
+      const handler = (e: KeyboardEvent) => {
+        if (e.key === "Enter") setPhase("setup");
+      };
+      window.addEventListener("keydown", handler);
+      return () => window.removeEventListener("keydown", handler);
+    }
+    if (phase === "picker") {
+      const handler = (e: KeyboardEvent) => {
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setSelected((s) => (s - 1 + pickerItems.length) % pickerItems.length);
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setSelected((s) => (s + 1) % pickerItems.length);
+        } else if (e.key === "Enter") {
+          const item = pickerItems[selected];
+          if (item.value === "done") {
+            setPhase("closing");
+          } else {
+            pickCount(item.value);
+          }
+        }
+      };
+      document
+        .querySelector("[data-terminal]")
+        ?.setAttribute("data-demo-ready", "");
+      window.addEventListener("keydown", handler);
+      return () => {
+        window.removeEventListener("keydown", handler);
+        document
+          .querySelector("[data-terminal]")
+          ?.removeAttribute("data-demo-ready");
+      };
+    }
+    if (phase === "restart") {
+      const handler = (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+          setPhase("gate");
+          setSetupStep(0);
+          setUrls([]);
+          setRevealed(0);
+          setTargetCount(0);
+          setTotalPhotos(0);
+          setRunIndex(0);
+          setPastRuns([]);
+          setSelected(0);
+        }
+      };
+      window.addEventListener("keydown", handler);
+      return () => window.removeEventListener("keydown", handler);
+    }
+  });
+
+  if (phase === "gate") {
+    return (
+      <div className="flex flex-col">
+        <BlankLine />
+        <button
+          type="button"
+          data-demo-ready
+          className="w-fit cursor-pointer text-left"
+          style={{ color: "var(--term-pink9)" }}
+          onClick={() => setPhase("setup")}
+        >
+          <CssTriangle /> Run demo
+        </button>
+        <p style={{ color: "var(--term-gray5)" }}>
+          Press Enter or click to start
+        </p>
+      </div>
+    );
+  }
+
+  const spent = totalPhotos * GALLERY_COST;
+
+  return (
+    <div className="flex flex-col">
+      {/* Setup steps */}
+      <BlankLine />
+      {setupAtOrPast("wallet") && (
+        <p style={{ color: "var(--term-gray6)" }}>
+          <StepIcon spinning={setupAt("wallet")} /> Creating wallet{" "}
+          <TruncatedHex hash={walletState.address}>
+            {walletState.address}
+          </TruncatedHex>
+        </p>
+      )}
+      {setupAtOrPast("fund") && (
+        <p style={{ color: "var(--term-gray6)" }}>
+          <StepIcon spinning={setupAt("fund")} /> Funding wallet with{" "}
+          <span style={{ color: "var(--term-amber9)" }}>100 USDC</span>
+        </p>
+      )}
+      {/* biome-ignore format: contains unicode → */}
+      {setupAtOrPast("req402") && (
+        <>
+          <p style={{ color: "var(--term-gray6)" }}>
+            <StepIcon spinning={setupAt("req402")} /> GET {step.endpoint}
+            {setupPast("req402") && (
+              <>
+                {" "}
+                →{" "}
+                <span style={{ color: "var(--term-amber9)" }}>
+                  402 Payment Required
+                </span>
+              </>
+            )}
+          </p>
+          {setupPast("req402") && (
+            <p style={{ color: "var(--term-gray6)", paddingLeft: "2ch" }}>
+              WWW-Authenticate: Payment
+            </p>
+          )}
+        </>
+      )}
+      {setupAtOrPast("channel") && (
+        <>
+          <p style={{ color: "var(--term-gray6)" }}>
+            <StepIcon spinning={setupAt("channel")} /> Opening payment channel
+          </p>
+          {setupPast("channel") && (
+            <p style={{ color: "var(--term-gray6)", paddingLeft: "2ch" }}>
+              channel{" "}
+              <TruncatedHex hash={channelTxHash}>{channelTxHash}</TruncatedHex>
+            </p>
+          )}
+          {setupPast("channel") && (
+            <p style={{ color: "var(--term-gray6)", paddingLeft: "2ch" }}>
+              deposit{" "}
+              <span style={{ color: "var(--term-amber9)" }}>5 USDC</span>
+            </p>
+          )}
+        </>
+      )}
+
+      {/* Past runs */}
+      {pastRuns.map((run, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: stable run order
+        <div key={i}>
+          <BlankLine />
+          <p style={{ color: "var(--term-gray10)" }}>How many photos?</p>
+          <div style={{ paddingLeft: "1rem" }}>
+            {GALLERY_COUNTS.map((n) => (
+              <p
+                key={n}
+                style={{
+                  color:
+                    n === run.count ? "var(--term-pink9)" : "var(--term-gray6)",
+                }}
+              >
+                {n === run.count ? (
+                  <>
+                    <CssTriangle />{" "}
+                  </>
+                ) : (
+                  "  "
+                )}
+                {n} photos (${(n * GALLERY_COST).toFixed(2)})
+              </p>
+            ))}
+            {i > 0 && <p style={{ color: "var(--term-gray6)" }}>{"  "}Done</p>}
+          </div>
+          <BlankLine />
+          <GalleryGrid urls={run.urls} />
+          {/* biome-ignore format: contains unicode ✔︎ */}
+          <p style={{ color: "var(--term-gray6)", marginTop: "0.5em" }}>
+            <span style={{ color: "var(--term-green9)" }}>✔︎</span>{" "}
+            {run.count} photos —{" "}
+            <span style={{ color: "var(--term-amber9)" }}>
+              {(run.count * GALLERY_COST).toFixed(2)} USDC
+            </span>
+          </p>
+        </div>
+      ))}
+
+      {/* Current picker or fetch */}
+      {phase === "picker" && (
+        <>
+          <BlankLine />
+          <p style={{ color: "var(--term-gray10)" }}>How many photos?</p>
+          <div style={{ paddingLeft: "1rem" }}>
+            {pickerItems.map((item, i) => (
+              <button
+                key={item.label}
+                type="button"
+                className="w-fit cursor-pointer text-left block"
+                style={{
+                  color:
+                    selected === i ? "var(--term-pink9)" : "var(--term-gray6)",
+                }}
+                onMouseEnter={() => setSelected(i)}
+                onClick={() => {
+                  setSelected(i);
+                  if (item.value === "done") {
+                    setPhase("closing");
+                  } else {
+                    pickCount(item.value);
+                  }
+                }}
+              >
+                {selected === i ? (
+                  <>
+                    <CssTriangle />{" "}
+                  </>
+                ) : (
+                  "  "
+                )}
+                {item.label}
+              </button>
+            ))}
+          </div>
+          {/* biome-ignore format: contains unicode ↑↓ */}
+          <p style={{ color: "var(--term-gray5)" }}>
+            Use ↑↓ arrows and Enter to select
+          </p>
+        </>
+      )}
+
+      {phase === "fetch" && (
+        <>
+          <BlankLine />
+          <p style={{ color: "var(--term-gray10)" }}>How many photos?</p>
+          <div style={{ paddingLeft: "1rem" }}>
+            {pickerItems.map((item) => (
+              <p
+                key={item.label}
+                style={{
+                  color:
+                    item.value === targetCount
+                      ? "var(--term-pink9)"
+                      : "var(--term-gray6)",
+                }}
+              >
+                {item.value === targetCount ? (
+                  <>
+                    <CssTriangle />{" "}
+                  </>
+                ) : (
+                  "  "
+                )}
+                {item.label}
+              </p>
+            ))}
+          </div>
+          <BlankLine />
+          <GalleryGrid
+            urls={urls.slice(
+              urls.length - targetCount,
+              urls.length - targetCount + revealed,
+            )}
+            loading={revealed < targetCount}
+          />
+          {/* biome-ignore format: contains unicode ✔︎ */}
+          {revealed > 0 && (
+            <p style={{ color: "var(--term-gray6)", marginTop: "0.5em" }}>
+              {revealed < targetCount ? (
+                <Spinner />
+              ) : (
+                <span style={{ color: "var(--term-green9)" }}>✔︎</span>
+              )}{" "}
+              {revealed} photos —{" "}
+              <span style={{ color: "var(--term-amber9)" }}>
+                {(revealed * GALLERY_COST).toFixed(2)} USDC
+              </span>
+            </p>
+          )}
+        </>
+      )}
+
+      {/* Close channel */}
+      {(phase === "closing" || phase === "restart") && (
+        <>
+          <BlankLine />
+          {/* Show "Done" as chosen in the picker */}
+          <p style={{ color: "var(--term-gray10)" }}>How many photos?</p>
+          <div style={{ paddingLeft: "1rem" }}>
+            {pickerItems.map((item) => (
+              <p
+                key={item.label}
+                style={{
+                  color:
+                    item.value === "done"
+                      ? "var(--term-pink9)"
+                      : "var(--term-gray6)",
+                }}
+              >
+                {item.value === "done" ? (
+                  <>
+                    <CssTriangle />{" "}
+                  </>
+                ) : (
+                  "  "
+                )}
+                {item.label}
+              </p>
+            ))}
+          </div>
+          <BlankLine />
+          <p style={{ color: "var(--term-gray6)" }}>
+            <StepIcon spinning={phase === "closing"} /> Closing payment channel
+          </p>
+          {phase === "restart" && (
+            <>
+              <p style={{ color: "var(--term-gray6)", paddingLeft: "2ch" }}>
+                tx <TruncatedHex hash={closeTxHash}>{closeTxHash}</TruncatedHex>
+              </p>
+              <p style={{ color: "var(--term-gray6)", paddingLeft: "2ch" }}>
+                spent{" "}
+                <span style={{ color: "var(--term-amber9)" }}>
+                  {spent.toFixed(2)} USDC
+                </span>
+              </p>
+              <p style={{ color: "var(--term-gray6)", paddingLeft: "2ch" }}>
+                refunded{" "}
+                <span style={{ color: "var(--term-amber9)" }}>
+                  {(5 - spent).toFixed(2)} USDC
+                </span>
+              </p>
+              <button
+                type="button"
+                className="cursor-pointer text-left"
+                style={{ color: "var(--term-gray6)" }}
+                onClick={() => {
+                  setPhase("gate");
+                  setSetupStep(0);
+                  setUrls([]);
+                  setRevealed(0);
+                  setTargetCount(0);
+                  setTotalPhotos(0);
+                  setRunIndex(0);
+                  setPastRuns([]);
+                  setSelected(0);
+                }}
+              >
+                [Press Enter or click to restart]
+              </button>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Single payment step (no wizard menu)
+// ---------------------------------------------------------------------------
+
+function SingleStep({
+  step,
   demoClient,
-  onRestart,
-  address,
   walletState,
   savedCard,
   setSavedCard,
 }: {
+  step: PaymentStepConfig;
   demoClient?: DemoClient | null;
-  onRestart?: () => void;
-  address: string;
   walletState: WalletState;
   savedCard: SavedCard | undefined;
   setSavedCard: (card: SavedCard | undefined) => void;
 }) {
-  const isClassic =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("mode") === "classic";
+  const [started, setStarted] = useState(false);
+  const [done, setDone] = useState(false);
+  const [key, setKey] = useState(0);
+  const [output, setOutput] = useState<string[]>(
+    () => step.pickOutput?.() ?? [],
+  );
 
-  const options = isClassic
-    ? ["Write poem", "Create ASCII art", "Lookup company"]
-    : ["Chat with AI", "Generate image", "Search the web", "Summarize article"];
+  const restart = () => {
+    setStarted(false);
+    setDone(false);
+    setOutput(step.pickOutput?.() ?? []);
+    setKey((k) => k + 1);
+  };
+
+  useEffect(() => {
+    if (started && !done) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        if (done) restart();
+        else setStarted(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
+  if (!started) {
+    return (
+      <div className="flex flex-col">
+        <BlankLine />
+        <button
+          type="button"
+          data-demo-ready
+          className="w-fit cursor-pointer text-left"
+          style={{ color: "var(--term-pink9)" }}
+          onClick={() => setStarted(true)}
+        >
+          <CssTriangle /> Run demo
+        </button>
+        <p style={{ color: "var(--term-gray5)" }}>
+          Press Enter or click to start
+        </p>
+      </div>
+    );
+  }
+
+  const liveEndpoint = step.liveEndpoint?.("");
 
   return (
-    <Wizard
-      options={options}
-      demoClient={demoClient}
-      onRestart={onRestart}
-      address={address}
-      walletState={walletState}
-      savedCard={savedCard}
-      setSavedCard={setSavedCard}
-    />
+    <>
+      {step.type === "stripe" ? (
+        <StripeSteps
+          key={key}
+          endpoint={liveEndpoint ?? step.endpoint}
+          output={output}
+          outputMode={step.outputMode}
+          savedCard={savedCard}
+          onCardSaved={setSavedCard}
+          demoClient={demoClient}
+          onContentReceived={setOutput}
+          onDone={() => setDone(true)}
+        />
+      ) : (
+        <AsyncSteps
+          key={key}
+          endpoint={step.endpoint}
+          liveEndpoint={liveEndpoint}
+          output={output}
+          outputMode={step.outputMode}
+          walletState={walletState}
+          paymentChannel={step.type === "tempo-session"}
+          demoClient={demoClient}
+          onContentReceived={setOutput}
+          onDone={() => setDone(true)}
+        />
+      )}
+      {done && (
+        <button
+          type="button"
+          className="cursor-pointer text-left"
+          style={{ color: "var(--term-gray6)" }}
+          onClick={restart}
+        >
+          [Press Enter or click to restart]
+        </button>
+      )}
+    </>
   );
 }
 
@@ -1992,10 +2563,25 @@ function DiscoverServices({
 // Exported Terminal component
 // ---------------------------------------------------------------------------
 
-export function Terminal({ className }: { className?: string }) {
+function TerminalComponent({
+  className,
+  steps,
+}: {
+  className?: string;
+  steps: StepConfig[];
+}) {
   const { client: demoClient } = useDemoClient();
+
+  const commandsStep = steps[0]?.type === "commands" ? steps[0] : null;
+  const contentSteps = commandsStep ? steps.slice(1) : steps;
+
   const { showLogin, showPrompt, started, lineIndex, charIndex, done } =
-    useTypewriter();
+    useTypewriter(commandsStep?.commands ?? []);
+  const commands = commandsStep?.commands ?? [];
+
+  const isClassic =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("mode") === "classic";
   const [wizardKey, setWizardKey] = useState(0);
   const [address, setAddress] = useState("");
   const [balance, setBalance] = useState(0);
@@ -2146,7 +2732,7 @@ export function Terminal({ className }: { className?: string }) {
               </p>
             )}
             {started &&
-              lines.map((line, i) => {
+              commands.map((line, i) => {
                 const visible =
                   i < lineIndex
                     ? line
@@ -2201,20 +2787,96 @@ export function Terminal({ className }: { className?: string }) {
                 );
               })}
 
-            {done && (
-              <DiscoverServices
-                key={wizardKey}
-                demoClient={demoClient}
-                address={address}
-                walletState={walletState}
-                savedCard={savedCard}
-                setSavedCard={setSavedCard}
-                onRestart={() => setWizardKey((k) => k + 1)}
-              />
-            )}
+            {done &&
+              contentSteps.map((contentStep, i) => {
+                if (contentStep.type === "wizard") {
+                  const wizardOptions = isClassic
+                    ? [_poem(), _ascii(), _lookup()]
+                    : contentStep.options;
+                  return (
+                    <Wizard
+                      // biome-ignore lint/suspicious/noArrayIndexKey: static steps never reorder
+                      key={`${wizardKey}-${i}`}
+                      steps={wizardOptions}
+                      demoClient={demoClient}
+                      address={address}
+                      walletState={walletState}
+                      savedCard={savedCard}
+                      setSavedCard={setSavedCard}
+                      onRestart={() => setWizardKey((k) => k + 1)}
+                    />
+                  );
+                }
+                if (
+                  contentStep.type === "tempo-charge" ||
+                  contentStep.type === "tempo-session" ||
+                  contentStep.type === "stripe"
+                ) {
+                  if (contentStep.outputMode === "gallery") {
+                    return (
+                      <GalleryStep
+                        // biome-ignore lint/suspicious/noArrayIndexKey: static steps never reorder
+                        key={i}
+                        step={contentStep}
+                        walletState={walletState}
+                      />
+                    );
+                  }
+                  return (
+                    <SingleStep
+                      // biome-ignore lint/suspicious/noArrayIndexKey: static steps never reorder
+                      key={i}
+                      step={contentStep}
+                      demoClient={demoClient}
+                      walletState={walletState}
+                      savedCard={savedCard}
+                      setSavedCard={setSavedCard}
+                    />
+                  );
+                }
+                return null;
+              })}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+export const Terminal = Object.assign(TerminalComponent, {
+  article: _article,
+  ascii: _ascii,
+  charge: _charge,
+  chat: _chat,
+  commands: _commands,
+  gallery: _gallery,
+  image: _image,
+  lookup: _lookup,
+  photo: _photo,
+  ping: _ping,
+  poem: _poem,
+  search: _search,
+  session: _session,
+  stripe: _stripe,
+  wizard: _wizard,
+});
+
+// Named re-exports for MDX/RSC contexts where Object.assign
+// properties are not available across the server-client boundary.
+export {
+  _article as article,
+  _ascii as ascii,
+  _charge as charge,
+  _chat as chat,
+  _commands as commands,
+  _gallery as gallery,
+  _image as image,
+  _lookup as lookup,
+  _photo as photo,
+  _ping as ping,
+  _poem as poem,
+  _search as search,
+  _session as session,
+  _stripe as stripe,
+  _wizard as wizard,
+};
