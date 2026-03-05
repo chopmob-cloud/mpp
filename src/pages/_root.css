@@ -131,6 +131,21 @@ html {
   margin-inline: 0.25rem;
 }
 
+/* Green dot on "Services" top nav link */
+[data-v-gutter-top] nav a[href="/services"] {
+  position: relative;
+}
+[data-v-gutter-top] nav a[href="/services"]::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: -6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
 /* No underline on hover inside buttons or button-like links */
 a[class*="bg-accent"]:hover,
 a[class*="bg-accent"]:hover *,
