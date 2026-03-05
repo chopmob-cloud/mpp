@@ -315,7 +315,16 @@ export function ServicesPage() {
     [services],
   );
   const filtered = useMemo(() => {
-    const PINNED_IDS: string[] = ["openai", "anthropic", "google-gemini", "parallel", "openrouter", "codestorage", "stabletravel", "browserbase"];
+    const PINNED_IDS: string[] = [
+      "openai",
+      "anthropic",
+      "google-gemini",
+      "parallel",
+      "openrouter",
+      "stabletravel",
+      "codestorage",
+      "browserbase",
+    ];
     let list = services;
     if (integrationFilter !== "all")
       list = list.filter(
