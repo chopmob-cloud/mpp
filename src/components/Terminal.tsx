@@ -136,7 +136,13 @@ function PhotoOutput({ url }: { url: string }) {
   );
 }
 
-function GalleryThumb({ url, animate = true }: { url: string; animate?: boolean }) {
+function GalleryThumb({
+  url,
+  animate = true,
+}: {
+  url: string;
+  animate?: boolean;
+}) {
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -1688,7 +1694,8 @@ function Wizard({
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
         setSelected((s) => (s + 1) % currentItems.length);
-      } else if (e.key === "Enter") {
+      } else if (e.key === "Tab" || e.key === "Enter") {
+        e.preventDefault();
         confirm();
       }
     };
@@ -1864,7 +1871,7 @@ function Wizard({
           {/* biome-ignore format: contains unicode ↑↓ */}
           {!chosen && !waitingForUrl && (
             <p style={{ color: "var(--term-gray5)" }}>
-              Use ↑↓ arrows and Enter to select
+              Use ↑↓ arrows and Tab or Enter to select
             </p>
           )}
           {waitingForUrl && (
@@ -1885,7 +1892,15 @@ function Wizard({
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") submitUrl();
+                  if (e.key === "Tab") {
+                    e.preventDefault();
+                    const placeholder =
+                      (currentItems[selected] as PaymentStepConfig).prompt
+                        ?.placeholder ?? "";
+                    if (!urlInput && placeholder) setUrlInput(placeholder);
+                  } else if (e.key === "Enter") {
+                    submitUrl();
+                  }
                 }}
                 className="term-url-input min-w-0 flex-1 bg-transparent outline-none"
                 style={{ color: "var(--term-gray10)" }}
@@ -2118,7 +2133,8 @@ function GalleryStep({
         } else if (e.key === "ArrowDown") {
           e.preventDefault();
           setSelected((s) => (s + 1) % pickerItems.length);
-        } else if (e.key === "Enter") {
+        } else if (e.key === "Tab" || e.key === "Enter") {
+          e.preventDefault();
           const item = pickerItems[selected];
           if (item.value === "done") {
             setPhase("closing");
@@ -2317,7 +2333,7 @@ function GalleryStep({
           </div>
           {/* biome-ignore format: contains unicode ↑↓ */}
           <p style={{ color: "var(--term-gray5)" }}>
-            Use ↑↓ arrows and Enter to select
+            Use ↑↓ arrows and Tab or Enter to select
           </p>
         </>
       )}
