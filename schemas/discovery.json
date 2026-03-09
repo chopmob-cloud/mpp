@@ -6496,6 +6496,1234 @@
           }
         }
       ]
+    },
+    {
+      "id": "googlemaps-aerialview",
+      "name": "Google Maps Aerial View",
+      "url": "https://aerialview.googleapis.com",
+      "serviceUrl": "https://googlemaps-aerialview.mpp.tempo.xyz",
+      "description": "Google Maps Aerial View API — 3D aerial flyover videos of locations.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "aerial",
+        "video"
+      ],
+      "status": "active",
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/videos:lookupVideo",
+          "description": "Look up an aerial view video",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Look up an aerial view video",
+            "amount": "16000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v1/videos:renderVideo",
+          "description": "Render an aerial view video",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Render an aerial view video",
+            "amount": "16000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/videos:lookupVideoMetadata",
+          "description": "Look up video metadata",
+          "payment": null
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-airquality",
+      "name": "Google Maps Air Quality",
+      "url": "https://airquality.googleapis.com",
+      "serviceUrl": "https://googlemaps-airquality.mpp.tempo.xyz",
+      "description": "Google Maps Air Quality API — air quality indexes, pollutants, and health recommendations.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "air-quality"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps/documentation/air-quality"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/currentConditions:lookup",
+          "description": "Get current air quality conditions",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get current air quality conditions",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v1/history:lookup",
+          "description": "Get air quality history",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get air quality history",
+            "amount": "5000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-geolocation",
+      "name": "Google Maps Geolocation",
+      "url": "https://www.googleapis.com",
+      "serviceUrl": "https://googlemaps-geolocation.mpp.tempo.xyz",
+      "description": "Google Maps Geolocation API — determine device location from cell towers and WiFi.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "geolocation"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps/documentation/geolocation",
+        "apiReference": "https://developers.google.com/maps/documentation/geolocation/overview"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/geolocation/v1/geolocate",
+          "description": "Geolocate a device",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Geolocate a device",
+            "amount": "5000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-places-v2",
+      "name": "Google Maps Places (New)",
+      "url": "https://places.googleapis.com",
+      "serviceUrl": "https://googlemaps-places-v2.mpp.tempo.xyz",
+      "description": "Google Maps Places API (New) — search, details, autocomplete, and photos with enhanced data.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "places"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps/documentation/places/web-service",
+        "apiReference": "https://developers.google.com/maps/documentation/places/web-service/reference/rest"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/places/:id",
+          "description": "Get place details (essentials)",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get place details (essentials)",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v1/places:searchText",
+          "description": "Text search for places",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Text search for places",
+            "amount": "32000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v1/places:searchNearby",
+          "description": "Nearby search for places",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Nearby search for places",
+            "amount": "32000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v1/places:autocomplete",
+          "description": "Place autocomplete",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Place autocomplete",
+            "amount": "2830"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/places/:id/photos/:photoId/media",
+          "description": "Get a place photo",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a place photo",
+            "amount": "7000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-pollen",
+      "name": "Google Maps Pollen",
+      "url": "https://pollen.googleapis.com",
+      "serviceUrl": "https://googlemaps-pollen.mpp.tempo.xyz",
+      "description": "Google Maps Pollen API — pollen types, plants, and allergy indexes by location.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "pollen"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps/documentation/pollen"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/forecast:lookup",
+          "description": "Get pollen forecast",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get pollen forecast",
+            "amount": "10000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-roads",
+      "name": "Google Maps Roads",
+      "url": "https://roads.googleapis.com",
+      "serviceUrl": "https://googlemaps-roads.mpp.tempo.xyz",
+      "description": "Google Maps Roads API — snap coordinates to roads and find nearest roads.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "roads"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps",
+        "apiReference": "https://developers.google.com/maps/documentation/roads"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/nearestRoads",
+          "description": "Find nearest roads to coordinates",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Find nearest roads to coordinates",
+            "amount": "10000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/snapToRoads",
+          "description": "Snap GPS coordinates to roads",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Snap GPS coordinates to roads",
+            "amount": "10000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-routes",
+      "name": "Google Maps Routes",
+      "url": "https://routes.googleapis.com",
+      "serviceUrl": "https://googlemaps-routes.mpp.tempo.xyz",
+      "description": "Google Maps Routes API — compute routes and distance matrices with real-time traffic.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "routes",
+        "directions"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps",
+        "apiReference": "https://developers.google.com/maps/documentation/routes"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/directions/v2:computeRoutes",
+          "description": "Compute routes between locations",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Compute routes between locations",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/distanceMatrix/v2:computeRouteMatrix",
+          "description": "Compute distance matrix",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Compute distance matrix",
+            "amount": "5000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-solar",
+      "name": "Google Maps Solar",
+      "url": "https://solar.googleapis.com",
+      "serviceUrl": "https://googlemaps-solar.mpp.tempo.xyz",
+      "description": "Google Maps Solar API — rooftop solar energy potential for buildings.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "solar",
+        "energy"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps/documentation/solar"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/buildingInsights:findClosest",
+          "description": "Get building solar insights",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get building solar insights",
+            "amount": "10000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/dataLayers:get",
+          "description": "Get solar data layers",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get solar data layers",
+            "amount": "75000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-tiles",
+      "name": "Google Maps Tiles",
+      "url": "https://tile.googleapis.com",
+      "serviceUrl": "https://googlemaps-tiles.mpp.tempo.xyz",
+      "description": "Google Maps Tiles API — 2D map tiles, Street View tiles, and 3D tiles.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "tiles"
+      ],
+      "status": "active",
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/2dtiles/:z/:x/:y",
+          "description": "Get a 2D map tile",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a 2D map tile",
+            "amount": "600"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/streetview/tiles/:panoId/:z/:x/:y",
+          "description": "Get a Street View tile",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a Street View tile",
+            "amount": "2000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/3dtiles/root.json",
+          "description": "Get 3D tiles root",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get 3D tiles root",
+            "amount": "6000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/createSession",
+          "description": "Create a tile session",
+          "payment": null
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-validation",
+      "name": "Google Maps Address Validation",
+      "url": "https://addressvalidation.googleapis.com",
+      "serviceUrl": "https://googlemaps-validation.mpp.tempo.xyz",
+      "description": "Google Maps Address Validation API — validate and standardize postal addresses.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "address",
+        "validation"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps",
+        "apiReference": "https://developers.google.com/maps/documentation/address-validation"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1:validateAddress",
+          "description": "Validate a postal address",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Validate a postal address",
+            "amount": "17000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v1:provideValidationFeedback",
+          "description": "Provide validation feedback",
+          "payment": null
+        }
+      ]
+    },
+    {
+      "id": "googlemaps-weather",
+      "name": "Google Maps Weather",
+      "url": "https://weather.googleapis.com",
+      "serviceUrl": "https://googlemaps-weather.mpp.tempo.xyz",
+      "description": "Google Maps Weather API — current conditions, hourly and daily forecasts.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "maps",
+        "google",
+        "weather"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://developers.google.com/maps/documentation/weather"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "Google",
+        "url": "https://developers.google.com/maps"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/currentConditions:lookup",
+          "description": "Get current weather conditions",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get current weather conditions",
+            "amount": "150"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/forecast/hours:lookup",
+          "description": "Get hourly weather forecast",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get hourly weather forecast",
+            "amount": "150"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/forecast/days:lookup",
+          "description": "Get daily weather forecast",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get daily weather forecast",
+            "amount": "150"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v1/history/hours:lookup",
+          "description": "Get hourly weather history",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get hourly weather history",
+            "amount": "150"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kicksdb",
+      "name": "KicksDB",
+      "url": "https://api.kicks.dev",
+      "serviceUrl": "https://kicksdb.mpp.tempo.xyz",
+      "description": "Sneaker & streetwear market data — prices, sales history, and availability from StockX, GOAT, and more.",
+      "categories": [
+        "data"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "sneakers",
+        "streetwear",
+        "prices",
+        "stockx",
+        "goat"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://kicks.dev",
+        "llmsTxt": "https://docs.kicks.dev/llms.txt",
+        "apiReference": "https://docs.kicks.dev"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "KicksDB",
+        "url": "https://kicks.dev"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v3/stockx/products",
+          "description": "Search StockX products",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search StockX products",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/stockx/products/:id",
+          "description": "Get a StockX product",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a StockX product",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/stockx/products/:id/sales",
+          "description": "StockX sales history",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "StockX sales history",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/stockx/products/:id/sales/daily",
+          "description": "StockX daily sales data",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "StockX daily sales data",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/v3/stockx/prices",
+          "description": "StockX batch prices",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "StockX batch prices",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/goat/products",
+          "description": "Search GOAT products",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search GOAT products",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/goat/products/:id",
+          "description": "Get a GOAT product",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a GOAT product",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/goat/products/:id/sales",
+          "description": "GOAT sales history",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "GOAT sales history",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/goat/products/:id/sales/daily",
+          "description": "GOAT daily sales data",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "GOAT daily sales data",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/shopify/products",
+          "description": "Search Shopify products",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search Shopify products",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/shopify/products/:id",
+          "description": "Get a Shopify product",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a Shopify product",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/shopify/shops",
+          "description": "List Shopify shops",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "List Shopify shops",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/snkrs/products",
+          "description": "Search SNKRS products",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search SNKRS products",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/kream/products",
+          "description": "Search Kream products",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search Kream products",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/kream/products/:id",
+          "description": "Get a Kream product",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a Kream product",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/novelship/products",
+          "description": "Search Novelship products",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search Novelship products",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/unified/products/:id",
+          "description": "Get a unified product",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get a unified product",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/unified/gtin",
+          "description": "Look up unified product by GTIN/barcode",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Look up unified product by GTIN/barcode",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/exports/daily",
+          "description": "Daily CSV snapshot",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Daily CSV snapshot",
+            "amount": "500"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/stockx/products",
+          "description": "Search StockX in real-time",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search StockX in real-time",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/stockx/products/:id",
+          "description": "Get StockX product in real-time",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get StockX product in real-time",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/stockx/products/:id/asks",
+          "description": "StockX real-time asks/bids",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "StockX real-time asks/bids",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/stockx/products/:id/sales",
+          "description": "StockX real-time sales",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "StockX real-time sales",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/stockx/products/:id/related",
+          "description": "StockX real-time related products",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "StockX real-time related products",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/goat/products",
+          "description": "Search GOAT in real-time",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Search GOAT in real-time",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/goat/products/:id",
+          "description": "Get GOAT product in real-time",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Get GOAT product in real-time",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/goat/products/:id/offers",
+          "description": "GOAT real-time offers",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "GOAT real-time offers",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/goat/products/:id/sales",
+          "description": "GOAT real-time sales",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "GOAT real-time sales",
+            "amount": "5000"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/v3/realtime/alias/products/:id/recent-orders",
+          "description": "Real-time recent orders by alias",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Real-time recent orders by alias",
+            "amount": "5000"
+          }
+        }
+      ]
+    },
+    {
+      "id": "twocaptcha",
+      "name": "2Captcha",
+      "url": "https://api.2captcha.com",
+      "serviceUrl": "https://twocaptcha.mpp.tempo.xyz",
+      "description": "CAPTCHA solving API — reCAPTCHA, Turnstile, hCaptcha, image captchas, and more.",
+      "categories": [
+        "web"
+      ],
+      "integration": "first-party",
+      "tags": [
+        "captcha",
+        "automation",
+        "solving"
+      ],
+      "status": "active",
+      "docs": {
+        "homepage": "https://2captcha.com",
+        "apiReference": "https://2captcha.com/api-docs"
+      },
+      "methods": {
+        "tempo": {
+          "intents": [
+            "charge"
+          ],
+          "assets": [
+            "0x20c000000000000000000000b9537d11c60e8b50"
+          ]
+        }
+      },
+      "realm": "mpp.tempo.xyz",
+      "provider": {
+        "name": "2Captcha",
+        "url": "https://2captcha.com"
+      },
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/createTask",
+          "description": "Submit a captcha task for solving",
+          "payment": {
+            "intent": "charge",
+            "method": "tempo",
+            "currency": "0x20c000000000000000000000b9537d11c60e8b50",
+            "decimals": 6,
+            "description": "Submit a captcha task for solving",
+            "amount": "3000"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/getTaskResult",
+          "description": "Poll for task result",
+          "payment": null
+        }
+      ]
     }
   ]
 }
