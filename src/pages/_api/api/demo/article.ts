@@ -73,8 +73,9 @@ export async function GET(request: Request) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            excerpts: { max_chars_per_result: 1000 },
+            excerpts: { max_chars_per_result: 250 },
             full_content: false,
+            objective: `Summarize this page in 2-3 concise sentences.`,
             urls: [fullUrl],
           }),
         },
