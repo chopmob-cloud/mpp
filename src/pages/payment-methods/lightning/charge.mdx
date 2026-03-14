@@ -105,8 +105,8 @@ import { Mppx, spark } from '@buildonspark/lightning-mpp-sdk/client'
 const method = spark.charge({ mnemonic: process.env.MNEMONIC! })
 
 const mppx = Mppx.create({
-  polyfill: false,
   methods: [method],
+  polyfill: false,
 })
 
 try {

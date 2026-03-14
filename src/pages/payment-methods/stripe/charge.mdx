@@ -289,7 +289,6 @@ import { Mppx, stripe } from 'mppx/client'
 const stripeJs = (await loadStripe('pk_test_...'))!
 
 const mppx = Mppx.create({
-  polyfill: false,
   methods: [
     stripe({
       client: stripeJs,
@@ -303,6 +302,7 @@ const mppx = Mppx.create({
       },
     }),
   ],
+  polyfill: false,
 })
 
 const response = await mppx.fetch('https://api.example.com/resource')
