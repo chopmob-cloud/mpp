@@ -115,53 +115,6 @@ function scoreService(service: Service, query: string): number {
   return score;
 }
 
-type DropdownResult =
-  | { type: "service"; service: Service }
-  | { type: "category"; category: Category; label: string }
-  | { type: "endpoint"; service: Service; endpoint: Endpoint };
-
-function getDropdownResults(
-  services: Service[],
-  query: string,
-): DropdownResult[] {
-  if (!query.trim()) return [];
-  const q = query.toLowerCase();
-  const results: DropdownResult[] = [];
-
-  for (const cat of Object.keys(CATEGORY_LABELS) as Category[]) {
-    if (cat.includes(q) || CATEGORY_LABELS[cat].toLowerCase().includes(q)) {
-      results.push({
-        type: "category",
-        category: cat,
-        label: CATEGORY_LABELS[cat],
-      });
-    }
-  }
-
-  for (const s of services) {
-    if (
-      s.name.toLowerCase().includes(q) ||
-      (s.description ?? "").toLowerCase().includes(q)
-    ) {
-      results.push({ type: "service", service: s });
-    }
-  }
-
-  for (const s of services) {
-    for (const ep of s.endpoints.slice(0, 5)) {
-      if (
-        ep.path.toLowerCase().includes(q) ||
-        (ep.description ?? "").toLowerCase().includes(q)
-      ) {
-        results.push({ type: "endpoint", service: s, endpoint: ep });
-        break;
-      }
-    }
-  }
-
-  return results.slice(0, 12);
-}
-
 // ---------------------------------------------------------------------------
 // Exported component
 // ---------------------------------------------------------------------------
@@ -181,21 +134,17 @@ export function ServiceDiscovery({
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
+
   const [transforms, setTransforms] = useState<
     Record<string, { x: number; y: number }>
   >({});
   const sectionRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
+
   const gridRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const brokenIcons = useRef(new Set<string>());
   const [, forceIconUpdate] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [isFocused, setIsFocused] = useState(false);
-  const [dropdownTab, setDropdownTab] = useState<
-    "all" | "services" | "endpoints"
-  >("all");
+
   const [mobileSearchActive, setMobileSearchActive] = useState(false);
   const [mobileResultsView, setMobileResultsView] = useState(false);
 
@@ -213,7 +162,6 @@ export function ServiceDiscovery({
   }, []);
 
   useEffect(() => {
-    setActiveIndex(-1);
     const timer = setTimeout(() => setDebouncedQuery(query), 300);
     return () => clearTimeout(timer);
   }, [query]);
@@ -241,10 +189,6 @@ export function ServiceDiscovery({
     const handleReset = () => {
       setQuery("");
       setDebouncedQuery("");
-      setShowDropdown(false);
-      setActiveIndex(-1);
-      setIsFocused(false);
-      setDropdownTab("all");
       setMobileSearchActive(false);
       setMobileResultsView(false);
       setSelectedService(null);
@@ -286,11 +230,6 @@ export function ServiceDiscovery({
     return map;
   }, [stableScored, debouncedQuery, externalCategory]);
 
-  const dropdownResults = useMemo(
-    () => getDropdownResults(services, query),
-    [services, query],
-  );
-
   // biome-ignore lint/correctness/useExhaustiveDependencies: trigger on external ID change
   useEffect(() => {
     if (!externalSelectedServiceId || services.length === 0) return;
@@ -304,48 +243,9 @@ export function ServiceDiscovery({
   const dismissMobileSearch = useCallback(() => {
     setMobileSearchActive(false);
     setMobileResultsView(false);
-    setShowDropdown(false);
     setQuery("");
     inputRef.current?.blur();
   }, []);
-
-  const handleDropdownSelect = useCallback((result: DropdownResult) => {
-    setShowDropdown(false);
-    setMobileSearchActive(false);
-    setMobileResultsView(false);
-    inputRef.current?.blur();
-    if (result.type === "service") {
-      setSelectedService(result.service);
-    } else if (result.type === "category") {
-      setQuery(result.label);
-    } else if (result.type === "endpoint") {
-      setSelectedService(result.service);
-    }
-  }, []);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setShowDropdown(false);
-        setActiveIndex(-1);
-        inputRef.current?.blur();
-        return;
-      }
-      if (!showDropdown || dropdownResults.length === 0) return;
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setActiveIndex((i) => Math.min(i + 1, dropdownResults.length - 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setActiveIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Enter" && activeIndex >= 0) {
-        e.preventDefault();
-        handleDropdownSelect(dropdownResults[activeIndex]);
-        setActiveIndex(-1);
-      }
-    },
-    [showDropdown, dropdownResults, activeIndex, handleDropdownSelect],
-  );
 
   useEffect(() => {
     if (!debouncedQuery) {
@@ -399,253 +299,6 @@ export function ServiceDiscovery({
         }}
       >
         <DiscoveryStyles />
-
-        {/* Search overlay — absolutely centered */}
-        <div className="discovery-overlay" ref={overlayRef}>
-          {/* biome-ignore lint/a11y/useKeyWithClickEvents: scroll to top */}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: scroll to top */}
-          <div
-            className="discovery-ascii-logo"
-            onClick={() => {
-              setQuery("");
-              setShowDropdown(false);
-              setMobileSearchActive(false);
-              setMobileResultsView(false);
-              setSelectedService(null);
-              const el = document.querySelector(".landing-page") as HTMLElement;
-              if (el) {
-                el.scrollTo({ top: 0, behavior: "smooth" });
-              }
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            Superpowers for <br className="sm:hidden" />
-            your agent
-          </div>
-
-          <p className="discovery-overlay-desc">
-            Explore services using MPP that enable new use cases for your agent
-            or application in just seconds
-          </p>
-          <div className="discovery-search-wrapper">
-            <div className="discovery-search">
-              <SearchIcon />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setShowDropdown(e.target.value.length > 0);
-                }}
-                onFocus={() => {
-                  setIsFocused(true);
-                  if (query.length > 0) setShowDropdown(true);
-                  if (window.matchMedia("(max-width: 768px)").matches) {
-                    setMobileSearchActive(true);
-                  }
-                }}
-                onBlur={() => {
-                  setIsFocused(false);
-                  if (!mobileSearchActive) {
-                    setTimeout(() => {
-                      setShowDropdown(false);
-                      setQuery("");
-                    }, 200);
-                  }
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Find by usage, route, category..."
-                className="discovery-search-input"
-              />
-              {!isFocused && query.length === 0 && !mobileSearchActive && (
-                <kbd className="discovery-kbd">
-                  <span className="discovery-kbd-symbol">⌘</span>K
-                </kbd>
-              )}
-              {query.length > 0 && !mobileSearchActive && (
-                <button
-                  type="button"
-                  className="discovery-search-clear"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    setQuery("");
-                    setShowDropdown(false);
-                    inputRef.current?.blur();
-                  }}
-                  aria-label="Clear search"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <title>Clear</title>
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                  </svg>
-                </button>
-              )}
-              {mobileSearchActive &&
-                dropdownResults.length > 0 &&
-                !mobileResultsView && (
-                  <button
-                    type="button"
-                    className="mobile-search-view"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setMobileResultsView(true);
-                      setShowDropdown(false);
-                      inputRef.current?.blur();
-                    }}
-                  >
-                    View
-                  </button>
-                )}
-              {mobileResultsView && targetGridIndex.size > 0 && (
-                <span className="mobile-results-count">
-                  {targetGridIndex.size} matches
-                </span>
-              )}
-              {(mobileSearchActive || mobileResultsView) && (
-                <button
-                  type="button"
-                  className="mobile-search-dismiss"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    if (mobileResultsView) {
-                      dismissMobileSearch();
-                    } else if (query.length > 0) {
-                      setQuery("");
-                      setShowDropdown(false);
-                    } else {
-                      dismissMobileSearch();
-                    }
-                  }}
-                  aria-label="Clear"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <title>Clear</title>
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-            {query.length === 0 && !mobileSearchActive && (
-              <a href="/services" className="discovery-view-all">
-                View all
-              </a>
-            )}
-            {(showDropdown || mobileSearchActive) && query.length > 0 && (
-              <div className="discovery-dropdown">
-                <div className="discovery-dropdown-tabs">
-                  {(["all", "services", "endpoints"] as const).map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      className={`discovery-dropdown-tab${dropdownTab === tab ? " discovery-dropdown-tab-active" : ""}`}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setDropdownTab(tab);
-                        setActiveIndex(-1);
-                      }}
-                    >
-                      {tab === "all"
-                        ? "All"
-                        : tab === "services"
-                          ? "Services"
-                          : "Endpoints"}
-                    </button>
-                  ))}
-                </div>
-                <div className="discovery-dropdown-scroll">
-                  {dropdownResults.length > 0 ? (
-                    dropdownResults
-                      .filter(
-                        (r) =>
-                          dropdownTab === "all" ||
-                          (dropdownTab === "services" &&
-                            (r.type === "service" || r.type === "category")) ||
-                          (dropdownTab === "endpoints" &&
-                            r.type === "endpoint"),
-                      )
-                      .map((r, i) => (
-                        <button
-                          key={`${r.type}-${i}`}
-                          type="button"
-                          className={`discovery-dropdown-item${i === activeIndex ? " discovery-dropdown-active" : ""}`}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            handleDropdownSelect(r);
-                          }}
-                          onMouseEnter={() => setActiveIndex(i)}
-                        >
-                          {r.type === "category" && (
-                            <>
-                              <span className="dropdown-tag">Category</span>
-                              <span>{r.label}</span>
-                            </>
-                          )}
-                          {r.type === "service" && (
-                            <>
-                              <span className="dropdown-tag">Service</span>
-                              <span>{r.service.name}</span>
-                              <span className="dropdown-desc">
-                                {r.service.description?.slice(0, 60)}
-                              </span>
-                            </>
-                          )}
-                          {r.type === "endpoint" && (
-                            <>
-                              <span className="dropdown-tag">Endpoint</span>
-                              <span>{r.service.name}</span>
-                              <span className="dropdown-right">
-                                <span className="dropdown-route">
-                                  {r.endpoint.path}
-                                </span>
-                                <span
-                                  className={`method-badge method-${r.endpoint.method.toLowerCase()}`}
-                                >
-                                  {r.endpoint.method}
-                                </span>
-                              </span>
-                            </>
-                          )}
-                        </button>
-                      ))
-                  ) : (
-                    <div
-                      style={{
-                        padding: "1.5rem 1rem",
-                        textAlign: "center",
-                        color: "var(--vocs-text-color-muted)",
-                        fontSize: 14,
-                      }}
-                    >
-                      <p style={{ margin: 0 }}>No matches found</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-          {/* submit hint removed for now */}
-        </div>
 
         {/* Card grid */}
         <div className="discovery-grid" ref={gridRef}>
@@ -1803,26 +1456,6 @@ function ServiceDetailModal({
 // Icons
 // ---------------------------------------------------------------------------
 
-function SearchIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ flexShrink: 0, opacity: 0.5 }}
-      aria-label="Search"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
@@ -1830,115 +1463,7 @@ function SearchIcon() {
 function DiscoveryStyles() {
   return (
     <style>{`
-      /* Search overlay — centered column */
-      .discovery-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        pointer-events: none;
-        width: min(90vw, 600px);
-        gap: 0;
-      }
-      .discovery-overlay > * { pointer-events: auto; }
-      .discovery-ascii-logo {
-        margin: 0 0 0.75rem;
-        pointer-events: none;
-        color: var(--vocs-text-color-heading);
-        opacity: 0.85;
-        font-family: "VTC Du Bois", var(--font-sans);
-        font-size: clamp(2.5rem, 2.5vw, 2.5rem);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: -0.01em;
-        transition: opacity 0.3s;
-      }
-      .discovery-ascii-logo > div { display: none; }
-      .discovery-overlay-desc {
-        color: var(--vocs-text-color-secondary);
-        font-size: clamp(1.2rem, 1.2vw, 1.2rem);
-        margin: 0 0 1.25rem;
-        line-height: 1.55;
-        max-width: 500px;
-      }
-      .has-query .discovery-ascii-logo {
-        display: none !important;
-      }
-      .has-query .discovery-overlay-desc {
-        display: none !important;
-      }
-      .has-query .discovery-overlay {
-        top: 35%;
-        transition: top 0.15s ease;
-      }
-
-      /* No results message */
-      .discovery-no-results {
-        margin-top: 0.75rem;
-        font-size: 0.8125rem;
-        color: var(--vocs-text-color-muted);
-      }
-
-      /* Cmd+K shortcut hint */
-      .discovery-kbd {
-        display: inline-flex;
-        align-items: center;
-        gap: 2px;
-        font-size: 12px;
-        font-family: var(--font-sans);
-        color: var(--vocs-text-color-muted);
-        background: light-dark(rgba(0,0,0,0.06), rgba(255,255,255,0.08));
-        border: 1px solid var(--vocs-border-color-primary);
-        padding: 2px 6px;
-        border-radius: 4px;
-        flex-shrink: 0;
-        line-height: 1;
-        pointer-events: none;
-      }
-      .discovery-kbd-symbol {
-        font-size: 14px;
-        line-height: 1;
-      }
-
-      /* Radial fade so center area is readable */
-      .discovery-grid { position: relative; }
-      .discovery-grid::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(
-          ellipse 55% 42% at center,
-          oklch(from var(--vocs-background-color-primary) l c h / 0.96) 0%,
-          oklch(from var(--vocs-background-color-primary) l c h / 0.92) 28%,
-          oklch(from var(--vocs-background-color-primary) l c h / 0.7) 48%,
-          oklch(from var(--vocs-background-color-primary) l c h / 0.4) 65%,
-          transparent 80%
-        );
-        pointer-events: none;
-        z-index: 8;
-        transition: opacity 0.4s;
-      }
       @media (max-width: 768px) {
-        .discovery-grid::after {
-          background: radial-gradient(
-            ellipse 100% 60% at 50% 30%,
-            oklch(from var(--vocs-background-color-primary) l c h / 0.98) 0%,
-            oklch(from var(--vocs-background-color-primary) l c h / 0.95) 20%,
-            oklch(from var(--vocs-background-color-primary) l c h / 0.85) 35%,
-            oklch(from var(--vocs-background-color-primary) l c h / 0.7) 55%,
-            transparent 75%
-          );
-        }
-        .discovery-overlay {
-          top: 28% !important;
-          left: 50% !important;
-          transform: translate(-50%, -50%) !important;
-        }
         .discovery-dropdown {
           max-height: 40vh;
           overflow-y: auto;
@@ -2692,67 +2217,10 @@ function DiscoveryStyles() {
       .mobile-search-view { display: none; }
 
       @media (max-width: 768px) {
-        .discovery-overlay {
-          transition: top 0.3s ease, opacity 0.3s ease !important;
-        }
-        .mobile-search-active .discovery-ascii-logo {
-          opacity: 0 !important;
-          max-height: 0 !important;
-          margin: 0 !important;
-          overflow: hidden;
-          transition: opacity 0.2s ease, max-height 0.2s ease, margin 0.2s ease;
-        }
-        .mobile-search-active .discovery-overlay-desc {
-          opacity: 0 !important;
-          max-height: 0 !important;
-          margin: 0 !important;
-          overflow: hidden;
-          transition: opacity 0.2s ease, max-height 0.2s ease, margin 0.2s ease;
-        }
-        .mobile-search-active .discovery-overlay {
-          top: 15% !important;
-        }
-        .mobile-search-active .discovery-grid::after {
-          opacity: 1 !important;
-          background: oklch(from var(--vocs-background-color-primary) l c h / 0.92) !important;
-        }
-        .mobile-search-active .discovery-dropdown {
-          max-height: 60vh !important;
-        }
-        .mobile-search-active .discovery-view-all {
-          display: none !important;
-        }
-        .mobile-results-view .discovery-overlay {
-          top: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          transform: none !important;
-          width: 100% !important;
-          margin: 0 !important;
-          padding: 0.75rem 1rem;
-          padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
-          flex-direction: row;
-          align-items: center;
-          gap: 10px;
-          position: sticky;
-          z-index: 20;
-          background: var(--vocs-background-color-primary);
-          border-bottom: 1px solid var(--vocs-border-color-primary);
-          pointer-events: auto;
-        }
-        .mobile-results-view .discovery-ascii-logo,
-        .mobile-results-view .discovery-overlay-desc,
-        .mobile-results-view .discovery-view-all,
-        .mobile-results-view .discovery-dropdown,
-        .mobile-results-view .discovery-kbd {
-          display: none !important;
-        }
+        
         .mobile-results-view .discovery-search-wrapper {
           margin-top: 0 !important;
           flex: 1;
-        }
-        .mobile-results-view .discovery-grid::after {
-          opacity: 0 !important;
         }
         .mobile-results-view.discovery-section {
           overflow-y: auto !important;
