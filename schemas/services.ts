@@ -64,6 +64,13 @@ export const TEMPO_PAYMENT: PaymentDefaults = {
   decimals: 6,
 };
 
+/** Common payment defaults for Stripe MPP services */
+export const STRIPE_PAYMENT: PaymentDefaults = {
+  method: "stripe",
+  currency: "usd",
+  decimals: 2,
+};
+
 export interface EndpointDef {
   /** Route string: "METHOD /path" (without service slug prefix) */
   route: string;
@@ -115,343 +122,399 @@ export const services: ServiceDef[] = [
   {
     id: "agentmail",
     name: "AgentMail",
-    url: "https://api.agentmail.to",
-    serviceUrl: `https://agentmail.${MPP_REALM}`,
-    description:
-      "Email inboxes for AI agents — create, send, receive, and manage email programmatically.",
+    url: "https://mpp.api.agentmail.to",
+    serviceUrl: "https://mpp.api.agentmail.to",
+    description: "Email inboxes for AI agents.",
     categories: ["ai", "social"],
     integration: "first-party",
-    tags: ["email", "inbox", "agents", "messaging"],
-    docs: {
-      homepage: "https://docs.agentmail.to",
-      llmsTxt: "https://docs.agentmail.to/llms.txt",
-    },
+    tags: [
+      "email",
+      "inboxes",
+      "domains",
+      "drafts",
+      "threads",
+      "webhooks",
+      "messaging",
+    ],
+    docs: { homepage: "https://docs.agentmail.to" },
     provider: { name: "AgentMail", url: "https://agentmail.to" },
-    realm: MPP_REALM,
+    realm: "mpp.api.agentmail.to",
     intent: "charge",
     payment: TEMPO_PAYMENT,
-    docsBase: "https://docs.agentmail.to/llms.txt",
     endpoints: [
-      { route: "GET /v0/inboxes", desc: "List inboxes", amount: "5000" },
-      { route: "POST /v0/inboxes", desc: "Create an inbox", amount: "5000" },
+      // Inboxes
+      { route: "GET /v0/inboxes", desc: "List inboxes" },
+      { route: "GET /v0/inboxes/:inbox_id", desc: "Get inbox" },
+      { route: "POST /v0/inboxes", desc: "Create inbox", amount: "2000000" },
+      { route: "PATCH /v0/inboxes/:inbox_id", desc: "Update inbox" },
+      { route: "DELETE /v0/inboxes/:inbox_id", desc: "Delete inbox" },
+      // Inbox threads
+      { route: "GET /v0/inboxes/:inbox_id/threads", desc: "List threads" },
       {
-        route: "GET /v0/inboxes/:inboxId",
-        desc: "Get inbox details",
-        amount: "5000",
-      },
-      {
-        route: "PATCH /v0/inboxes/:inboxId",
-        desc: "Update an inbox",
-        amount: "5000",
-      },
-      {
-        route: "DELETE /v0/inboxes/:inboxId",
-        desc: "Delete an inbox",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/inboxes/:inboxId/threads",
-        desc: "List threads in inbox",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/inboxes/:inboxId/threads/:threadId",
-        desc: "Get thread details",
-        amount: "5000",
+        route: "GET /v0/inboxes/:inbox_id/threads/:thread_id",
+        desc: "Get thread",
       },
       {
         route:
-          "GET /v0/inboxes/:inboxId/threads/:threadId/attachments/:attachmentId",
-        desc: "Get thread attachment",
-        amount: "5000",
+          "GET /v0/inboxes/:inbox_id/threads/:thread_id/attachments/:attachment_id",
+        desc: "Get attachment",
       },
       {
-        route: "DELETE /v0/inboxes/:inboxId/threads/:threadId",
-        desc: "Delete a thread",
-        amount: "5000",
+        route: "DELETE /v0/inboxes/:inbox_id/threads/:thread_id",
+        desc: "Delete thread",
       },
+      // Inbox messages
+      { route: "GET /v0/inboxes/:inbox_id/messages", desc: "List messages" },
       {
-        route: "GET /v0/inboxes/:inboxId/messages",
-        desc: "List messages in inbox",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/inboxes/:inboxId/messages/:messageId",
-        desc: "Get message details",
-        amount: "5000",
+        route: "GET /v0/inboxes/:inbox_id/messages/:message_id",
+        desc: "Get message",
       },
       {
         route:
-          "GET /v0/inboxes/:inboxId/messages/:messageId/attachments/:attachmentId",
-        desc: "Get message attachment",
-        amount: "5000",
+          "GET /v0/inboxes/:inbox_id/messages/:message_id/attachments/:attachment_id",
+        desc: "Get attachment",
       },
       {
-        route: "GET /v0/inboxes/:inboxId/messages/:messageId/raw",
+        route: "GET /v0/inboxes/:inbox_id/messages/:message_id/raw",
         desc: "Get raw message",
-        amount: "5000",
       },
       {
-        route: "POST /v0/inboxes/:inboxId/messages",
-        desc: "Send a message",
+        route: "PATCH /v0/inboxes/:inbox_id/messages/:message_id",
+        desc: "Update message",
+      },
+      {
+        route: "POST /v0/inboxes/:inbox_id/messages/send",
+        desc: "Send message",
         amount: "10000",
       },
       {
-        route: "POST /v0/inboxes/:inboxId/messages/send",
-        desc: "Send a message",
+        route: "POST /v0/inboxes/:inbox_id/messages/:message_id/reply",
+        desc: "Reply to message",
         amount: "10000",
       },
       {
-        route: "POST /v0/inboxes/:inboxId/messages/:messageId/reply",
-        desc: "Reply to a message",
+        route: "POST /v0/inboxes/:inbox_id/messages/:message_id/reply-all",
+        desc: "Reply all message",
         amount: "10000",
       },
       {
-        route: "POST /v0/inboxes/:inboxId/messages/:messageId/reply-all",
-        desc: "Reply all to a message",
+        route: "POST /v0/inboxes/:inbox_id/messages/:message_id/forward",
+        desc: "Forward message",
         amount: "10000",
       },
+      // Inbox drafts
+      { route: "GET /v0/inboxes/:inbox_id/drafts", desc: "List drafts" },
       {
-        route: "POST /v0/inboxes/:inboxId/messages/:messageId/forward",
-        desc: "Forward a message",
-        amount: "10000",
-      },
-      {
-        route: "PATCH /v0/inboxes/:inboxId/messages/:messageId",
-        desc: "Update a message",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/inboxes/:inboxId/drafts",
-        desc: "List drafts in inbox",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/inboxes/:inboxId/drafts/:draftId",
-        desc: "Get draft details",
-        amount: "5000",
+        route: "GET /v0/inboxes/:inbox_id/drafts/:draft_id",
+        desc: "Get draft",
       },
       {
         route:
-          "GET /v0/inboxes/:inboxId/drafts/:draftId/attachments/:attachmentId",
-        desc: "Get draft attachment",
-        amount: "5000",
+          "GET /v0/inboxes/:inbox_id/drafts/:draft_id/attachments/:attachment_id",
+        desc: "Get attachment",
       },
       {
-        route: "POST /v0/inboxes/:inboxId/drafts",
-        desc: "Create a draft",
-        amount: "5000",
-      },
-      {
-        route: "PATCH /v0/inboxes/:inboxId/drafts/:draftId",
-        desc: "Update a draft",
-        amount: "5000",
-      },
-      {
-        route: "POST /v0/inboxes/:inboxId/drafts/:draftId/send",
-        desc: "Send a draft",
+        route: "POST /v0/inboxes/:inbox_id/drafts",
+        desc: "Create draft",
         amount: "10000",
       },
       {
-        route: "DELETE /v0/inboxes/:inboxId/drafts/:draftId",
-        desc: "Delete a draft",
-        amount: "5000",
+        route: "PATCH /v0/inboxes/:inbox_id/drafts/:draft_id",
+        desc: "Update draft",
       },
       {
-        route: "GET /v0/inboxes/:inboxId/metrics",
-        desc: "Get inbox metrics",
-        amount: "5000",
+        route: "DELETE /v0/inboxes/:inbox_id/drafts/:draft_id",
+        desc: "Delete draft",
       },
       {
-        route: "GET /v0/threads",
-        desc: "List threads across all inboxes",
-        amount: "5000",
+        route: "POST /v0/inboxes/:inbox_id/drafts/:draft_id/send",
+        desc: "Send draft",
+        amount: "10000",
+      },
+      // Inbox lists
+      {
+        route: "GET /v0/inboxes/:inbox_id/lists/:direction/:type",
+        desc: "List entries",
       },
       {
-        route: "GET /v0/threads/:threadId",
-        desc: "Get thread details",
-        amount: "5000",
+        route: "GET /v0/inboxes/:inbox_id/lists/:direction/:type/:entry",
+        desc: "Get list entry",
       },
       {
-        route: "GET /v0/threads/:threadId/attachments/:attachmentId",
-        desc: "Get thread attachment",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/drafts",
-        desc: "List drafts across all inboxes",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/drafts/:draftId",
-        desc: "Get draft details",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/drafts/:draftId/attachments/:attachmentId",
-        desc: "Get draft attachment",
-        amount: "5000",
-      },
-      { route: "GET /v0/domains", desc: "List domains", amount: "5000" },
-      { route: "POST /v0/domains", desc: "Create a domain", amount: "10000" },
-      {
-        route: "GET /v0/domains/:domainId",
-        desc: "Get domain details",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/domains/:domainId/zone-file",
-        desc: "Get domain zone file",
-        amount: "5000",
-      },
-      {
-        route: "DELETE /v0/domains/:domainId",
-        desc: "Delete a domain",
+        route: "POST /v0/inboxes/:inbox_id/lists/:direction/:type",
+        desc: "Create list entry",
         amount: "10000",
       },
       {
-        route: "POST /v0/domains/:domainId/verify",
-        desc: "Verify a domain",
+        route: "DELETE /v0/inboxes/:inbox_id/lists/:direction/:type/:entry",
+        desc: "Delete list entry",
+      },
+      // Inbox metrics
+      { route: "GET /v0/inboxes/:inbox_id/metrics", desc: "Query metrics" },
+      // Top-level threads
+      { route: "GET /v0/threads", desc: "List threads" },
+      { route: "GET /v0/threads/:thread_id", desc: "Get thread" },
+      {
+        route: "GET /v0/threads/:thread_id/attachments/:attachment_id",
+        desc: "Get attachment",
+      },
+      { route: "DELETE /v0/threads/:thread_id", desc: "Delete thread" },
+      // Top-level drafts
+      { route: "GET /v0/drafts", desc: "List drafts" },
+      { route: "GET /v0/drafts/:draft_id", desc: "Get draft" },
+      {
+        route: "GET /v0/drafts/:draft_id/attachments/:attachment_id",
+        desc: "Get attachment",
+      },
+      // Domains
+      { route: "GET /v0/domains", desc: "List domains" },
+      { route: "GET /v0/domains/:domain_id", desc: "Get domain" },
+      { route: "GET /v0/domains/:domain_id/zone-file", desc: "Get zone file" },
+      { route: "POST /v0/domains", desc: "Create domain", amount: "10000" },
+      { route: "DELETE /v0/domains/:domain_id", desc: "Delete domain" },
+      { route: "POST /v0/domains/:domain_id/verify", desc: "Verify domain" },
+      // Top-level lists
+      { route: "GET /v0/lists/:direction/:type", desc: "List entries" },
+      {
+        route: "GET /v0/lists/:direction/:type/:entry",
+        desc: "Get list entry",
+      },
+      {
+        route: "POST /v0/lists/:direction/:type",
+        desc: "Create list entry",
         amount: "10000",
       },
-      { route: "GET /v0/webhooks", desc: "List webhooks", amount: "5000" },
-      { route: "POST /v0/webhooks", desc: "Create a webhook", amount: "5000" },
       {
-        route: "GET /v0/webhooks/:webhookId",
-        desc: "Get webhook details",
-        amount: "5000",
+        route: "DELETE /v0/lists/:direction/:type/:entry",
+        desc: "Delete list entry",
+      },
+      // Metrics
+      { route: "GET /v0/metrics", desc: "Query metrics" },
+      // API keys
+      { route: "GET /v0/api-keys", desc: "List API keys" },
+      { route: "POST /v0/api-keys", desc: "Create API key" },
+      { route: "DELETE /v0/api-keys/:api_key", desc: "Delete API key" },
+      // Pods
+      { route: "GET /v0/pods", desc: "List pods" },
+      { route: "GET /v0/pods/:pod_id", desc: "Get pod" },
+      { route: "POST /v0/pods", desc: "Create pod", amount: "10000" },
+      { route: "DELETE /v0/pods/:pod_id", desc: "Delete pod" },
+      // Pod inboxes
+      { route: "GET /v0/pods/:pod_id/inboxes", desc: "List inboxes" },
+      { route: "GET /v0/pods/:pod_id/inboxes/:inbox_id", desc: "Get inbox" },
+      {
+        route: "POST /v0/pods/:pod_id/inboxes",
+        desc: "Create inbox",
+        amount: "2000000",
       },
       {
-        route: "PATCH /v0/webhooks/:webhookId",
-        desc: "Update a webhook",
-        amount: "5000",
+        route: "PATCH /v0/pods/:pod_id/inboxes/:inbox_id",
+        desc: "Update inbox",
       },
       {
-        route: "DELETE /v0/webhooks/:webhookId",
-        desc: "Delete a webhook",
-        amount: "5000",
+        route: "DELETE /v0/pods/:pod_id/inboxes/:inbox_id",
+        desc: "Delete inbox",
       },
-      { route: "GET /v0/metrics", desc: "List metrics", amount: "5000" },
-      { route: "GET /v0/api-keys", desc: "List API keys", amount: "5000" },
-      { route: "POST /v0/api-keys", desc: "Create an API key", amount: "5000" },
-      {
-        route: "DELETE /v0/api-keys/:keyId",
-        desc: "Delete an API key",
-        amount: "5000",
-      },
-      { route: "GET /v0/pods", desc: "List pods", amount: "5000" },
-      { route: "POST /v0/pods", desc: "Create a pod", amount: "5000" },
-      { route: "GET /v0/pods/:podId", desc: "Get pod details", amount: "5000" },
-      { route: "DELETE /v0/pods/:podId", desc: "Delete a pod", amount: "5000" },
-      {
-        route: "GET /v0/pods/:podId/inboxes",
-        desc: "List pod inboxes",
-        amount: "5000",
-      },
-      {
-        route: "POST /v0/pods/:podId/inboxes",
-        desc: "Create pod inbox",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/pods/:podId/inboxes/:inboxId",
-        desc: "Get pod inbox",
-        amount: "5000",
-      },
-      {
-        route: "DELETE /v0/pods/:podId/inboxes/:inboxId",
-        desc: "Delete pod inbox",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/pods/:podId/threads",
-        desc: "List pod threads",
-        amount: "5000",
-      },
-      {
-        route: "GET /v0/pods/:podId/threads/:threadId",
-        desc: "Get pod thread",
-        amount: "5000",
-      },
+      // Pod threads
+      { route: "GET /v0/pods/:pod_id/threads", desc: "List threads" },
+      { route: "GET /v0/pods/:pod_id/threads/:thread_id", desc: "Get thread" },
       {
         route:
-          "GET /v0/pods/:podId/threads/:threadId/attachments/:attachmentId",
-        desc: "Get pod thread attachment",
-        amount: "5000",
+          "GET /v0/pods/:pod_id/threads/:thread_id/attachments/:attachment_id",
+        desc: "Get attachment",
       },
       {
-        route: "GET /v0/pods/:podId/drafts",
-        desc: "List pod drafts",
-        amount: "5000",
+        route: "DELETE /v0/pods/:pod_id/threads/:thread_id",
+        desc: "Delete thread",
+      },
+      // Pod drafts
+      { route: "GET /v0/pods/:pod_id/drafts", desc: "List drafts" },
+      { route: "GET /v0/pods/:pod_id/drafts/:draft_id", desc: "Get draft" },
+      {
+        route:
+          "GET /v0/pods/:pod_id/drafts/:draft_id/attachments/:attachment_id",
+        desc: "Get attachment",
+      },
+      // Pod domains
+      { route: "GET /v0/pods/:pod_id/domains", desc: "List domains" },
+      { route: "GET /v0/pods/:pod_id/domains/:domain_id", desc: "Get domain" },
+      {
+        route: "GET /v0/pods/:pod_id/domains/:domain_id/zone-file",
+        desc: "Get zone file",
       },
       {
-        route: "GET /v0/pods/:podId/drafts/:draftId",
-        desc: "Get pod draft",
-        amount: "5000",
+        route: "POST /v0/pods/:pod_id/domains",
+        desc: "Create domain",
+        amount: "10000000",
       },
       {
-        route: "GET /v0/pods/:podId/drafts/:draftId/attachments/:attachmentId",
-        desc: "Get pod draft attachment",
-        amount: "5000",
+        route: "PATCH /v0/pods/:pod_id/domains/:domain_id",
+        desc: "Update domain",
       },
       {
-        route: "GET /v0/pods/:podId/domains",
-        desc: "List pod domains",
-        amount: "5000",
+        route: "DELETE /v0/pods/:pod_id/domains/:domain_id",
+        desc: "Delete domain",
       },
       {
-        route: "POST /v0/pods/:podId/domains",
-        desc: "Create pod domain",
+        route: "POST /v0/pods/:pod_id/domains/:domain_id/verify",
+        desc: "Verify domain",
+      },
+      // Pod lists
+      {
+        route: "GET /v0/pods/:pod_id/lists/:direction/:type",
+        desc: "List entries",
+      },
+      {
+        route: "GET /v0/pods/:pod_id/lists/:direction/:type/:entry",
+        desc: "Get list entry",
+      },
+      {
+        route: "POST /v0/pods/:pod_id/lists/:direction/:type",
+        desc: "Create list entry",
         amount: "10000",
       },
       {
-        route: "DELETE /v0/pods/:podId/domains/:domainId",
-        desc: "Delete pod domain",
-        amount: "10000",
+        route: "DELETE /v0/pods/:pod_id/lists/:direction/:type/:entry",
+        desc: "Delete list entry",
       },
+      // Pod metrics & API keys
+      { route: "GET /v0/pods/:pod_id/metrics", desc: "Query metrics" },
+      { route: "GET /v0/pods/:pod_id/api-keys", desc: "List API keys" },
+      { route: "POST /v0/pods/:pod_id/api-keys", desc: "Create API key" },
       {
-        route: "GET /v0/organizations",
-        desc: "Get organization details",
-        amount: "5000",
+        route: "DELETE /v0/pods/:pod_id/api-keys/:api_key",
+        desc: "Delete API key",
       },
+      // Organization
+      { route: "GET /v0/organizations", desc: "Get organization" },
     ],
   },
 
-  // ── Alchemy ────────────────────────────────────────────────────────────
+  // ── Allium ──────────────────────────────────────────────────────────────
   {
-    id: "alchemy",
-    name: "Alchemy",
-    url: "https://eth-mainnet.g.alchemy.com",
-    serviceUrl: `https://alchemy.${MPP_REALM}`,
+    id: "allium",
+    name: "Allium",
+    url: "https://agents.allium.so",
+    serviceUrl: "https://agents.allium.so",
     description:
-      "Blockchain data APIs including Core RPC APIs, Prices API, Portfolio API, and NFT API across 100+ chains.",
+      "System of record for onchain finance. Real-time blockchain data: token prices, wallet balances, transactions, PnL, and SQL explorer.",
     categories: ["blockchain", "data"],
     integration: "first-party",
-    tags: ["rpc", "json-rpc", "nft", "evm", "multichain"],
-    docs: {
-      homepage: "https://www.alchemy.com/docs",
-      llmsTxt: "https://www.alchemy.com/docs/llms.txt",
-    },
-    provider: { name: "Alchemy", url: "https://alchemy.com" },
-    realm: MPP_REALM,
+    tags: [
+      "blockchain",
+      "prices",
+      "tokens",
+      "wallet",
+      "balances",
+      "transactions",
+      "pnl",
+      "sql",
+      "explorer",
+      "solana",
+      "base",
+      "defi",
+    ],
+    docs: { homepage: "https://docs.allium.so" },
+    provider: { name: "Allium", url: "https://allium.so" },
+    realm: "agents.allium.so",
     intent: "charge",
     payment: TEMPO_PAYMENT,
-    docsBase: "https://context7.com/websites/alchemy/llms.txt",
     endpoints: [
+      // Realtime - Prices
       {
-        route: "POST /:network/v2",
-        desc: "JSON-RPC call (eth_*, alchemy_*)",
-        amount: "100",
+        route: "POST /api/v1/developer/prices",
+        desc: "Get latest token prices",
+        amount: "20000",
+        unitType: "request",
       },
       {
-        route: "GET /:network/nft/v3/:endpoint",
-        desc: "NFT API v3",
-        amount: "500",
+        route: "POST /api/v1/developer/prices/at-timestamp",
+        desc: "Get token prices at a specific time",
+        amount: "20000",
+        unitType: "request",
       },
       {
-        route: "POST /:network/nft/v3/:endpoint",
-        desc: "NFT API v3",
-        amount: "500",
+        route: "POST /api/v1/developer/prices/history",
+        desc: "Get historical token price series",
+        amount: "20000",
+        unitType: "request",
+      },
+      {
+        route: "POST /api/v1/developer/prices/stats",
+        desc: "Get token price statistics",
+        amount: "20000",
+        unitType: "request",
+      },
+      // Realtime - Tokens
+      {
+        route: "GET /api/v1/developer/tokens/search",
+        desc: "Search tokens by name or symbol",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /api/v1/developer/tokens/chain-address",
+        desc: "Look up tokens by chain and address",
+        amount: "20000",
+        unitType: "request",
+      },
+      {
+        route: "GET /api/v1/developer/tokens",
+        desc: "List all supported tokens",
+        amount: "30000",
+        unitType: "request",
+      },
+      // Realtime - Balances
+      {
+        route: "POST /api/v1/developer/wallet/balances",
+        desc: "Get current wallet token balances",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /api/v1/developer/wallet/balances/history",
+        desc: "Get historical wallet balances",
+        amount: "30000",
+        unitType: "request",
+      },
+      // Realtime - Transactions
+      {
+        route: "POST /api/v1/developer/wallet/transactions",
+        desc: "Get wallet transaction history",
+        amount: "30000",
+        unitType: "request",
+      },
+      // Realtime - PnL
+      {
+        route: "POST /api/v1/developer/wallet/pnl",
+        desc: "Get wallet profit and loss",
+        amount: "30000",
+        unitType: "request",
+      },
+      // Explorer
+      {
+        route: "POST /api/v1/explorer/queries/run-async",
+        desc: "Submit raw SQL for async execution",
+        amount: "10000",
+        unitType: "request",
+      },
+      {
+        route: "POST /api/v1/explorer/queries/:query_id/run-async",
+        desc: "Run a saved query asynchronously",
+        amount: "10000",
+        unitType: "request",
+      },
+      {
+        route: "GET /api/v1/explorer/query-runs/:run_id/status",
+        desc: "Check status of a query run",
+        amount: "10000",
+        unitType: "request",
+      },
+      {
+        route: "GET /api/v1/explorer/query-runs/:run_id/results",
+        desc: "Fetch results of a completed query",
+        dynamic: true,
+        amountHint: "$0.01 – $2.00",
       },
     ],
   },
@@ -494,31 +557,60 @@ export const services: ServiceDef[] = [
   {
     id: "browserbase",
     name: "Browserbase",
-    url: "https://api.browserbase.com",
-    serviceUrl: `https://browserbase.${MPP_REALM}`,
-    description: "Headless browser sessions for web scraping and automation.",
-    categories: ["web", "compute"],
-    integration: "third-party",
-    tags: ["browser", "scraping", "automation", "headless"],
+    url: "https://mpp.browserbase.com",
+    serviceUrl: "https://mpp.browserbase.com",
+    description:
+      "Headless browser sessions, web search, and page fetching for AI agents.",
+    categories: ["web", "compute", "search"],
+    integration: "first-party",
+    tags: ["browser", "scraping", "automation", "headless", "search", "fetch"],
     docs: {
       homepage: "https://docs.browserbase.com",
       llmsTxt: "https://docs.browserbase.com/llms.txt",
     },
     provider: { name: "Browserbase", url: "https://browserbase.com" },
-    realm: MPP_REALM,
+    realm: "mpp.browserbase.com",
     intent: "charge",
     payment: TEMPO_PAYMENT,
-    docsBase: "https://context7.com/websites/browserbase/llms.txt",
+    docsBase: "https://docs.browserbase.com/features",
     endpoints: [
       {
-        route: "POST /v1/sessions",
+        route: "POST /browser/session/create",
         desc: "Create a browser session",
-        amount: "120000",
+        dynamic: true,
+        amountHint: "$0.12/hr",
+        docs: "https://docs.browserbase.com/reference/api/create-a-session",
       },
       {
-        route: "POST /v1/sessions/:id/extend",
+        route: "GET /browser/session/:id/status",
+        desc: "Check session status",
+        docs: false,
+      },
+      {
+        route: "POST /browser/session/:id/extend",
         desc: "Add more time to session",
-        amount: "120000",
+        dynamic: true,
+        amountHint: "$0.12/hr",
+        docs: "https://docs.browserbase.com/reference/api/create-a-session",
+      },
+      {
+        route: "DELETE /browser/session/:id",
+        desc: "Terminate session",
+        docs: false,
+      },
+      {
+        route: "POST /search",
+        desc: "Web search with structured results",
+        amount: "10000",
+        unitType: "request",
+        docs: "https://docs.browserbase.com/features/search",
+      },
+      {
+        route: "POST /fetch",
+        desc: "Fetch a page and return content and metadata",
+        amount: "10000",
+        unitType: "request",
+        docs: "https://docs.browserbase.com/features/fetch",
       },
     ],
   },
@@ -548,6 +640,44 @@ export const services: ServiceDef[] = [
         route: "POST /graphql",
         desc: "GraphQL query (token data, trades, liquidity, NFTs, wallets)",
         amount: "350",
+      },
+    ],
+  },
+
+  // ── Dune ────────────────────────────────────────────────────────────────
+  {
+    id: "dune",
+    name: "Dune",
+    url: "https://dune.com",
+    serviceUrl: "https://api.dune.com",
+    description:
+      "Execute SQL queries on Dune and retrieve results or CSV exports from completed executions.",
+    categories: ["data", "blockchain"],
+    integration: "first-party",
+    tags: ["sql", "analytics", "blockchain", "data", "query"],
+    docs: { homepage: "https://docs.dune.com/api-reference/agents/mpp" },
+    provider: { name: "Dune", url: "https://dune.com" },
+    realm: "api.dune.com",
+    intent: "session",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /v1/sql/execute",
+        desc: "Execute a SQL query",
+        dynamic: true,
+        amountHint: "$0.05-$3",
+      },
+      {
+        route: "GET /v1/execution/:execution_id/csv",
+        desc: "Download CSV results for an execution",
+        dynamic: true,
+        amountHint: "$0.05-$10",
+      },
+      {
+        route: "GET /v1/execution/:execution_id/results",
+        desc: "Fetch JSON results for an execution",
+        dynamic: true,
+        amountHint: "$0.05-$10",
       },
     ],
   },
@@ -985,6 +1115,45 @@ export const services: ServiceDef[] = [
         desc: "Multi-hop web research task - price varies by processor",
         dynamic: true,
         amountHint: "$0.10 – $0.30",
+      },
+    ],
+  },
+
+  // ── Alchemy ────────────────────────────────────────────────────────────
+  {
+    id: "alchemy",
+    name: "Alchemy",
+    url: "https://eth-mainnet.g.alchemy.com",
+    serviceUrl: "https://mpp.alchemy.com",
+    description:
+      "Blockchain data APIs including Core RPC APIs, Prices API, Portfolio API, and NFT API across 100+ chains.",
+    categories: ["blockchain", "data"],
+    integration: "first-party",
+    tags: ["rpc", "json-rpc", "nft", "evm", "multichain"],
+    docs: {
+      homepage: "https://www.alchemy.com/docs",
+      llmsTxt: "https://www.alchemy.com/docs/llms.txt",
+    },
+    provider: { name: "Alchemy", url: "https://alchemy.com" },
+    realm: "alchemy.com",
+    intent: "session",
+    payment: TEMPO_PAYMENT,
+    docsBase: "https://context7.com/websites/alchemy/llms.txt",
+    endpoints: [
+      {
+        route: "POST /:network/v2",
+        desc: "JSON-RPC call (eth_*, alchemy_*)",
+        amount: "100",
+      },
+      {
+        route: "GET /:network/nft/v3/:endpoint",
+        desc: "NFT API v3",
+        amount: "500",
+      },
+      {
+        route: "POST /:network/nft/v3/:endpoint",
+        desc: "NFT API v3",
+        amount: "500",
       },
     ],
   },
@@ -1810,18 +1979,10 @@ export const services: ServiceDef[] = [
     url: "https://stablesocial.dev",
     serviceUrl: "https://stablesocial.dev",
     description:
-      "Pay-per-request social media data from TikTok, Instagram, X/Twitter, Facebook, and Reddit.",
+      "Pay-per-request social media data from TikTok, Instagram, Facebook, and Reddit.",
     categories: ["social", "data"],
     integration: "first-party",
-    tags: [
-      "tiktok",
-      "instagram",
-      "twitter",
-      "facebook",
-      "reddit",
-      "scraping",
-      "social",
-    ],
+    tags: ["tiktok", "instagram", "facebook", "reddit", "scraping", "social"],
     docs: {
       homepage: "https://stablesocial.dev",
       llmsTxt: "https://stablesocial.dev/llms.txt",
@@ -1931,52 +2092,6 @@ export const services: ServiceDef[] = [
       {
         route: "POST /api/instagram/search-tags",
         desc: "Search Instagram by tag",
-        amount: "60000",
-      },
-      // X/Twitter
-      {
-        route: "POST /api/x/profile",
-        desc: "Get X/Twitter user profile",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/posts",
-        desc: "Get X/Twitter user posts",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/post-replies",
-        desc: "Get X/Twitter post replies",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/post-retweets",
-        desc: "Get X/Twitter retweet profiles",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/post-quotes",
-        desc: "Get X/Twitter quote tweets",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/followers",
-        desc: "Get X/Twitter followers",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/following",
-        desc: "Get X/Twitter following",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/search",
-        desc: "Search X/Twitter posts by keyword",
-        amount: "60000",
-      },
-      {
-        route: "POST /api/x/search-profiles",
-        desc: "Search X/Twitter user profiles",
         amount: "60000",
       },
       // Facebook
@@ -3068,6 +3183,1210 @@ export const services: ServiceDef[] = [
         amount: "3000",
       },
       { route: "POST /getTaskResult", desc: "Poll for task result" },
+    ],
+  },
+
+  // ── PostalForm ──────────────────────────────────────────────────────────
+  {
+    id: "postalform",
+    name: "PostalForm",
+    url: "https://postalform.com",
+    serviceUrl: "https://postalform.com",
+    description: "Print and mail real letters and documents via AI agents.",
+    categories: ["web"],
+    integration: "first-party",
+    tags: ["mail", "print", "letters", "physical", "postal"],
+    docs: {
+      homepage: "https://postalform.com/agents",
+    },
+    provider: { name: "PostalForm", url: "https://postalform.com" },
+    realm: "postalform.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /api/machine/mpp/orders/validate",
+        desc: "Quote and validate an order before payment",
+      },
+      {
+        route: "POST /api/machine/mpp/orders",
+        desc: "Create and pay for a print-and-mail order",
+        dynamic: true,
+        amountHint: "Varies",
+      },
+      {
+        route: "GET /api/machine/mpp/orders/:id",
+        desc: "Poll order status and fulfillment",
+      },
+    ],
+  },
+
+  // ── Prospect Butcher Co ─────────────────────────────────────────────────
+  {
+    id: "prospect-butcher",
+    name: "Prospect Butcher",
+    url: "https://agents.prospectbutcher.shop",
+    serviceUrl: "https://agents.prospectbutcher.shop",
+    description:
+      "Order sandwiches for pickup in Brooklyn — the first food purchase made entirely by an AI agent.",
+    categories: ["web"],
+    integration: "first-party",
+    tags: ["food", "ordering", "sandwiches", "physical", "restaurant"],
+    docs: {
+      homepage: "https://agents.prospectbutcher.shop",
+      llmsTxt: "https://agents.prospectbutcher.shop/llms.txt",
+    },
+    provider: {
+      name: "Prospect Butcher",
+      url: "https://www.prospectbutcher.com",
+    },
+    realm: "agents.prospectbutcher.shop",
+    intent: "charge",
+    payment: STRIPE_PAYMENT,
+    endpoints: [
+      {
+        route: "GET /buy/:slug",
+        desc: "Purchase a sandwich",
+        dynamic: true,
+        amountHint: "Varies",
+      },
+    ],
+  },
+
+  // ── Mapbox ──────────────────────────────────────────────────────────────
+  {
+    id: "mapbox",
+    name: "Mapbox",
+    url: "https://mapbox.mpp.paywithlocus.com",
+    serviceUrl: "https://mapbox.mpp.paywithlocus.com",
+    description:
+      "Geocoding, directions, isochrones, map matching, static maps, and tile queries.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: ["maps", "geocoding", "directions", "routing", "geospatial"],
+    docs: { homepage: "https://docs.mapbox.com" },
+    provider: { name: "Mapbox", url: "https://www.mapbox.com" },
+    realm: "mapbox.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /mapbox/geocode-forward",
+        desc: "Convert an address or place name to coordinates",
+        amount: "750",
+        unitType: "request",
+      },
+      {
+        route: "POST /mapbox/geocode-reverse",
+        desc: "Convert coordinates to an address or place name",
+        amount: "750",
+        unitType: "request",
+      },
+      {
+        route: "POST /mapbox/directions",
+        desc: "Get turn-by-turn directions between coordinates",
+        amount: "2000",
+        unitType: "request",
+      },
+      {
+        route: "POST /mapbox/matrix",
+        desc: "Get travel time and distance matrix between coordinates",
+        dynamic: true,
+        amountHint: "$0.002 – $0.50",
+      },
+      {
+        route: "POST /mapbox/isochrone",
+        desc: "Get reachable area polygons from a point within time or distance limits",
+        amount: "2000",
+        unitType: "request",
+      },
+      {
+        route: "POST /mapbox/map-matching",
+        desc: "Snap GPS traces to the road network",
+        amount: "2000",
+        unitType: "request",
+      },
+      {
+        route: "POST /mapbox/static-image",
+        desc: "Generate a static map image",
+        amount: "1000",
+        unitType: "request",
+      },
+      {
+        route: "POST /mapbox/tilequery",
+        desc: "Query map tile features at a location",
+        amount: "2000",
+        unitType: "request",
+      },
+    ],
+  },
+
+  // ── RentCast ───────────────────────────────────────────────────────────
+  {
+    id: "rentcast",
+    name: "RentCast",
+    url: "https://rentcast.mpp.paywithlocus.com",
+    serviceUrl: "https://rentcast.mpp.paywithlocus.com",
+    description:
+      "Real estate data including property records, valuations, rent estimates, sale and rental listings, and market statistics.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: [
+      "real-estate",
+      "property",
+      "valuation",
+      "listings",
+      "rental",
+      "market-data",
+    ],
+    docs: { homepage: "https://developers.rentcast.io" },
+    provider: { name: "RentCast", url: "https://www.rentcast.io" },
+    realm: "rentcast.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /rentcast/properties",
+        desc: "Search property records by address, city, state, zip, or coordinates",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/property-by-id",
+        desc: "Get property details by ID",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/random-properties",
+        desc: "Get random property records",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/value-estimate",
+        desc: "Get property value estimate with comparables",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/rent-estimate",
+        desc: "Get rental price estimate with comparables",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/sale-listings",
+        desc: "Search active sale listings",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/sale-listing-by-id",
+        desc: "Get sale listing details by ID",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/rental-listings",
+        desc: "Search active rental listings",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/rental-listing-by-id",
+        desc: "Get rental listing details by ID",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /rentcast/markets",
+        desc: "Get market statistics for a zip code",
+        amount: "30000",
+        unitType: "request",
+      },
+    ],
+  },
+
+  // ── Stability AI ───────────────────────────────────────────────────────
+  {
+    id: "stability-ai",
+    name: "Stability AI",
+    url: "https://stability.mpp.paywithlocus.com",
+    serviceUrl: "https://stability.mpp.paywithlocus.com",
+    description:
+      "Generative AI for images, 3D models, and audio — including generation, editing, upscaling, background removal, style transfer, and more.",
+    categories: ["ai", "media"],
+    integration: "third-party",
+    tags: [
+      "ai",
+      "image-generation",
+      "image-editing",
+      "3d",
+      "audio",
+      "upscaling",
+      "style-transfer",
+    ],
+    docs: { homepage: "https://platform.stability.ai" },
+    provider: { name: "Stability AI", url: "https://stability.ai" },
+    realm: "stability.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /stability-ai/generate-ultra",
+        desc: "Generate high-quality images with Ultra model",
+        amount: "92000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/generate-core",
+        desc: "Generate images with Core model",
+        amount: "35000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/generate-sd3",
+        desc: "Generate images with Stable Diffusion 3 — price varies by model variant",
+        dynamic: true,
+        amountHint: "$0.035 – $0.092",
+      },
+      {
+        route: "POST /stability-ai/erase",
+        desc: "Erase objects from an image using a mask",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/inpaint",
+        desc: "Fill in masked regions of an image with new content",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/outpaint",
+        desc: "Extend an image beyond its original borders",
+        amount: "46000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/search-and-replace",
+        desc: "Find and replace objects in an image by description",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/search-and-recolor",
+        desc: "Find and recolor objects in an image by description",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/remove-background",
+        desc: "Remove the background from an image",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/replace-background-and-relight",
+        desc: "Replace background and adjust lighting on a subject",
+        amount: "92000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/upscale-fast",
+        desc: "Upscale an image quickly (4x)",
+        amount: "23000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/upscale-conservative",
+        desc: "Upscale an image with conservative detail enhancement",
+        amount: "460000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/upscale-creative",
+        desc: "Upscale an image with creative detail synthesis",
+        amount: "690000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/sketch",
+        desc: "Generate an image guided by a sketch",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/structure",
+        desc: "Generate an image guided by structural input",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/style-guide",
+        desc: "Generate an image guided by a style reference",
+        amount: "58000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/style-transfer",
+        desc: "Transfer the style of one image onto another",
+        amount: "92000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/stable-fast-3d",
+        desc: "Generate a 3D model from a single image (fast)",
+        amount: "115000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/stable-point-aware-3d",
+        desc: "Generate a 3D model from a single image (point-aware)",
+        amount: "46000",
+        unitType: "request",
+      },
+      {
+        route: "POST /stability-ai/text-to-audio",
+        desc: "Generate audio from a text prompt — price varies by duration",
+        dynamic: true,
+        amountHint: "$0.02 – $0.10",
+      },
+      {
+        route: "POST /stability-ai/audio-to-audio",
+        desc: "Transform audio guided by a text prompt — price varies by duration",
+        dynamic: true,
+        amountHint: "$0.02 – $0.10",
+      },
+      {
+        route: "POST /stability-ai/audio-inpaint",
+        desc: "Inpaint a section of audio guided by a text prompt — price varies by duration",
+        dynamic: true,
+        amountHint: "$0.02 – $0.10",
+      },
+      {
+        route: "POST /stability-ai/result",
+        desc: "Retrieve the result of an async generation by ID",
+      },
+    ],
+  },
+
+  // ── Hunter ─────────────────────────────────────────────────────────────
+  {
+    id: "hunter",
+    name: "Hunter",
+    url: "https://hunter.mpp.paywithlocus.com",
+    serviceUrl: "https://hunter.mpp.paywithlocus.com",
+    description:
+      "Email finding, verification, and enrichment — domain search, person lookup, and company intelligence.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: ["email", "enrichment", "leads", "verification", "b2b"],
+    docs: { homepage: "https://hunter.io/api" },
+    provider: { name: "Hunter", url: "https://hunter.io" },
+    realm: "hunter.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /hunter/domain-search",
+        desc: "Find email addresses associated with a domain — price scales with result limit",
+        dynamic: true,
+        amountHint: "$0.01 – $0.10",
+      },
+      {
+        route: "POST /hunter/discover",
+        desc: "Discover contacts matching filters",
+        amount: "5000",
+        unitType: "request",
+      },
+      {
+        route: "POST /hunter/email-finder",
+        desc: "Find the email address of a person at a company",
+        amount: "10000",
+        unitType: "request",
+      },
+      {
+        route: "POST /hunter/email-verifier",
+        desc: "Verify the deliverability of an email address",
+        amount: "5000",
+        unitType: "request",
+      },
+      {
+        route: "POST /hunter/email-enrichment",
+        desc: "Get enriched data about an email address owner",
+        amount: "10000",
+        unitType: "request",
+      },
+      {
+        route: "POST /hunter/company-enrichment",
+        desc: "Get enriched data about a company by domain",
+        amount: "10000",
+        unitType: "request",
+      },
+      {
+        route: "POST /hunter/combined-enrichment",
+        desc: "Get combined person and company enrichment from an email",
+        amount: "20000",
+        unitType: "request",
+      },
+      {
+        route: "POST /hunter/email-count",
+        desc: "Get the count of email addresses for a domain",
+      },
+    ],
+  },
+
+  // ── Replicate ──────────────────────────────────────────────────────────
+  {
+    id: "replicate",
+    name: "Replicate",
+    url: "https://replicate.mpp.paywithlocus.com",
+    serviceUrl: "https://replicate.mpp.paywithlocus.com",
+    description:
+      "Run open-source AI models — image generation, LLMs, video, audio, and more.",
+    categories: ["ai", "media"],
+    integration: "third-party",
+    tags: ["ai", "ml", "models", "inference", "open-source"],
+    docs: { homepage: "https://replicate.com/docs" },
+    provider: { name: "Replicate", url: "https://replicate.com" },
+    realm: "replicate.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /replicate/run",
+        desc: "Run a model prediction — price varies by model",
+        dynamic: true,
+        amountHint: "$0.01 – $1.00",
+      },
+      {
+        route: "POST /replicate/get-prediction",
+        desc: "Get the status and output of a prediction",
+      },
+      {
+        route: "POST /replicate/get-model",
+        desc: "Get details about a model",
+        amount: "1000",
+        unitType: "request",
+      },
+      {
+        route: "POST /replicate/list-models",
+        desc: "List available models",
+        amount: "1000",
+        unitType: "request",
+      },
+    ],
+  },
+
+  // ── BuiltWith ──────────────────────────────────────────────────────────
+  {
+    id: "builtwith",
+    name: "BuiltWith",
+    url: "https://builtwith.mpp.paywithlocus.com",
+    serviceUrl: "https://builtwith.mpp.paywithlocus.com",
+    description:
+      "Technology detection and website profiling — discover what technologies websites use, find competitors, and analyze tech trends.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: [
+      "technology",
+      "detection",
+      "websites",
+      "analytics",
+      "competitive-intelligence",
+    ],
+    docs: { homepage: "https://api.builtwith.com" },
+    provider: { name: "BuiltWith", url: "https://builtwith.com" },
+    realm: "builtwith.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /builtwith/domain",
+        desc: "Get full technology profile for a domain",
+        amount: "50000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/lists",
+        desc: "Get lists of websites using a specific technology",
+        amount: "50000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/relationships",
+        desc: "Get related websites for a domain",
+        amount: "50000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/company-to-url",
+        desc: "Find website URLs for a company name",
+        amount: "50000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/tags",
+        desc: "Get technology tags for a domain",
+        amount: "50000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/product",
+        desc: "Search for websites using a product or technology",
+        amount: "50000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/recommendations",
+        desc: "Get technology recommendations for a domain",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/redirects",
+        desc: "Get redirect chain for a domain",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/keywords",
+        desc: "Get keyword analysis for a domain",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/trends",
+        desc: "Get usage trends for a technology",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/trust",
+        desc: "Get trust and safety signals for a domain",
+        amount: "30000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/free",
+        desc: "Get basic technology profile for a domain (light)",
+        amount: "10000",
+        unitType: "request",
+      },
+      {
+        route: "POST /builtwith/whoami",
+        desc: "Get current API account information",
+      },
+      {
+        route: "POST /builtwith/usage",
+        desc: "Get API usage statistics",
+      },
+    ],
+  },
+
+  // ── Suno ────────────────────────────────────────────────────────────────
+  {
+    id: "suno",
+    name: "Suno",
+    url: "https://suno.mpp.paywithlocus.com",
+    serviceUrl: "https://suno.mpp.paywithlocus.com",
+    description:
+      "AI music and lyrics generation — create songs, instrumentals, and lyrics from text prompts.",
+    categories: ["ai", "media"],
+    integration: "third-party",
+    tags: ["ai", "music", "audio", "lyrics", "generation"],
+    docs: { homepage: "https://docs.suno.com" },
+    provider: { name: "Suno", url: "https://suno.com" },
+    realm: "suno.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /suno/generate-music",
+        desc: "Generate a song from a text prompt or lyrics",
+        amount: "100000",
+        unitType: "request",
+      },
+      {
+        route: "POST /suno/get-music-status",
+        desc: "Check the status of a music generation task",
+      },
+      {
+        route: "POST /suno/generate-lyrics",
+        desc: "Generate song lyrics from a text prompt",
+        amount: "20000",
+        unitType: "request",
+      },
+      {
+        route: "POST /suno/get-lyrics-status",
+        desc: "Check the status of a lyrics generation task",
+      },
+      {
+        route: "POST /suno/get-credits",
+        desc: "Get remaining Suno credits balance",
+      },
+    ],
+  },
+
+  // ── OpenWeather ────────────────────────────────────────────────────────
+  {
+    id: "openweather",
+    name: "OpenWeather",
+    url: "https://weather.mpp.paywithlocus.com",
+    serviceUrl: "https://weather.mpp.paywithlocus.com",
+    description:
+      "Weather data including current conditions, 5-day forecasts, air quality, geocoding, and comprehensive one-call weather.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: ["weather", "forecast", "air-quality", "geocoding", "climate"],
+    docs: { homepage: "https://openweathermap.org/api" },
+    provider: { name: "OpenWeather", url: "https://openweathermap.org" },
+    realm: "weather.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /openweather/current-weather",
+        desc: "Get current weather conditions for a location",
+        amount: "3000",
+        unitType: "request",
+      },
+      {
+        route: "POST /openweather/forecast-5day",
+        desc: "Get 5-day / 3-hour weather forecast",
+        amount: "5000",
+        unitType: "request",
+      },
+      {
+        route: "POST /openweather/air-quality",
+        desc: "Get air quality index and pollutant data",
+        amount: "3000",
+        unitType: "request",
+      },
+      {
+        route: "POST /openweather/geocode",
+        desc: "Convert a place name to coordinates",
+        amount: "2000",
+        unitType: "request",
+      },
+      {
+        route: "POST /openweather/reverse-geocode",
+        desc: "Convert coordinates to a place name",
+        amount: "2000",
+        unitType: "request",
+      },
+      {
+        route: "POST /openweather/onecall",
+        desc: "Get comprehensive weather data (current, minutely, hourly, daily)",
+        amount: "7000",
+        unitType: "request",
+      },
+      {
+        route: "POST /openweather/weather-overview",
+        desc: "Get a human-readable weather summary",
+        amount: "7000",
+        unitType: "request",
+      },
+    ],
+  },
+
+  // ── Perplexity ─────────────────────────────────────────────────────────
+  {
+    id: "perplexity",
+    name: "Perplexity",
+    url: "https://perplexity.mpp.paywithlocus.com",
+    serviceUrl: "https://perplexity.mpp.paywithlocus.com",
+    description:
+      "AI-powered search and chat with Sonar models — real-time web-grounded answers, search, and embeddings.",
+    categories: ["ai", "search"],
+    integration: "third-party",
+    tags: ["ai", "search", "llm", "chat", "embeddings", "web-grounded"],
+    docs: { homepage: "https://docs.perplexity.ai" },
+    provider: { name: "Perplexity", url: "https://www.perplexity.ai" },
+    realm: "perplexity.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /perplexity/chat",
+        desc: "Chat completion with Sonar models and web citations",
+        dynamic: true,
+        amountHint: "$0.001 – $0.05",
+      },
+      {
+        route: "POST /perplexity/search",
+        desc: "Web search with structured results",
+        dynamic: true,
+        amountHint: "$0.005 – $0.05",
+      },
+      {
+        route: "POST /perplexity/embed",
+        desc: "Generate text embeddings",
+        dynamic: true,
+        amountHint: "$0.001 – $0.01",
+      },
+      {
+        route: "POST /perplexity/context-embed",
+        desc: "Generate contextual embeddings for document chunks",
+        dynamic: true,
+        amountHint: "$0.001 – $0.01",
+      },
+    ],
+  },
+
+  // ── Diffbot ────────────────────────────────────────────────────────────
+  {
+    id: "diffbot",
+    name: "Diffbot",
+    url: "https://diffbot.mpp.paywithlocus.com",
+    serviceUrl: "https://diffbot.mpp.paywithlocus.com",
+    description:
+      "Web data extraction, natural language processing, and knowledge graph — extract structured data from any URL, analyze text entities, and search a global knowledge graph.",
+    categories: ["ai", "data", "web"],
+    integration: "third-party",
+    tags: [
+      "web-scraping",
+      "extraction",
+      "nlp",
+      "knowledge-graph",
+      "entities",
+      "structured-data",
+    ],
+    docs: { homepage: "https://docs.diffbot.com" },
+    provider: { name: "Diffbot", url: "https://www.diffbot.com" },
+    realm: "diffbot.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /diffbot/article",
+        desc: "Extract structured article data from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/product",
+        desc: "Extract structured product data from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/discussion",
+        desc: "Extract discussion/comment threads from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/image",
+        desc: "Extract image metadata from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/video",
+        desc: "Extract video metadata from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/analyze",
+        desc: "Auto-detect page type and extract structured data from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/event",
+        desc: "Extract event data from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/list",
+        desc: "Extract list items from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot/job",
+        desc: "Extract job listing data from a URL",
+        amount: "1200",
+        unitType: "request",
+      },
+      {
+        route: "POST /diffbot-nl/analyze",
+        desc: "Analyze text for entities, relationships, and sentiment (NLP)",
+        dynamic: true,
+        amountHint: "$0.001 – $0.01",
+      },
+      {
+        route: "POST /diffbot-kg/search",
+        desc: "Search the Diffbot Knowledge Graph for entities",
+        dynamic: true,
+        amountHint: "$0.03 – $1.50",
+      },
+      {
+        route: "POST /diffbot-kg/enhance",
+        desc: "Enrich an entity with Knowledge Graph data",
+        dynamic: true,
+        amountHint: "$0.03 – $0.12",
+      },
+    ],
+  },
+
+  // ── Mathpix ────────────────────────────────────────────────────────────
+  {
+    id: "mathpix",
+    name: "Mathpix",
+    url: "https://mathpix.mpp.paywithlocus.com",
+    serviceUrl: "https://mathpix.mpp.paywithlocus.com",
+    description:
+      "OCR for math and scientific documents — extract LaTeX, MathML, and text from images and handwritten strokes.",
+    categories: ["ai"],
+    integration: "third-party",
+    tags: ["ocr", "math", "latex", "handwriting", "document-processing"],
+    docs: { homepage: "https://docs.mathpix.com" },
+    provider: { name: "Mathpix", url: "https://mathpix.com" },
+    realm: "mathpix.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /mathpix/process-image",
+        desc: "Extract LaTeX and text from an image of math or scientific content",
+        amount: "2000",
+        unitType: "request",
+      },
+      {
+        route: "POST /mathpix/process-strokes",
+        desc: "Convert handwritten strokes to LaTeX and text",
+        amount: "10000",
+        unitType: "request",
+      },
+    ],
+  },
+
+  // ── Judge0 ─────────────────────────────────────────────────────────────
+  {
+    id: "judge0",
+    name: "Judge0",
+    url: "https://judge0.mpp.paywithlocus.com",
+    serviceUrl: "https://judge0.mpp.paywithlocus.com",
+    description:
+      "Online code execution engine — compile and run code in 70+ programming languages with sandboxed execution.",
+    categories: ["compute"],
+    integration: "third-party",
+    tags: ["code-execution", "compiler", "sandbox", "programming", "languages"],
+    docs: { homepage: "https://judge0.com" },
+    provider: { name: "Judge0", url: "https://judge0.com" },
+    realm: "judge0.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /judge0/execute-code",
+        desc: "Execute code synchronously and return the output",
+        amount: "1000",
+        unitType: "request",
+      },
+      {
+        route: "POST /judge0/submit-code",
+        desc: "Submit code for async execution and get a token",
+        amount: "1000",
+        unitType: "request",
+      },
+      {
+        route: "POST /judge0/get-submission",
+        desc: "Get the status and output of a submitted code execution",
+      },
+      {
+        route: "POST /judge0/list-languages",
+        desc: "List all supported programming languages",
+      },
+      {
+        route: "POST /judge0/list-statuses",
+        desc: "List all possible submission statuses",
+      },
+    ],
+  },
+
+  // ── Browser Use ────────────────────────────────────────────────────────
+  {
+    id: "browser-use",
+    name: "Browser Use",
+    url: "https://beta-api.paywithlocus.com/api/browser-use-mpp",
+    serviceUrl: "https://beta-api.paywithlocus.com/api/browser-use-mpp",
+    description:
+      "AI-powered browser automation — run tasks in a cloud browser with LLM agents.",
+    categories: ["ai", "web"],
+    integration: "third-party",
+    tags: ["ai", "browser", "automation", "scraping", "web-agent"],
+    docs: { homepage: "https://docs.cloud.browser-use.com" },
+    provider: { name: "Browser Use", url: "https://browser-use.com" },
+    realm: "browseruse.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /api/browser-use-mpp/run-task",
+        desc: "Start an automated browser task with an AI agent",
+        dynamic: true,
+        amountHint: "$0.01 – $10.00",
+      },
+      {
+        route: "POST /api/browser-use-mpp/get-task",
+        desc: "Retrieve the full details and output of a task",
+      },
+      {
+        route: "POST /api/browser-use-mpp/get-task-status",
+        desc: "Check the current status of a running task",
+      },
+      {
+        route: "POST /api/browser-use-mpp/stop-task",
+        desc: "Stop a running browser task",
+      },
+    ],
+  },
+
+  // ── Clado ──────────────────────────────────────────────────────────────
+  {
+    id: "clado",
+    name: "Clado",
+    url: "https://clado.mpp.paywithlocus.com",
+    serviceUrl: "https://clado.mpp.paywithlocus.com",
+    description:
+      "People search, LinkedIn enrichment, and deep research for lead generation.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: ["people-search", "linkedin", "enrichment", "leads", "deep-research"],
+    docs: { homepage: "https://docs.clado.ai" },
+    provider: { name: "Clado", url: "https://clado.ai" },
+    realm: "clado.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /clado/search",
+        desc: "Search for people by query",
+        dynamic: true,
+        amountHint: "$0.01 – $0.30",
+      },
+      {
+        route: "POST /clado/deep-research",
+        desc: "Start async deep research job",
+        dynamic: true,
+        amountHint: "$0.01 – $0.30",
+      },
+      {
+        route: "POST /clado/deep-research-status",
+        desc: "Check deep research status and results",
+      },
+      {
+        route: "POST /clado/deep-research-cancel",
+        desc: "Cancel a running deep research job",
+      },
+      {
+        route: "POST /clado/deep-research-more",
+        desc: "Request additional deep research results",
+        dynamic: true,
+        amountHint: "$0.01 – $0.30",
+      },
+      {
+        route: "POST /clado/contacts",
+        desc: "Get contact info by LinkedIn URL, email, or phone",
+        dynamic: true,
+        amountHint: "$0.04 – $0.14",
+      },
+      {
+        route: "POST /clado/scrape",
+        desc: "Scrape a LinkedIn profile",
+        amount: "2000",
+        unitType: "request",
+      },
+      {
+        route: "POST /clado/linkedin-profile",
+        desc: "Get structured LinkedIn profile data",
+        amount: "1000",
+        unitType: "request",
+      },
+      {
+        route: "POST /clado/post-reactions",
+        desc: "Get reactions on a LinkedIn post",
+        amount: "1000",
+        unitType: "request",
+      },
+      {
+        route: "POST /clado/bulk-contacts",
+        desc: "Enrich contacts in bulk",
+        dynamic: true,
+        amountHint: "$0.04 – $1.40",
+      },
+      {
+        route: "POST /clado/bulk-contacts-status",
+        desc: "Check bulk enrichment status",
+      },
+      {
+        route: "POST /clado/credits",
+        desc: "Check remaining API credits",
+      },
+    ],
+  },
+
+  // ── EDGAR ──────────────────────────────────────────────────────────────
+  {
+    id: "edgar",
+    name: "EDGAR",
+    url: "https://edgar.mpp.paywithlocus.com",
+    serviceUrl: "https://edgar.mpp.paywithlocus.com",
+    description:
+      "SEC EDGAR public financial data — company filing history, XBRL financial facts, and single-concept time series.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: ["sec", "edgar", "finance", "filings", "xbrl", "stocks"],
+    docs: { homepage: "https://www.sec.gov/developer" },
+    provider: { name: "SEC EDGAR", url: "https://www.sec.gov/developer" },
+    realm: "edgar.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /edgar/company-submissions",
+        desc: "Get filing history and metadata for a SEC filer",
+        amount: "5000",
+        unitType: "request",
+      },
+      {
+        route: "POST /edgar/company-facts",
+        desc: "Get all XBRL financial data for a company",
+        amount: "5000",
+        unitType: "request",
+      },
+      {
+        route: "POST /edgar/company-concept",
+        desc: "Get time series for a single XBRL financial metric",
+        amount: "5000",
+        unitType: "request",
+      },
+    ],
+  },
+
+  // ── EDGAR Search ───────────────────────────────────────────────────────
+  {
+    id: "edgar-search",
+    name: "EDGAR Search",
+    url: "https://edgar-search.mpp.paywithlocus.com",
+    serviceUrl: "https://edgar-search.mpp.paywithlocus.com",
+    description:
+      "Full-text search across all SEC filings — 10-Ks, 10-Qs, 8-Ks, proxy statements, and more.",
+    categories: ["data", "search"],
+    integration: "third-party",
+    tags: ["sec", "edgar", "search", "filings", "finance"],
+    docs: { homepage: "https://www.sec.gov/developer" },
+    provider: { name: "SEC EDGAR", url: "https://www.sec.gov/developer" },
+    realm: "edgar-search.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /edgar-search/search",
+        desc: "Search full text of SEC filings by keyword, company, form type, and date range",
+        amount: "5000",
+        unitType: "request",
+      },
+    ],
+  },
+
+  // ── Laso Finance ───────────────────────────────────────────────────────
+  {
+    id: "laso",
+    name: "Laso Finance",
+    url: "https://beta-api.paywithlocus.com/api/laso-mpp",
+    serviceUrl: "https://beta-api.paywithlocus.com/api/laso-mpp",
+    description:
+      "AI-powered virtual debit cards, payments via Venmo/PayPal, and balance management.",
+    categories: ["data"],
+    integration: "third-party",
+    tags: ["finance", "payments", "debit-card", "venmo", "paypal"],
+    docs: { homepage: "https://docs.paywithlocus.com" },
+    provider: { name: "Laso Finance", url: "https://laso.finance" },
+    realm: "laso.mpp.paywithlocus.com",
+    intent: "charge",
+    payment: TEMPO_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /api/laso-mpp/auth",
+        desc: "Authenticate for a session token",
+        amount: "5000",
+        unitType: "request",
+      },
+      {
+        route: "POST /api/laso-mpp/get-card",
+        desc: "Provision a virtual debit card",
+        dynamic: true,
+        amountHint: "$5.00 – $1000.00",
+      },
+      {
+        route: "POST /api/laso-mpp/send-payment",
+        desc: "Send payment via Venmo or PayPal",
+        dynamic: true,
+        amountHint: "$5.00 – $1000.00",
+      },
+      {
+        route: "POST /api/laso-mpp/get-card-data",
+        desc: "Get card status and details",
+      },
+      {
+        route: "POST /api/laso-mpp/get-payment-status",
+        desc: "Check payment status",
+      },
+      {
+        route: "POST /api/laso-mpp/get-account-balance",
+        desc: "Check account balance",
+      },
+      {
+        route: "POST /api/laso-mpp/withdraw",
+        desc: "Initiate a withdrawal",
+      },
+      {
+        route: "POST /api/laso-mpp/get-withdrawal-status",
+        desc: "Check withdrawal status",
+      },
+      {
+        route: "POST /api/laso-mpp/refresh-card-data",
+        desc: "Refresh card data",
+      },
+      {
+        route: "POST /api/laso-mpp/refresh",
+        desc: "Exchange refresh token for new ID token",
+      },
+    ],
+  },
+
+  // ── Stripe Climate ──────────────────────────────────────────────────────
+  {
+    id: "stripe-climate",
+    name: "Stripe Climate",
+    url: "https://climate.stripe.dev",
+    serviceUrl: "https://climate.stripe.dev",
+    description: "Fund permanent carbon removal projects via Stripe Climate.",
+    categories: ["web"],
+    integration: "first-party",
+    tags: ["climate", "carbon", "sustainability", "stripe"],
+    docs: {
+      homepage: "https://climate.stripe.dev",
+    },
+    provider: { name: "Stripe", url: "https://stripe.com/climate" },
+    realm: "climate.stripe.dev",
+    intent: "charge",
+    payment: STRIPE_PAYMENT,
+    endpoints: [
+      {
+        route: "POST /api/contribute",
+        desc: "Create a climate contribution",
+        dynamic: true,
+        amountHint: "$0.01+",
+      },
     ],
   },
 ];
