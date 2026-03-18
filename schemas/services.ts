@@ -530,7 +530,7 @@ export const services: ServiceDef[] = [
     url: "https://graph.codex.io",
     serviceUrl: `https://codex.${MPP_REALM}`,
     description:
-      "GraphQL API for DeFi and blockchain data across 80+ networks.",
+      "Comprehensive onchain data API for tokens and prediction markets. Real-time prices, charts, trades, and wallet analytics across 80+ networks via GraphQL.",
     categories: ["blockchain", "data"],
     integration: "third-party",
     tags: ["graphql", "defi", "tokens", "trades", "nft"],
