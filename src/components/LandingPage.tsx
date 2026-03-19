@@ -662,6 +662,7 @@ function StripeLogo() {
 function Lockup() {
   return (
     <h1 className="lockup-h1" style={{ margin: 0 }}>
+      {/* sr-only span carries the heading text; images use empty alt to avoid triple-announcement by screen readers */}
       <span className="sr-only">MPP — Machine Payments Protocol</span>
       <img
         src="/lockup-dark.svg"
