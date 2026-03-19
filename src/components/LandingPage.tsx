@@ -17,7 +17,7 @@ const JSON_LD = JSON.stringify([
     "@type": "WebSite",
     name: "MPP",
     alternateName: "Machine Payments Protocol",
-    url: "https://mpp.tempo.xyz",
+    url: "https://mpp.dev",
     description:
       "The open standard for machine-to-machine payments via HTTP 402.",
   },
