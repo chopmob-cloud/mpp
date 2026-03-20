@@ -833,6 +833,11 @@ export function ServicesPage() {
     return () => clearTimeout(id);
   }, [search]);
 
+  // Reset expanded row when search or category changes so rows don't stay grayed out
+  useEffect(() => {
+    setExpandedIds(new Set());
+  }, [debouncedSearch, selectedCategory]);
+
   const stickyObserverReady = !loading && !error;
   useEffect(() => {
     if (!stickyObserverReady) return;
