@@ -13,7 +13,7 @@ inputs:
   vocs-config:
     description: "Path to vocs config file"
     required: false
-    default: "./vocs.config.tsx"
+    default: "./vocs.config.ts"
   sdk-path-prefix:
     description: "Sidebar path prefix for SDK references"
     required: false
