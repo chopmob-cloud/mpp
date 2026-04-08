@@ -119,10 +119,10 @@ Enable SSE streaming. Pass `true` to enable with defaults, or an options object 
 
 ### store (optional)
 
-- **Type:** `Store`
+- **Type:** `Store.Store`
 - **Default:** `Store.memory()`
 
-Storage backend for persisting channel and session state. Implements atomic read-modify-write operations for concurrency safety.
+Store backend for persisting channel and session state. `mppx` handles concurrency internally.
 
 ```ts twoslash
 import { Store, tempo } from 'mppx/server'
@@ -131,6 +131,8 @@ const method = tempo.session({
   store: Store.memory(), // [!code focus]
 })
 ```
+
+Use `Store.memory()` for local development and tests. For multi-instance deployments, use `Store.redis()`, `Store.upstash()`, or `Store.cloudflare()` so channel state is shared across processes.
 
 ### suggestedDeposit (optional)
 
@@ -187,4 +189,3 @@ const txHash = await tempo.settle(store, client, '0xchannelId...')
 #### Return type
 
 - **Type:** `Hex` — The settlement transaction hash.
-
