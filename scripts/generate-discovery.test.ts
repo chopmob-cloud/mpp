@@ -75,7 +75,7 @@ function paymentSvc(overrides: Partial<ServiceDef> = {}): ServiceDef {
     tags: [],
     realm: MPP_REALM,
     intent: "charge",
-    payment: TEMPO_PAYMENT,
+    payments: [TEMPO_PAYMENT],
     endpoints: [{ route: "GET /foo", desc: "test" }],
     ...overrides,
   };
@@ -208,7 +208,7 @@ function svc(overrides: Partial<ServiceDef> = {}): ServiceDef {
     tags: [],
     realm: MPP_REALM,
     intent: "charge",
-    payment: TEMPO_PAYMENT,
+    payments: [TEMPO_PAYMENT],
     endpoints: [{ route: "GET /foo", desc: "test" }],
     ...overrides,
   };
