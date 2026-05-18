@@ -6620,7 +6620,7 @@ export const services: ServiceDef[] = [
     payments: [TEMPO_PAYMENT],
     endpoints: [
       {
-        route: "GET /mpp/{resource_id}",
+        route: "GET /mpp/:resource_id",
         desc: "MPP-gated resource — 401 Payment challenge then 200 content",
         amount: "10000",
       },
